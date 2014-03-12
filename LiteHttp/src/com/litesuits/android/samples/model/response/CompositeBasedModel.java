@@ -17,7 +17,7 @@ public class CompositeBasedModel {
 	 * 用法： @see
 	 * {@link LiteHttpSamplesActivity#makeIntelligentJsonModelMapingRequest()}
 	 */
-	public static class User {
+	public static class UserModel {
 		private String name;
 		private int age;
 		public ArrayList<String> girl_friends;

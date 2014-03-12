@@ -12,7 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.litesuits.android.samples.model.response.ExtendBasedModel.UserResult;
+import com.litesuits.android.samples.model.response.ExtendBasedModel.User;
 
 /**
  * 传统http连接读取过程和解析json方式
@@ -58,8 +58,8 @@ public class OriginHttp {
 		return null;
 	}
 
-	public static UserResult parseJsonToUser(String json) {
-		UserResult user = new UserResult();
+	public static User parseJsonToUser(String json) {
+		User user = new User();
 		if (json != null) {
 			try {
 				JSONObject jsonObj = new JSONObject(json);
@@ -68,8 +68,8 @@ public class OriginHttp {
 				JSONArray arr = null;
 				if (data != null) arr = data.optJSONArray("girl_friends");
 
-				user.result = new UserResult.Result();
-				user.data = new UserResult.User();
+				user.result = new User.Result();
+				user.data = new User.UserInfo();
 				user.data.girl_friends = new ArrayList<String>();
 
 				if (jsonObj != null) {

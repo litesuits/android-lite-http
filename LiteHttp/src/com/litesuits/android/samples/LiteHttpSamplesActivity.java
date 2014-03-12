@@ -23,8 +23,8 @@ import com.litesuits.android.async.AsyncExcutor.Worker;
 import com.litesuits.android.log.Log;
 import com.litesuits.android.samples.model.param.RequestParams.BaiDuSearch;
 import com.litesuits.android.samples.model.response.CompositeBasedModel.ApiResult;
-import com.litesuits.android.samples.model.response.CompositeBasedModel.User;
-import com.litesuits.android.samples.model.response.ExtendBasedModel.UserResult;
+import com.litesuits.android.samples.model.response.CompositeBasedModel.UserModel;
+import com.litesuits.android.samples.model.response.ExtendBasedModel.User;
 import com.litesuits.http.LiteHttpClient;
 import com.litesuits.http.R;
 import com.litesuits.http.async.HttpAsyncExcutor;
@@ -230,9 +230,9 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 
 		});
 
-		asyncExcutor.execute(client, new Request(urlUser), new HttpModelHandler<UserResult>() {
+		asyncExcutor.execute(client, new Request(urlUser), new HttpModelHandler<User>() {
 			@Override
-			protected void onSuccess(UserResult data, Response res) {
+			protected void onSuccess(User data, Response res) {
 				Log.i(TAG, "User: " + data);
 				toast("User: " + data);
 				printLog(res);
@@ -245,9 +245,9 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 
 		});
 
-		asyncExcutor.execute(client, new Request(urlUserList), new HttpModelHandler<ArrayList<UserResult>>() {
+		asyncExcutor.execute(client, new Request(urlUserList), new HttpModelHandler<ArrayList<User>>() {
 			@Override
-			protected void onSuccess(ArrayList<UserResult> data, Response res) {
+			protected void onSuccess(ArrayList<User> data, Response res) {
 				Log.i(TAG, "User List: " + data);
 				toast("User List: " + data);
 				printLog(res);
@@ -447,6 +447,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 	 * 通过String存储data对象，再转化为User模型
 	 */
 	private void makeIntelligentJsonModelMapingRequest() {
+//		User user = client.get("", null, User.class);
 		asyncExcutor.execute(new Worker<Response>() {
 
 			@Override
@@ -459,12 +460,12 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 				//以组合的方式组织model并解析
 				ApiResult api = res.getObject(ApiResult.class);
 				if (api != null) {
-					User user1 = api.getData(User.class);
+					UserModel user1 = api.getData(UserModel.class);
 					Log.i(TAG, "user1: " + user1);
 					toast("user1: " + user1);
 				}
 				//以继承的方式组织model并解析
-				UserResult user2 = res.getObject(UserResult.class);
+				User user2 = res.getObject(User.class);
 				Log.i(TAG, "user2: " + user2);
 				toast("user2: " + user2);
 				// user1 和 user2 是一样的对象，只是实现、组织起来的的方式不同。

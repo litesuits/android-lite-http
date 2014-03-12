@@ -35,12 +35,12 @@ public class ExtendBasedModel {
 	 * @author MaTianyu
 	 * 2014-3-11下午5:10:36
 	 */
-	public static class UserResult extends ApiResult {
+	public static class User extends ApiResult {
 
 		//全部声明public是因为使用方便，性能也好，即使private变量LiteHttp也能自动赋值，开发者可自行斟酌修饰符。
-		public User data;
+		public UserInfo data;
 
-		public static class User {
+		public static class UserInfo {
 			public String name;
 			public int age;
 			public ArrayList<String> girl_friends;
