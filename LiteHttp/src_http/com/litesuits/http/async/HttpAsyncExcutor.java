@@ -2,18 +2,9 @@ package com.litesuits.http.async;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import com.litesuits.android.async.AsyncExcutor;
-import com.litesuits.android.log.Log;
 import com.litesuits.http.LiteHttpClient;
 import com.litesuits.http.request.Request;
 import com.litesuits.http.response.Response;
