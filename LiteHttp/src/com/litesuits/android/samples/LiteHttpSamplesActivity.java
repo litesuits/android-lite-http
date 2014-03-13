@@ -52,11 +52,11 @@ import com.litesuits.http.response.handler.HttpResponseHandler;
 public class LiteHttpSamplesActivity extends BaseActivity {
 	private LiteHttpClient client;
 	private HttpAsyncExcutor asyncExcutor = new HttpAsyncExcutor();
-	private String urlUser = "http://litesuits.github.io/mockdata/user.txt";
-	private String urlUserList = "http://litesuits.github.io/mockdata/user_list.txt";
+	private String urlUser = "http://litesuits.github.io/mockdata/user";
+	private String urlUserList = "http://litesuits.github.io/mockdata/user_list";
 
 	/**
-	 * 在{@link BaseActivity#onCreate(Bundle)}中设置视图
+	 * 在{@link BaseActivity#onCreate(Bundle)}中设置视图m
 	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
