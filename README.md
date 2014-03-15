@@ -93,4 +93,4 @@ File file = client.execute(imageUrl, new FileParser("sdcard/lite.jpg"), HttpMeth
 Response res = client.execute(new Request(imageUrl).setDataParser(new BitmapParser()));
 Bitmap bitmap = res.getBitmap();
 ```
-###Start and Clone [LiteHttp](https://github.com/litesuits/android-lite-http) Github Project, See More Samples.
+###Star and Clone [LiteHttp](https://github.com/litesuits/android-lite-http) Github Project, Learn More Samples.
