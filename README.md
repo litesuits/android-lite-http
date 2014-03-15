@@ -55,7 +55,7 @@ man class:
 public class Man implements HttpParam{
 	private String name;
 	private int id;
-        private int age;
+    private int age;
 	public Man(String name, int id){
 		this.name = name;
 		this.id= id;
