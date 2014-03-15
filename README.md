@@ -21,7 +21,7 @@ Fetures
 
 Architectures
 ---
-
+![LiteHttp Architecture](litehttp_archi.png)
 Basic Usage
 ---
 ###Basic Request
