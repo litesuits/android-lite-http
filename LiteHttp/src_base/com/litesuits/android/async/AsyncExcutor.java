@@ -51,14 +51,16 @@ public class AsyncExcutor {
 				try {
 					get();
 				} catch (InterruptedException e) {
-					Log.e(TAG, e.getMessage());
+					Log.e(TAG, e);
+					worker.abort();
 					e.printStackTrace();
 				} catch (ExecutionException e) {
 					Log.e(TAG, e.getMessage());
 					e.printStackTrace();
 					throw new RuntimeException("An error occured while executing doInBackground()", e.getCause());
 				} catch (CancellationException e) {
-					Log.e(TAG, e.getMessage());
+					worker.abort();
+					Log.e(TAG, e);
 					e.printStackTrace();
 				}
 			}
@@ -89,9 +91,11 @@ public class AsyncExcutor {
 		return task;
 	}
 
-	public static interface Worker<T> {
-		T doInBackground();
+	public static abstract class Worker<T> {
+		protected abstract T doInBackground();
 
-		void onPostExecute(T data);
+		protected void onPostExecute(T data) {}
+
+		protected void abort() {}
 	}
 }

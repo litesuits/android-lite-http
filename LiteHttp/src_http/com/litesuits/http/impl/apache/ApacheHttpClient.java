@@ -374,15 +374,23 @@ public class ApacheHttpClient extends LiteHttpClient {
 	 * @throws HttpServerException
 	 * @throws InterruptedException
 	 */
-	private void readDataWithRetries(Request request, InternalResponse innerResponse) throws HttpNetException,
-			HttpClientException, HttpServerException, InterruptedException {
-		HttpUriRequest req = createApacheRequest(request);
+	private void readDataWithRetries(Request request, InternalResponse innerResponse) throws HttpNetException, HttpClientException, HttpServerException,
+			InterruptedException {
+		final HttpUriRequest req = createApacheRequest(request);
 		// update header
 		if (request.getHeaders() != null) {
 			for (Entry<String, String> en : request.getHeaders().entrySet()) {
 				req.setHeader(new BasicHeader(en.getKey(), en.getValue()));
 			}
 		}
+		// set request abort
+		request.setAbort(new Request.Abortable() {
+			@Override
+			public void abort() {
+				req.abort();
+			}
+		});
+		//try connect
 		int times = 0, retryTimes = request.getRetryMaxTimes();
 		HttpResponse response = null;
 		IOException cause = null;

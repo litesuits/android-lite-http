@@ -36,6 +36,12 @@ public class HttpAsyncExcutor extends AsyncExcutor {
 			public void onPostExecute(Response res) {
 				UIHandler.handleResponse(res);
 			}
+
+			@Override
+			public void abort() {
+				if (req != null) req.abort();
+			}
+
 		};
 		return execute(worker);
 	}
@@ -66,6 +72,11 @@ public class HttpAsyncExcutor extends AsyncExcutor {
 			@Override
 			public void onPostExecute(T data) {
 				UIHandler.handleModelData(data, res);
+			}
+
+			@Override
+			public void abort() {
+				if (req != null) req.abort();
 			}
 
 		};

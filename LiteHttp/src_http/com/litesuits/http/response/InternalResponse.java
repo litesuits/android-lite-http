@@ -2,8 +2,6 @@ package com.litesuits.http.response;
 
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 
 import android.graphics.Bitmap;
@@ -250,19 +248,11 @@ public class InternalResponse implements Response {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("----------Http Response Info Start------------\n")
-				.append("http [Response] : httpStatus=").append(httpStatus)
-				.append(", charSet=").append(charSet)
-				.append(", tryTimes=").append(tryTimes)
-				.append(", redirectTimes=").append(redirectTimes)
-				.append(", readedLength=").append(readedLength)
-				.append(", contentLength=").append(contentLength)
-				.append(", connectTime=").append(connectTime)
-				.append("\nhttp [headers] : ").append(Arrays.toString(headers))
-				.append("\nhttp [request] : ").append(request)
-				.append("\nhttp [dataParser] : ").append(dataParser)
-				.append("\nhttp [executeListener] : ").append(executeListener)
-				.append("\nhttp [exception] : ").append(exception)
+		sb.append("----------Http Response Info Start------------\n").append("http [Response] : httpStatus=").append(httpStatus).append(", charSet=")
+				.append(charSet).append(", tryTimes=").append(tryTimes).append(", redirectTimes=").append(redirectTimes).append(", readedLength=")
+				.append(readedLength).append(", contentLength=").append(contentLength).append(", connectTime=").append(connectTime)
+				.append("\nhttp [headers] : ").append(Arrays.toString(headers)).append("\nhttp [request] : ").append(request).append("\nhttp [dataParser] : ")
+				.append(dataParser).append("\nhttp [executeListener] : ").append(executeListener).append("\nhttp [exception] : ").append(exception)
 				.append("\n----------Http Response Info End------------");
 		return sb.toString();
 

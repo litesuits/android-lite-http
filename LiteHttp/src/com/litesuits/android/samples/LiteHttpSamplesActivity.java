@@ -7,10 +7,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 import org.apache.http.util.CharArrayBuffer;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -44,6 +46,7 @@ import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.FileParser;
 import com.litesuits.http.request.Request;
 import com.litesuits.http.request.param.HttpMethod;
+import com.litesuits.http.request.param.HttpParam;
 import com.litesuits.http.response.Response;
 import com.litesuits.http.response.handler.HttpExceptionHandler;
 import com.litesuits.http.response.handler.HttpModelHandler;
@@ -199,7 +202,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 	}
 
 	private void innerAsyncGetResponse() {
-		asyncExcutor = new HttpAsyncExcutor();
+		HttpAsyncExcutor asyncExcutor = new HttpAsyncExcutor();
 
 		asyncExcutor.execute(client, new Request(url), new HttpResponseHandler() {
 			@Override
@@ -213,6 +216,36 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 				toast("e: " + e);
 			}
 		});
+		//		HttpAsyncExcutor asyncExcutor = new HttpAsyncExcutor();
+		//		asyncExcutor.execute(client, new Request(url), new HttpResponseHandler() {
+		//			@Override
+		//			protected void onSuccess(Response res, HttpStatus status, NameValuePair[] headers) {
+		//				// do some thing on UI thread
+		//			}
+		//
+		//			@Override
+		//			protected void onFailure(Response res, HttpException e) {
+		//				// do some thing on UI thread 
+		//				// and you can handle exception by HttpExceptionHandler.
+		//				new HttpExceptionHandler() {
+		//					
+		//					@Override
+		//					protected void onServerException(HttpServerException e, ServerException type, HttpStatus status, NameValuePair[] headers) {
+		//						// connect success, server error
+		//					}
+		//					
+		//					@Override
+		//					protected void onNetException(HttpNetException e, NetException type) {
+		//						// network error
+		//					}
+		//					
+		//					@Override
+		//					protected void onClientException(HttpClientException e, ClientException type) {
+		//						//client exception
+		//					}
+		//				}.handleException(e);
+		//			}
+		//		});
 	}
 
 	private void innerAsyncGetModel() {
@@ -321,20 +354,29 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 			}
 		});
 		future.cancel(true);
-		future = asyncExcutor.execute(client, new Request(url), new HttpResponseHandler() {
-			@Override
-			protected void onSuccess(Response res, HttpStatus status, NameValuePair[] headers) {
-				printLog(res);
-				toast(res.getString());
-			}
+		// delay cancel
+		asyncExcutor.execute(new Callable<Void>() {
 
 			@Override
-			protected void onFailure(Response res, HttpException e) {
-				toast("e: " + e);
+			public Void call() throws Exception {
+				FutureTask<?> future = asyncExcutor.execute(client, new Request(url), new HttpResponseHandler() {
+					@Override
+					protected void onSuccess(Response res, HttpStatus status, NameValuePair[] headers) {
+						printLog(res);
+						toast(res.getString());
+					}
+
+					@Override
+					protected void onFailure(Response res, HttpException e) {
+						toast("e: " + e);
+					}
+				});
+				SystemClock.sleep(400);
+				future.cancel(true);
+				return null;
 			}
 		});
-		SystemClock.sleep(1200);
-		future.cancel(true);
+
 	}
 
 	private void makeJavaModeAsParamsRequest() {
@@ -342,6 +384,20 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 		Request req = new Request(url).addUrlSuffix("/s").setParamModel(model);
 		Response res = client.execute(req);
 		printLog(res);
+
+		//		Man man = new Man("jame",18);
+		//		Response resonse = client.execute(new Request("http://a.com",man));
+		//build as http://a.com?name=jame&age=18
+	}
+
+	public class Man implements HttpParam {
+		private String name;
+		private int age;
+
+		public Man(String name, int age) {
+			this.name = name;
+			this.age = age;
+		}
 	}
 
 	private void makeAutoRedirectRequest() {
@@ -401,8 +457,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 	}
 
 	private void makeLoadBitmapRequest() {
-		Request req = new Request(imageUrl).setDataParser(new BitmapParser());
-		final Response res = client.execute(req);
+		final Response res = client.execute(new Request(imageUrl).setDataParser(new BitmapParser()));
 
 		runOnUiThread(new Runnable() {
 			@Override
@@ -426,11 +481,6 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 		if (bitmap != null) {
 			ImageView imageview = new ImageView(LiteHttpSamplesActivity.this);
 			imageview.setImageBitmap(bitmap);
-			//			LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-			//			LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-			//			lp.setMargins(20, 10, 20, 10);
-			//			imageview.setLayoutParams(lp);
-			//			container.addView(imageview);
 			mListview.addFooterView(imageview);
 			Toast.makeText(LiteHttpSamplesActivity.this, "Bitmap 加载完成，RowBytes：" + bitmap.getRowBytes() + ", ByteCount: " + bitmap.getByteCount(),
 					Toast.LENGTH_LONG).show();
@@ -447,7 +497,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 	 * 通过String存储data对象，再转化为User模型
 	 */
 	private void makeIntelligentJsonModelMapingRequest() {
-//		User user = client.get("", null, User.class);
+		//		User user = client.get("", null, User.class);
 		asyncExcutor.execute(new Worker<Response>() {
 
 			@Override
@@ -486,10 +536,10 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 	}
 
 	private void makeBaseGetRequest() {
+		Context context = this;
 		// default method is get.
-		LiteHttpClient client = ApacheHttpClient.getInstance(this);
-		Request req = new Request(url);
-		Response res = client.execute(req);
+		LiteHttpClient client = ApacheHttpClient.getInstance(context);
+		Response res = client.execute(new Request("http://baidu.com"));
 		printLog(res);
 	}
 
@@ -536,7 +586,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 						if (type == NetException.NetworkError) {
 							toast("开发者可更新界面提示用户，原因：无可用网络");
 						} else if (type == NetException.UnReachable) {
-							toast("开发者可更新界面提示用户，原因：网络不稳定或服务器不可访问");
+							toast("开发者可更新界面提示用户，原因：服务器不可访问(或网络不稳定)");
 						} else if (type == NetException.NetworkDisabled) {
 							toast("原因：该网络类型已被开发者设置禁用");
 						}

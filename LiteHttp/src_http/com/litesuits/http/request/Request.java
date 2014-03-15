@@ -19,7 +19,6 @@ import com.litesuits.http.request.param.HttpMethod;
 import com.litesuits.http.request.param.HttpParam;
 import com.litesuits.http.request.query.AbstractQueryBuilder;
 import com.litesuits.http.request.query.JsonQueryBuilder;
-import com.litesuits.http.response.handler.HttpResponseHandler;
 /**
  * Base request for {@link LiteHttpClient} method
  * 
@@ -64,6 +63,12 @@ public class Request {
 	private int retryMaxTimes = LiteHttpClient.DEFAULT_MAX_RETRY_TIMES;
 
 	private DataParser<?> dataParser;
+
+	protected Abortable abort;
+
+	public static interface Abortable {
+		public void abort();
+	}
 
 	//	private HttpResponseHandler UiHanler;
 
@@ -170,8 +175,7 @@ public class Request {
 			LinkedHashMap<String, String> map = getBasicParams();
 			int i = 0, size = map.size();
 			for (Entry<String, String> v : map.entrySet()) {
-				sb.append(URLEncoder.encode(v.getKey(), charSet)).append("=")
-						.append(URLEncoder.encode(v.getValue(), charSet)).append(++i == size ? "" : "&");
+				sb.append(URLEncoder.encode(v.getKey(), charSet)).append("=").append(URLEncoder.encode(v.getValue(), charSet)).append(++i == size ? "" : "&");
 			}
 			if (Log.isPrint) Log.i(TAG, "Request URL: " + sb.toString());
 			return sb.toString();
@@ -183,8 +187,8 @@ public class Request {
 	/**
 	 * 融合hashmap和解析到的javamodel里的参数，即所有string 参数.
 	 */
-	public LinkedHashMap<String, String> getBasicParams() throws IllegalArgumentException,
-			UnsupportedEncodingException, IllegalAccessException, InvocationTargetException {
+	public LinkedHashMap<String, String> getBasicParams() throws IllegalArgumentException, UnsupportedEncodingException, IllegalAccessException,
+			InvocationTargetException {
 		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
 		if (paramMap != null) map.putAll(paramMap);
 		LinkedHashMap<String, String> modelMap = queryBuilder.buildPrimaryMap(paramModel);
@@ -277,6 +281,14 @@ public class Request {
 		return this;
 	}
 
+	public void setAbort(Abortable abort) {
+		this.abort = abort;
+	}
+
+	public void abort() {
+		if (abort != null) abort.abort();
+	}
+
 	//	public HttpResponseHandler getUiHanler() {
 	//		return UiHanler;
 	//	}
@@ -288,10 +300,9 @@ public class Request {
 
 	@Override
 	public String toString() {
-		return "Request [url=" + url + ", headers=" + headers + ", paramModel=" + paramModel + ", paramMap=" + paramMap
-				+ ", paramStream=" + paramStream + ", paramFile=" + paramFile + ", queryBuilder=" + queryBuilder
-				+ ", method=" + method + ", charSet=" + charSet + ", retryMaxTimes=" + retryMaxTimes + ", dataParser="
-				+ dataParser + "]";
+		return "Request [url=" + url + ", headers=" + headers + ", paramModel=" + paramModel + ", paramMap=" + paramMap + ", paramStream=" + paramStream
+				+ ", paramFile=" + paramFile + ", queryBuilder=" + queryBuilder + ", method=" + method + ", charSet=" + charSet + ", retryMaxTimes="
+				+ retryMaxTimes + ", dataParser=" + dataParser + "]";
 	}
 
 }
