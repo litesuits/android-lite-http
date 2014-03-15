@@ -73,7 +73,7 @@ man json:
     "id": 18
 }
 ```
-### multiple files upload Request
+### Multiple Files Upload Request
 ```java
 	String url = "http://192.168.2.108:8080/LiteHttpServer/ReceiveFile";
 	FileInputStream fis = new FileInputStream(new File("sdcard/1.jpg"));
@@ -92,5 +92,47 @@ File file = client.execute(imageUrl, new FileParser("sdcard/lite.jpg"), HttpMeth
 // other way
 Response res = client.execute(new Request(imageUrl).setDataParser(new BitmapParser()));
 Bitmap bitmap = res.getBitmap();
+```
+
+### File and Bitmap load Request
+```java
+Request req = new Request(url).setMethod(HttpMethod.Head);
+HttpAsyncExcutor asyncExcutor = new HttpAsyncExcutor();
+asyncExcutor.execute(client, req, new HttpResponseHandler() {
+
+	@Override
+	public void onSuccess(Response response, HttpStatus status, NameValuePair[] headers) {
+		response.getBitmap();
+		// do some thing on ui thread
+	}
+
+	@Override
+	public void onFailure(Response response, HttpException e) {
+
+		new HttpExceptionHandler() {
+			@Override
+			protected void onClientException(HttpClientException e, ClientException type) {
+				// Client Exception
+			}
+
+			@Override
+			protected void onNetException(HttpNetException e, NetException type) {
+				if (type == NetException.NetworkError) {
+					// NetWork Unconnected
+				} else if (type == NetException.UnReachable) {
+					// NetWork UnReachable
+				} else if (type == NetException.NetworkDisabled) {
+					// Network Disabled
+				}
+			}
+
+			@Override
+			protected void onServerException(HttpServerException e, ServerException type, HttpStatus status, NameValuePair[] headers) {
+				// Server Exception
+			}
+
+		}.handleException(e);
+	}
+});
 ```
 ###Star and Clone [LiteHttp](https://github.com/litesuits/android-lite-http) Github Project, Learn More Samples.
