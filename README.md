@@ -94,7 +94,8 @@ Response res = client.execute(new Request(imageUrl).setDataParser(new BitmapPars
 Bitmap bitmap = res.getBitmap();
 ```
 
-### File and Bitmap load Request
+### Handle Exception(unified)
+HttpException : ClientException + NetworkException + ServerException
 ```java
 Request req = new Request(url).setMethod(HttpMethod.Head);
 HttpAsyncExcutor asyncExcutor = new HttpAsyncExcutor();
