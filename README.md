@@ -36,6 +36,7 @@ Architectures
 - Bottom is non-business-related Framework, Libraries.
 - Middle is business-related third party and main logic. 
 - Top is View renders and business logic caller. 
+
 This make you migrate your code across different device, such as phone,pad,tv easy. 
 
 ###LiteHttp Architectures
@@ -45,8 +46,9 @@ Basic Usage
 ---
 ###Basic Request
 ```java
-LiteHttpClient client = ApacheHttpClient.getInstance(context);
-Response res = client.execute(new Request("http://a.com"));
+LiteHttpClient client = LiteHttpClient.getInstance(context);
+Response res = client.execute(new Request("http://baidu.com"));
+String html = res.getString();
 ```
 ###Asynchronous Request
 ```java
@@ -84,14 +86,51 @@ public class Man implements HttpParam{
 ###Intelligent Response Json Convert
 ```java
 String url = "http://litesuits.github.io/mockdata/user?id=18";
-Man man = client.get(url, null, Man.class);
+User user = client.get(url, null, User.class);
 ```
-man json:
+User Class :
+```java
+public class User extends ApiResult {
+	//全部声明public是因为写sample方便，不过这样性能也好，
+	//即使private变量LiteHttp也能自动赋值，开发者可自行斟酌修饰符。
+	public UserInfo data;
+
+	public static class UserInfo {
+		public String name;
+		public int age;
+		public ArrayList<String> girl_friends;
+	}
+}
+
+public abstract class ApiResult {
+	public String api;
+	public String v;
+	public Result result;
+
+	public static class Result {
+		public int code;
+		public String message;
+	}
+}
+```
+User json structure:
 ```json
 {
-    "name": "jame",
-    "age": 26,
-    "id": 18
+	"api": "com.xx.get.userinfo",
+	"v": "1.0",
+	"result": {
+		"code": 200,
+		"message": "success"
+	},
+	"data": {
+		"age": 18,
+		"name": "qingtianzhu",
+		"girl_friends": [
+			"xiaoli",
+			"fengjie",
+			"lucy"
+		]
+	}
 }
 ```
 ### Multiple Files Upload Request
@@ -100,7 +139,6 @@ man json:
 	FileInputStream fis = new FileInputStream(new File("sdcard/1.jpg"));
 	Request req = new Request(url);
 	req.setMethod(HttpMethod.Post)
-		.setParamModel(new BaiDuSearch())
 		.addParam("lite", new File("sdcard/lite.jpg"), "image/jpeg")
 		.addParam("feiq", new File("sdcard/feiq.exe"), "application/octet-stream");
 	if (fis != null) req.addParam("meinv", fis, "sm.jpg", "image/jpeg");
@@ -157,5 +195,5 @@ asyncExcutor.execute(client, req, new HttpResponseHandler() {
 	}
 });
 ```
-###Star and Clone [LiteHttp](https://github.com/litesuits/android-lite-http) Github Project, See and Learn More Samples.
+###Star and clone [LiteHttp](https://github.com/litesuits/android-lite-http) github project, see and Learn More Samples.
 ## QQ Group: 47357508

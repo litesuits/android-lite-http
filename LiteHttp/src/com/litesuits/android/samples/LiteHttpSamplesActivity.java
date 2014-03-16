@@ -444,7 +444,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 		}
 		String url = "http://192.168.2.108:8080/LiteHttpServer/ReceiveFile";
 		Request req = new Request(url);
-		req.setMethod(HttpMethod.Post).setParamModel(new BaiDuSearch()).addParam("lite", new File("sdcard/lite.jpg"), "image/jpeg")
+		req.setMethod(HttpMethod.Post).addParam("lite", new File("sdcard/lite.jpg"), "image/jpeg")
 				.addParam("feiq", new File("sdcard/feiq.exe"), "application/octet-stream");
 		if (fis != null) req.addParam("meinv", fis, "sm.jpg", "image/jpeg");
 		Response res = client.execute(req);
@@ -538,8 +538,9 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 	private void makeBaseGetRequest() {
 		Context context = this;
 		// default method is get.
-		LiteHttpClient client = ApacheHttpClient.getInstance(context);
+		LiteHttpClient client = LiteHttpClient.getInstance(context);
 		Response res = client.execute(new Request("http://baidu.com"));
+		String html = res.getString();
 		printLog(res);
 	}
 
