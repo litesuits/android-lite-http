@@ -37,6 +37,7 @@ Architectures
 - Middle is business-related third party and main logic. 
 - Top is View renders and business logic caller. 
 This make you migrate your code across different device, such as phone,pad,tv easy. 
+
 ###LiteHttp Architectures
 ![LiteHttp Architecture](http://litesuits.github.io/guide/img/litehttp_archi.png)
 
