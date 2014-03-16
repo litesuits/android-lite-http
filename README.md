@@ -2,10 +2,22 @@ An Intelligent  Http Client
 ===
 LiteHttp is a simple, intelligent and flexible HTTP client for Android. With LiteHttp you can make HTTP request with only one line of code! It supports GET, POST, PUT, DELETE, HEAD, TRACE, OPTIONS and PATCH request types. LiteHttp could convert a java model to the parameter of http request and rander the response JSON as a java model intelligently. And you can extend the abstract class DataParser to parse inputstream(network) to which you want.
 
+LiteHttp中文简介
+---
+ http://litesuits.github.io/guide/http/intro.html 
+其中描述了LiteHttp的功能、特点、案例，以及架构模型。
+为什么是LiteHttp？
+---
+ http://litesuits.github.io/guide/http/get-start.html 
+LiteHttp引言，一个案例告诉你它的强大之处。
+
+
+
 Fetures
 ---
-- **One thread**, all methods work on the same thread as the request was created.
+- **One thread**, all methods work on the same thread as the request was created. Never-Across-Thread. [See more about Asynchronous](https://github.com/litesuits/android-lite-async)
 - **Flexible architecture**, you can replace json library, apache httpclient or params builder easily.
+- **Lightweight**. Tiny size overhead to your app. About 86kb for core jar. 
 - Multiple method support, **get, post, head, put, delete, trace, options, patch.**
 - **Multipart file uploads** without additional jars or libraries.
 - **File and bitmap downloads** support by the built-in DataParser. You can extend DataParser yourself and set it for Request to parse http inputstream to which you want fairly easily.
@@ -19,7 +31,15 @@ Fetures
 
 Architectures
 ---
-![LiteHttp Architecture](litehttp_archi.png)
+###A well-architected  app：
+![App Architecture](http://litesuits.github.io/guide/img/app_archi.png)
+- Bottom is non-business-related Framework, Libraries.
+- Middle is business-related third party and main logic. 
+- Top is View renders and business logic caller. 
+This make you migrate your code across different device, such as phone,pad,tv easy. 
+###LiteHttp Architectures
+![LiteHttp Architecture](http://litesuits.github.io/guide/img/litehttp_archi.png)
+
 Basic Usage
 ---
 ###Basic Request
@@ -136,4 +156,5 @@ asyncExcutor.execute(client, req, new HttpResponseHandler() {
 	}
 });
 ```
-###Star and Clone [LiteHttp](https://github.com/litesuits/android-lite-http) Github Project, Learn More Samples.
+###Star and Clone [LiteHttp](https://github.com/litesuits/android-lite-http) Github Project, See and Learn More Samples.
+## QQ Group: 47357508
