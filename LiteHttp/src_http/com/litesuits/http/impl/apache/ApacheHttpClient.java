@@ -111,7 +111,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 		HttpConnectionParams.setSoTimeout(params, DEFAULT_TIMEOUT);
 		HttpConnectionParams.setSocketBufferSize(params, DEFAULT_BUFFER_SIZE);
 		HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-		HttpProtocolParams.setUserAgent(params, String.format("Light %s ( http://litesuits.com )", "1.0"));
+		HttpProtocolParams.setUserAgent(params, String.format("Lite %s ( http://litesuits.com )", "1.0"));
 		// settingOthers(params);
 		return params;
 	}
@@ -202,8 +202,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 	 */
 	private ThreadSafeClientConnManager createClientConnManager(BasicHttpParams httpParams) {
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
-		// Android had a bug where HTTPS made reverse DNS lookups (fixed in Ice
-		// Cream Sandwich)
+		// Android had a bug where HTTPS made reverse DNS lookups (fixed in Ice Cream Sandwich)
 		// http://code.google.com/p/android/issues/detail?id=13117
 		SocketFactory socketFactory = null;
 		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -446,9 +445,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 					} else if (status.getStatusCode() <= 399) {
 						// redirect
 						if (innerResponse.getRedirectTimes() < DEFAULT_MAX_REDIRECT_TIMES) {
-							// get the location header to find out where to
-							// redirect
-							// to
+							// get the location header to find out where to redirect to
 							Header locationHeader = response.getFirstHeader(REDIRECT_LOCATION);
 							if (locationHeader != null) {
 								String location = locationHeader.getValue();
@@ -465,10 +462,8 @@ public class ApacheHttpClient extends LiteHttpClient {
 									return;
 								}
 							}
-							// 服务器有误
 							throw new HttpServerException(httpStatus);
 						} else {
-							// 服务器有误
 							throw new HttpServerException(ServerException.RedirectTooMany);
 						}
 					} else if (status.getStatusCode() <= 499) {
