@@ -195,9 +195,6 @@ asyncExcutor.execute(client, req, new HttpResponseHandler() {
 	}
 });
 ```
-#个人开源站点：[LiteSuits](http://litesuits.com) 
-
-http://litesuits.com
-
 ###Star and clone [LiteHttp](https://github.com/litesuits/android-lite-http) github project, see and Learn More Samples.
 ## QQ Group: 47357508
+##个人开源站点：[LiteSuits](http://litesuits.com) ：http://litesuits.com
