@@ -1,5 +1,7 @@
 package com.litesuits.http.exception;
 
+import org.apache.http.protocol.HTTP;
+
 import com.litesuits.http.data.HttpStatus;
 
 /**
@@ -11,10 +13,14 @@ import com.litesuits.http.data.HttpStatus;
 public class HttpServerException extends HttpException {
 	private static final long serialVersionUID = 3695887939006497385L;
 	private ServerException exceptionType;
+	private HttpStatus status;
 
 	public enum ServerException {
+		//500 error
 		ServerInner("Server Inner Exception", "服务器内部异常"),
+		//400 error
 		ServerReject("Server Reject Client Exception", "服务器拒绝或无法提供服务"),
+		//redirect too many
 		RedirectTooMany("Server RedirectTooMany", "重定向次数过多");
 
 		public String reason;
@@ -33,6 +39,7 @@ public class HttpServerException extends HttpException {
 
 	public HttpServerException(HttpStatus status) {
 		super(useChinese ? status.getDescriptionInChinese() : status.getDescription());
+		this.status = status;
 		if (status.getCode() >= 500) {
 			exceptionType = ServerException.ServerInner;
 		} else {
@@ -48,4 +55,7 @@ public class HttpServerException extends HttpException {
 		this.exceptionType = exceptionType;
 	}
 
+	public HttpStatus getHttpStatus() {
+		return status;
+	}
 }

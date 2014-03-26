@@ -39,7 +39,6 @@ import com.litesuits.http.exception.HttpNetException;
 import com.litesuits.http.exception.HttpNetException.NetException;
 import com.litesuits.http.exception.HttpServerException;
 import com.litesuits.http.exception.HttpServerException.ServerException;
-import com.litesuits.http.impl.apache.ApacheHttpClient;
 import com.litesuits.http.parser.BinaryParser;
 import com.litesuits.http.parser.BitmapParser;
 import com.litesuits.http.parser.DataParser;
@@ -564,7 +563,8 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 	}
 
 	private void makeRequestWithExceptionHandler() {
-		Request req = new Request(url).setMethod(HttpMethod.Trace);
+		url="http://h5.m.taobao.com/we/pc.htm";
+		Request req = new Request(url).setMethod(HttpMethod.Get);
 		asyncExcutor.execute(client, req, new HttpResponseHandler() {
 
 			@Override
@@ -594,7 +594,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 					}
 
 					@Override
-					protected void onServerException(HttpServerException e, ServerException type, HttpStatus status, NameValuePair[] headers) {
+					protected void onServerException(HttpServerException e, ServerException type, HttpStatus status) {
 						toast("开发者可更新界面提示用户，原因：服务暂时不可用");
 					}
 

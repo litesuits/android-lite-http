@@ -27,8 +27,8 @@ public abstract class HttpExceptionHandler {
 				HttpNetException ne = ((HttpNetException) e);
 				onNetException(ne, ne.getExceptionType());
 			} else if (e instanceof HttpServerException) {
-				HttpNetException ne = ((HttpNetException) e);
-				onNetException(ne, ne.getExceptionType());
+				HttpServerException se = ((HttpServerException) e);
+				onServerException(se, se.getExceptionType(), se.getHttpStatus());
 			} else {
 				throw new RuntimeException("Unkonwn HttpException");
 			}
@@ -54,6 +54,5 @@ public abstract class HttpExceptionHandler {
 	 * [500~599]：基本是服务器内部错误或者网关异常造成的
 	 * @param e
 	 */
-	protected abstract void onServerException(HttpServerException e, ServerException type, HttpStatus status,
-			NameValuePair[] headers);
+	protected abstract void onServerException(HttpServerException e, ServerException type, HttpStatus status);
 }
