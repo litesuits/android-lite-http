@@ -569,7 +569,6 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 
 			@Override
 			public void onSuccess(Response response, HttpStatus status, NameValuePair[] headers) {
-				response.getBitmap();
 				toast("成功");
 			}
 
