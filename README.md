@@ -197,4 +197,4 @@ asyncExcutor.execute(client, req, new HttpResponseHandler() {
 ```
 ###Star and clone [LiteHttp](https://github.com/litesuits/android-lite-http) github project, see and Learn More Samples.
 ## QQ Group: 47357508
-##个人开源站点：Lite Your Android ：http://litesuits.com
+##个人开源站点 ：http://litesuits.com
