@@ -56,6 +56,7 @@ public abstract class LiteHttpClient {
 	public static final String REDIRECT_LOCATION = "location";
 
 	public static final String DEFAULT_CHARSET = Charsets.UTF_8;
+    public static final String DEFAULT_PLAIN_TEXT_TYPE = "text/plain";
 
 	/**
 	 * u cat set {@link #disableNetworkFlags } = {@link #FLAG_NET_DISABLE_MOBILE }

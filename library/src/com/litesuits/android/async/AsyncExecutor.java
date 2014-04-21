@@ -16,12 +16,12 @@ import com.litesuits.android.log.Log;
  * 异步执行
  * @author MaTianyu
  */
-public class AsyncExcutor {
-	private static final String TAG = AsyncExcutor.class.getSimpleName();
+public class AsyncExecutor {
+	private static final String TAG = AsyncExecutor.class.getSimpleName();
 	private static ExecutorService threadPool;
 	public static Handler handler = new Handler(Looper.getMainLooper());
 
-	public AsyncExcutor() {
+	public AsyncExecutor() {
 		if (threadPool == null) {
 			threadPool = Executors.newCachedThreadPool();
 		}

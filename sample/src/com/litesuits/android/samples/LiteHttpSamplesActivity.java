@@ -6,11 +6,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.util.CharArrayBuffer;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -561,10 +576,57 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 		Response res = client.execute(req);
 		printLog(res);
 	}
-
+	public static String httpRequestForUpload(String url, String json) {
+        HttpParams myParams = new BasicHttpParams();
+        HttpConnectionParams.setConnectionTimeout(myParams, 10000);
+        HttpConnectionParams.setSoTimeout(myParams, 10000);
+        String result = null;
+        HttpClient httpClient = new DefaultHttpClient();
+        try {
+            HttpPost httppost = new HttpPost(url);
+            httppost.setHeader("Content-type", "application/json");
+            StringEntity se = new StringEntity(json.toString(), "utf-8");
+            se.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE,
+                    "application/json"));
+            httppost.setEntity(se);
+            HttpResponse response = httpClient.execute(httppost);
+            result = EntityUtils.toString(response.getEntity());
+        } catch (ConnectTimeoutException e) {
+            e.printStackTrace();
+            System.out.println("CTException"+e.toString());
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.out.println("UEException"+e.toString());
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.out.println("CPException"+e.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("IOException"+e.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Exception"+e.toString());
+        } finally {
+            // 当不再需要HttpClient实例时,关闭连接管理器以确保释放所有占用的系统资源
+            httpClient.getConnectionManager().shutdown();
+        }
+        return result;
+    }
 	private void makeRequestWithExceptionHandler() {
-		url="http://h5.m.taobao.com/we/pc.htm";
-		Request req = new Request(url).setMethod(HttpMethod.Get);
+		//		url="http://h5.m.taobao.com/we/pc.htm";
+			//			InputStream is = new 
+		url = "http://service.bong.cn/bong/bongData/upload?userId=2312&validateSN=1396286249610850530";
+
+		String json = "[{\"bongFlag\":1,\"alert\":5,\"swim\":0,\"dataTime\":\"2014-04-01T00:13:00+0800\",\"chargeFlag\":0,\"quiet\":18,\"run\":0,\"amp\":387,\"walk\":0,\"move\":6,\"step\":0},{\"bongFlag\":1,\"alert\":5,\"swim\":0,\"dataTime\":\"2014-04-01T00:14:00+0800\",\"chargeFlag\":0,\"quiet\":13,\"run\":0,\"amp\":442,\"walk\":0,\"move\":11,\"step\":0},{\"bongFlag\":1,\"alert\":6,\"swim\":0,\"dataTime\":\"2014-04-01T00:15:00+0800\",\"chargeFlag\":0,\"quiet\":17,\"run\":0,\"amp\":438,\"walk\":0,\"move\":6,\"step\":0},{\"bongFlag\":1,\"alert\":4,\"swim\":0,\"dataTime\":\"2014-04-01T00:16:00+0800\",\"chargeFlag\":0,\"quiet\":16,\"run\":0,\"amp\":474,\"walk\":0,\"move\":10,\"step\":0}]";
+		String r = httpRequestForUpload(url, json);
+		Log.d(TAG, "result:" + r);
+		
+		Request req = new Request(url).setMethod(HttpMethod.Trace);
+		req.addHeader("Content-Type", "application/json");
+		req.addParam("", json);
+		
 		asyncExcutor.execute(client, req, new HttpResponseHandler() {
 
 			@Override
