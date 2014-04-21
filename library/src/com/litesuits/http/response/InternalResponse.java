@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import android.graphics.Bitmap;
 
+import com.litesuits.android.log.Log;
 import com.litesuits.http.LiteHttpClient;
 import com.litesuits.http.data.HttpStatus;
 import com.litesuits.http.data.Json;
@@ -254,6 +255,7 @@ public class InternalResponse implements Response {
 				.append("\nhttp [headers] : ").append(Arrays.toString(headers)).append("\nhttp [request] : ").append(request).append("\nhttp [dataParser] : ")
 				.append(dataParser).append("\nhttp [executeListener] : ").append(executeListener).append("\nhttp [exception] : ").append(exception)
 				.append("\n----------Http Response Info End------------");
+        if(exception != null)Log.e(this.getClass().getSimpleName(),"exception: " + exception );
 		return sb.toString();
 
 	}
