@@ -1,18 +1,11 @@
 package com.litesuits.http.impl.apache;
 
 import com.litesuits.android.log.Log;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.message.BasicHeader;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -27,7 +20,7 @@ class SimpleMultipartEntity implements HttpEntity {
     private static final String TAG = SimpleMultipartEntity.class.getSimpleName();
 
     private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
-    private static final byte[] CR_LF = ("\r\n").getBytes();
+    private static final byte[] CR_LF                    = ("\r\n").getBytes();
     private static final byte[] TRANSFER_ENCODING_BINARY = "Content-Transfer-Encoding: binary\r\n".getBytes();
 
     private final static char[] MULTIPART_CHARS = "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
@@ -62,14 +55,22 @@ class SimpleMultipartEntity implements HttpEntity {
 //		this.progressHandler = progressHandler;
     }
 
-//    public void addPart(final String key, final String value, String charset, final String contentType) throws UnsupportedEncodingException {
-//        if (charset == null) charset = ApacheHttpClient.DEFAULT_CHARSET;
-//        addPart(key, value.getBytes(charset), contentType);
-//    }
-//
-//    public void addPart(final String key, final String value) throws UnsupportedEncodingException {
-//        addPart(key, value, (String)null, "text/plain; charset=UTF-8");
-//    }
+    public void addPart(final byte[] bytes) {
+        try {
+            out.write(bytes);
+            out.write(CR_LF);
+        } catch (final IOException e) {
+            Log.e(TAG, "addPart ByteArrayOutputStream exception", e);
+        }
+    }
+
+    public void addPart(final String string, final String charset) {
+        try {
+            addPart(string.getBytes(charset));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void addPart(final String key, final byte[] bytes, final String contentType) {
         try {
@@ -143,62 +144,6 @@ class SimpleMultipartEntity implements HttpEntity {
 //		progressHandler.sendProgressMessage(bytesWritten, totalSize);
     }
 
-    private class FilePart {
-        public File file;
-        public byte[] header;
-
-        public FilePart(String key, File file, String type) {
-            header = createHeader(key, file.getName(), type);
-            this.file = file;
-        }
-
-        private byte[] createHeader(String key, String filename, String type) {
-            ByteArrayOutputStream headerStream = new ByteArrayOutputStream();
-            try {
-                headerStream.write(boundaryLine);
-
-                // Headers
-                headerStream.write(createContentDisposition(key, filename));
-                headerStream.write(createContentType(type));
-                headerStream.write(TRANSFER_ENCODING_BINARY);
-                headerStream.write(CR_LF);
-            } catch (IOException e) {
-                // Can't happen on ByteArrayOutputStream
-                Log.e(TAG, "createHeader ByteArrayOutputStream exception", e);
-            }
-            return headerStream.toByteArray();
-        }
-
-        public long getTotalLength() {
-            long streamLength = file.length();
-            return header.length + streamLength;
-        }
-
-        public void writeTo(OutputStream out) throws IOException {
-            out.write(header);
-            updateProgress(header.length);
-
-            FileInputStream inputStream = new FileInputStream(file);
-            final byte[] tmp = new byte[4096];
-            int l;
-            while ((l = inputStream.read(tmp)) != -1) {
-                out.write(tmp, 0, l);
-                updateProgress(l);
-            }
-            out.write(CR_LF);
-            updateProgress(CR_LF.length);
-            out.flush();
-            try {
-                inputStream.close();
-            } catch (final IOException e) {
-                // Not important, just log it
-                Log.w(TAG, "Cannot close input stream", e);
-            }
-        }
-    }
-
-    // The following methods are from the HttpEntity interface
-
     @Override
     public long getContentLength() {
         long contentLen = out.size();
@@ -212,6 +157,8 @@ class SimpleMultipartEntity implements HttpEntity {
         contentLen += boundaryEnd.length;
         return contentLen;
     }
+
+    // The following methods are from the HttpEntity interface
 
     @Override
     public Header getContentType() {
@@ -266,5 +213,59 @@ class SimpleMultipartEntity implements HttpEntity {
     @Override
     public InputStream getContent() throws IOException, UnsupportedOperationException {
         throw new UnsupportedOperationException("getContent() is not supported. Use writeTo() instead.");
+    }
+
+    private class FilePart {
+        public File   file;
+        public byte[] header;
+
+        public FilePart(String key, File file, String type) {
+            header = createHeader(key, file.getName(), type);
+            this.file = file;
+        }
+
+        private byte[] createHeader(String key, String filename, String type) {
+            ByteArrayOutputStream headerStream = new ByteArrayOutputStream();
+            try {
+                headerStream.write(boundaryLine);
+
+                // Headers
+                headerStream.write(createContentDisposition(key, filename));
+                headerStream.write(createContentType(type));
+                headerStream.write(TRANSFER_ENCODING_BINARY);
+                headerStream.write(CR_LF);
+            } catch (IOException e) {
+                // Can't happen on ByteArrayOutputStream
+                Log.e(TAG, "createHeader ByteArrayOutputStream exception", e);
+            }
+            return headerStream.toByteArray();
+        }
+
+        public long getTotalLength() {
+            long streamLength = file.length();
+            return header.length + streamLength;
+        }
+
+        public void writeTo(OutputStream out) throws IOException {
+            out.write(header);
+            updateProgress(header.length);
+
+            FileInputStream inputStream = new FileInputStream(file);
+            final byte[] tmp = new byte[4096];
+            int l;
+            while ((l = inputStream.read(tmp)) != -1) {
+                out.write(tmp, 0, l);
+                updateProgress(l);
+            }
+            out.write(CR_LF);
+            updateProgress(CR_LF.length);
+            out.flush();
+            try {
+                inputStream.close();
+            } catch (final IOException e) {
+                // Not important, just log it
+                Log.w(TAG, "Cannot close input stream", e);
+            }
+        }
     }
 }

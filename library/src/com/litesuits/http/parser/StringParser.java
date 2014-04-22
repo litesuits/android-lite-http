@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import com.litesuits.android.log.Log;
 import org.apache.http.util.CharArrayBuffer;
 
 /**
@@ -15,7 +16,9 @@ import org.apache.http.util.CharArrayBuffer;
  */
 public class StringParser extends DataParser<String> {
 
-	@Override
+    private static final String TAG = StringParser.class.getSimpleName();
+
+    @Override
 	public String parseData(InputStream stream, int len, String charSet) throws IOException {
 		return streamToString(stream, len, charSet);
 	}

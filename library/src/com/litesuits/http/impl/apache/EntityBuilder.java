@@ -5,9 +5,10 @@ import com.litesuits.http.request.Request;
 import com.litesuits.http.request.RequestParams;
 import com.litesuits.http.request.RequestParams.FileEntity;
 import com.litesuits.http.request.RequestParams.InputStreamEntity;
-
 import org.apache.http.HttpEntity;
+import org.apache.http.protocol.HTTP;
 
+import java.net.URLEncoder;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
@@ -35,17 +36,18 @@ public class EntityBuilder {
                     sb.append(en.getKey()).append("=").append(en.getValue());
                 }
                 if (sb.length() > 0) {
-                    smEntiry.addPart(null, sb.toString().getBytes(), null);
+//                   String contentType = ApacheHttpClient.DEFAULT_PLAIN_TEXT_TYPE + HTTP.CHARSET_PARAM + req.getCharSet();
+                    smEntiry.addPart(sb.toString(), req.getCharSet());
+                }
+            }
+            if (paramString != null) {
+                for (RequestParams.StringEntity se : paramString) {
+                    smEntiry.addPart(se.string.getBytes(se.charset));
                 }
             }
             if (paramBytes != null) {
                 for (RequestParams.ByteArrayEntity be : paramBytes) {
                     smEntiry.addPart(null, be.bytes, be.contentType);
-                }
-            }
-            if (paramString != null) {
-                for (RequestParams.StringEntity se : paramString) {
-                    smEntiry.addPart(null, se.string.getBytes(se.charset), se.contentType);
                 }
             }
             if (paramFile != null) {

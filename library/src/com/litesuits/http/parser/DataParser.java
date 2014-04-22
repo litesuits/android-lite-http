@@ -56,4 +56,14 @@ public abstract class DataParser<D> {
 	public final D getData() {
 		return data;
 	}
+
+    @Override
+    public String toString() {
+        return "DataParser{" +
+                "buffSize=" + buffSize +
+                ", data=" + data +
+                ", readLength=" + readLength +
+                ", statistics=" + statistics +
+                '}';
+    }
 }

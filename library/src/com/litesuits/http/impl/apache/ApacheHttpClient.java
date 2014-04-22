@@ -244,6 +244,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 			}
 			final HttpException e = innerResponse.getException();
 			if (e != null) {
+                Log.e(TAG, "http connect error, stack trace as fllows :");
 				e.printStackTrace();
 			}
 		}
@@ -400,6 +401,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 				if (!Thread.currentThread().isInterrupted()) {
 					innerResponse.setTryTimes(++times);
 					// start
+                    if (Log.isPrint) Log.v(TAG, "http connect  to " + req.getURI());
 					if (doStatistics) innerResponse.getExecuteListener().onPreConnect();
 					response = mHttpClient.execute(req);
 					if (doStatistics) innerResponse.getExecuteListener().onAfterConnect();
@@ -441,6 +443,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 							} else {
 								if (Log.isPrint) Log.w(TAG, "DataParser readInputStream :currentThread isInterrupted ");
 							}
+                            if (Log.isPrint) Log.v(TAG, "http response is " + parser.getData());
 						}
 					} else if (status.getStatusCode() <= 399) {
 						// redirect

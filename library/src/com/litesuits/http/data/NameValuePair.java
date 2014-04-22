@@ -32,7 +32,7 @@ public class NameValuePair implements Serializable {
 		final int len = this.name.length() + 1 + this.value.length();
 		final StringBuilder buffer = new StringBuilder(len);
 		buffer.append(this.name);
-		buffer.append("=");
+		buffer.append(" = ");
 		buffer.append(this.value);
 		buffer.append("\n");
 		return buffer.toString();

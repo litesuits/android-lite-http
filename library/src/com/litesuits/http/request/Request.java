@@ -29,6 +29,7 @@ import java.util.Map.Entry;
  */
 public class Request {
     private static final String TAG = Request.class.getSimpleName();
+    protected Abortable abort;
     private String url;
     /**
      * add custom header to request.
@@ -67,24 +68,15 @@ public class Request {
      * defaul method is get(GET).
      */
     private HttpMethod method;
-
     private String charSet = LiteHttpClient.DEFAULT_CHARSET;
-
     private int retryMaxTimes = LiteHttpClient.DEFAULT_MAX_RETRY_TIMES;
-
     private DataParser<?> dataParser;
-
-    protected Abortable abort;
-
-    public static interface Abortable {
-        public void abort();
-    }
-
-    //	private HttpResponseHandler UiHanler;
 
     public Request(String url) {
         this(url, (HttpParam) null);
     }
+
+    //	private HttpResponseHandler UiHanler;
 
     public Request(String url, HttpParam paramModel) {
         this(url, paramModel, new StringParser());
@@ -216,6 +208,11 @@ public class Request {
         }
     }
 
+    public Request setUrl(String url) {
+        this.url = url;
+        return this;
+    }
+
     /**
      * 融合hashmap和解析到的javamodel里的参数，即所有string 参数.
      */
@@ -226,11 +223,6 @@ public class Request {
         LinkedHashMap<String, String> modelMap = queryBuilder.buildPrimaryMap(paramModel);
         if (modelMap != null) map.putAll(modelMap);
         return map;
-    }
-
-    public Request setUrl(String url) {
-        this.url = url;
-        return this;
     }
 
     public LinkedHashMap<String, String> getHeaders() {
@@ -331,21 +323,23 @@ public class Request {
 
     @Override
     public String toString() {
-        return "Request{" +
-                "url='" + url + '\'' +
-                ", headers=" + headers +
-                ", paramModel=" + paramModel +
-                ", paramMap=" + paramMap +
-                ", streamEntity=" + streamEntity +
-                ", fileEntity=" + fileEntity +
-                ", bytesEntity=" + bytesEntity +
-                ", stringEntity=" + stringEntity +
-                ", queryBuilder=" + queryBuilder +
-                ", method=" + method +
-                ", charSet='" + charSet + '\'' +
-                ", retryMaxTimes=" + retryMaxTimes +
-                ", dataParser=" + dataParser +
-                ", abort=" + abort +
-                '}';
+        return "\turl = " + url +
+                "\n\tmethod = " + method +
+                "\n\theaders = " + headers +
+                "\n\tcharSet = " + charSet +
+                "\n\tretryMaxTimes = " + retryMaxTimes +
+                "\n\tparamModel = " + paramModel +
+                "\n\tdataParser = " + (dataParser != null ? dataParser.getClass().getSimpleName() : "null") +
+                "\n\tqueryBuilder = " + (queryBuilder != null ? queryBuilder.getClass().getSimpleName() : "null") +
+                "\n\tparamMap = " + paramMap +
+                "\n\tstreamEntity = " + streamEntity +
+                "\n\tfileEntity = " + fileEntity +
+                "\n\tbytesEntity = " + bytesEntity +
+                "\n\tstringEntity = " + stringEntity;
+
+    }
+
+    public static interface Abortable {
+        public void abort();
     }
 }

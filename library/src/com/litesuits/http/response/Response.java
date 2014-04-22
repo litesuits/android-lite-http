@@ -57,10 +57,11 @@ public interface Response {
 
 	public int getRedirectTimes();
 
-	public long getConnectTime();
+	public long getUseTime();
 
 	public int getReadedLength();
 
 	public DataParser<?> getDataParser();
 
+    void printInfo();
 }
