@@ -40,7 +40,7 @@ public class RequestBuilder {
 	}
 
 	public RequestBuilder param(String key, CharSequence value) {
-		req.addParam(key, String.valueOf(value));
+		req.addUrlParam(key, String.valueOf(value));
 		return this;
 	}
 

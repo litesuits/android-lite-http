@@ -27,6 +27,7 @@
         <item>19. Thread方式开启异步</item>
         <item>20. AsyncTask方式开启异步</item>
         <item>21. HTTP加载取消</item>
+        <item>22. Post发送Model Entity</item>
     </string-array>
 
 </resources>

@@ -27,6 +27,7 @@
         <item>19. Use Thread Execute</item>
         <item>20. Use AsyncTask Execute</item>
         <item>21. Cancel HTTP Loading</item>
+        <item>22. Post Send Model Entity</item>
     </string-array>
 
 </resources>

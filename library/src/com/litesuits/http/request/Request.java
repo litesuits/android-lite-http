@@ -2,6 +2,7 @@ package com.litesuits.http.request;
 
 import com.litesuits.android.log.Log;
 import com.litesuits.http.LiteHttpClient;
+import com.litesuits.http.data.Json;
 import com.litesuits.http.exception.HttpClientException;
 import com.litesuits.http.exception.HttpClientException.ClientException;
 import com.litesuits.http.parser.DataParser;
@@ -29,47 +30,47 @@ import java.util.Map.Entry;
  */
 public class Request {
     private static final String TAG = Request.class.getSimpleName();
-    protected Abortable abort;
-    private String url;
+    protected Abortable                                              abort;
+    private   String                                                 url;
     /**
      * add custom header to request.
      */
-    private LinkedHashMap<String, String> headers;
+    private   LinkedHashMap<String, String>                          headers;
     /**
      * intelligently translate java object into mapping(k=v) parameters
      */
-    private HttpParam paramModel;
+    private   HttpParam                                              paramModel;
     /**
      * key value parameters
      */
-    private LinkedHashMap<String, String> paramMap;
+    private   LinkedHashMap<String, String>                          paramMap;
     /**
      * input stream entity
      */
-    private LinkedHashMap<String, RequestParams.InputStreamEntity> streamEntity;
+    private   LinkedHashMap<String, RequestParams.InputStreamEntity> streamEntity;
     /**
      * file entity
      */
-    private LinkedHashMap<String, RequestParams.FileEntity> fileEntity;
+    private   LinkedHashMap<String, RequestParams.FileEntity>        fileEntity;
     /**
      * bytes entity
      */
-    private LinkedList<RequestParams.ByteArrayEntity> bytesEntity;
+    private   LinkedList<RequestParams.ByteArrayEntity>              bytesEntity;
     /**
      * string entity
      */
-    private LinkedList<RequestParams.StringEntity> stringEntity;
+    private   LinkedList<RequestParams.StringEntity>                 stringEntity;
     /**
      * when parameter's value is complex, u can chose one buider, default mode
      * is build value into json string.
      */
-    private AbstractQueryBuilder queryBuilder;
+    private   AbstractQueryBuilder                                   queryBuilder;
     /**
      * defaul method is get(GET).
      */
-    private HttpMethod method;
-    private String charSet = LiteHttpClient.DEFAULT_CHARSET;
-    private int retryMaxTimes = LiteHttpClient.DEFAULT_MAX_RETRY_TIMES;
+    private   HttpMethod                                             method;
+    private String charSet       = LiteHttpClient.DEFAULT_CHARSET;
+    private int    retryMaxTimes = LiteHttpClient.DEFAULT_MAX_RETRY_TIMES;
     private DataParser<?> dataParser;
 
     public Request(String url) {
@@ -119,6 +120,25 @@ public class Request {
         return this;
     }
 
+    /**
+     * 以Java Model为数据源，序列化为 Json String 以StringEntity的方式传递。
+     *
+     * @param paramModel 将会被
+     * @param charset 传null 默认utf-8
+     * @return
+     */
+    public Request addEntity(HttpParam paramModel, String charset) {
+        if (paramModel != null) {
+            if (bytesEntity == null) {
+                stringEntity = new LinkedList<RequestParams.StringEntity>();
+            }
+            stringEntity.add(new RequestParams.StringEntity(Json.get().toString(paramModel),
+                    LiteHttpClient.DEFAULT_PLAIN_TEXT_TYPE, charset));
+
+        }
+        return this;
+    }
+
     public Request addEntity(String string, String mimeType, String charset) {
         if (string != null) {
             if (bytesEntity == null) {
@@ -149,7 +169,7 @@ public class Request {
         return this;
     }
 
-    public Request addParam(String key, String value) {
+    public Request addUrlParam(String key, String value) {
         if (value != null) {
             if (paramMap == null) {
                 paramMap = new LinkedHashMap<String, String>();
