@@ -218,7 +218,8 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 
     private void innerAsyncPostModel() {
         Request req = new Request(urlUser);
-        req.addEntity(new BaiDuSearch(),null);
+        req.setMethod(HttpMethod.Post);
+        req.addEntity(new BaiDuSearch(),"utf-8");
         asyncExcutor.execute(req, new HttpModelHandler<String>() {
             @Override
             protected void onSuccess(String data, Response res) {
