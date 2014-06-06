@@ -328,7 +328,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     }
 
     private void cancelHttpLoading() {
-        FutureTask<Response> future = asyncExcutor.execute(new Request(url), new HttpResponseHandler() {
+        FutureTask<Response> future = asyncExcutor.execute(new Request(urlUser), new HttpResponseHandler() {
             @Override
             protected void onSuccess(Response res, HttpStatus status, NameValuePair[] headers) {
                 printLog(res);
@@ -340,29 +340,8 @@ public class LiteHttpSamplesActivity extends BaseActivity {
                 toast("e: " + e);
             }
         });
+        SystemClock.sleep(200);
         future.cancel(true);
-        // delay cancel
-        asyncExcutor.execute(new Callable<Void>() {
-
-            @Override
-            public Void call() throws Exception {
-                FutureTask<?> future = asyncExcutor.execute(new Request(url), new HttpResponseHandler() {
-                    @Override
-                    protected void onSuccess(Response res, HttpStatus status, NameValuePair[] headers) {
-                        printLog(res);
-                        toast(res.getString());
-                    }
-
-                    @Override
-                    protected void onFailure(Response res, HttpException e) {
-                        toast("e: " + e);
-                    }
-                });
-                SystemClock.sleep(400);
-                future.cancel(true);
-                return null;
-            }
-        });
     }
 
     private void makeJavaModeAsParamsRequest() {
