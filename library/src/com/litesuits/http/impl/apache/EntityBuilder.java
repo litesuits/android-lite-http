@@ -6,7 +6,6 @@ import com.litesuits.http.request.RequestParams;
 import com.litesuits.http.request.RequestParams.FileEntity;
 import com.litesuits.http.request.RequestParams.InputStreamEntity;
 import org.apache.http.HttpEntity;
-import org.apache.http.protocol.HTTP;
 
 import java.net.URLEncoder;
 import java.util.LinkedHashMap;
@@ -23,21 +22,22 @@ public class EntityBuilder {
 
     public static HttpEntity build(Request req) throws HttpClientException {
         try {
-            LinkedHashMap<String, String> paramMap = req.getBasicParams();
+            LinkedHashMap<String, String> paramMap = req.getUrlEncodedFormEntity();
             LinkedHashMap<String, RequestParams.InputStreamEntity> paramStream = req.getStreamEntity();
             LinkedHashMap<String, RequestParams.FileEntity> paramFile = req.getFileEntity();
             LinkedList<RequestParams.StringEntity> paramString = req.getStringEntity();
             LinkedList<RequestParams.ByteArrayEntity> paramBytes = req.getBytesEntity();
             SimpleMultipartEntity smEntiry = new SimpleMultipartEntity();
+            //LinkedHashMap<String, String> urlEncodedFormEntity = req.getUrlEncodedFormEntity();
             if (paramMap != null) {
                 StringBuilder sb = new StringBuilder();
                 for (Entry<String, String> en : paramMap.entrySet()) {
                     if (sb.length() != 0) sb.append("&");
-                    sb.append(en.getKey()).append("=").append(en.getValue());
+                    sb.append(URLEncoder.encode(en.getKey(),req.getCharSet())).append("=").append(URLEncoder.encode
+                            (en.getValue(),req.getCharSet()));
                 }
                 if (sb.length() > 0) {
-//                   String contentType = ApacheHttpClient.DEFAULT_PLAIN_TEXT_TYPE + HTTP.CHARSET_PARAM + req.getCharSet();
-                    smEntiry.addPart(sb.toString(), req.getCharSet());
+                    smEntiry.addFormPart(sb.toString(), req.getCharSet());
                 }
             }
             if (paramString != null) {

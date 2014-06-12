@@ -57,6 +57,10 @@ public class Request {
      */
     private   LinkedList<RequestParams.ByteArrayEntity>              bytesEntity;
     /**
+     * bytes entity
+     */
+    private   LinkedHashMap<String, String>                          urlEncodedFormEntity;
+    /**
      * string entity
      */
     private   LinkedList<RequestParams.StringEntity>                 stringEntity;
@@ -120,11 +124,22 @@ public class Request {
         return this;
     }
 
+
+    public Request addUrlEncodedFormEntity(String key, String value) {
+        if (key != null && value != null) {
+            if (urlEncodedFormEntity == null) {
+                urlEncodedFormEntity = new LinkedHashMap<String, String>();
+            }
+            urlEncodedFormEntity.put(key, value);
+        }
+        return this;
+    }
+
     /**
      * 以Java Model为数据源，序列化为 Json String 以StringEntity的方式传递。
      *
      * @param paramModel 将会被
-     * @param charset 传null 默认utf-8
+     * @param charset    传null 默认utf-8
      * @return
      */
     public Request addEntity(HttpParam paramModel, String charset) {
@@ -300,6 +315,9 @@ public class Request {
 
     public LinkedList<RequestParams.ByteArrayEntity> getBytesEntity() {
         return bytesEntity;
+    }
+    public LinkedHashMap<String, String> getUrlEncodedFormEntity() {
+        return urlEncodedFormEntity;
     }
 
     public LinkedList<RequestParams.StringEntity> getStringEntity() {

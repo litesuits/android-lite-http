@@ -1,12 +1,10 @@
 package com.litesuits.http.request;
 
 import com.litesuits.http.impl.apache.ApacheHttpClient;
-
 import org.apache.http.protocol.HTTP;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Arrays;
 
 /**
  * define the interface, method, file parameter and input stream parameter, etc.

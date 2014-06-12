@@ -36,7 +36,7 @@ class SimpleMultipartEntity implements HttpEntity {
     // boundary
     private ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-//	private ResponseHandlerInterface progressHandler;
+    //	private ResponseHandlerInterface progressHandler;
 
     private int bytesWritten;
 
@@ -52,7 +52,7 @@ class SimpleMultipartEntity implements HttpEntity {
         boundary = buf.toString();
         boundaryLine = ("--" + boundary + "\r\n").getBytes();
         boundaryEnd = ("--" + boundary + "--\r\n").getBytes();
-//		this.progressHandler = progressHandler;
+        //		this.progressHandler = progressHandler;
     }
 
     public void addPart(final byte[] bytes) {
@@ -64,9 +64,12 @@ class SimpleMultipartEntity implements HttpEntity {
         }
     }
 
-    public void addPart(final String string, final String charset) {
+    private boolean isUrlEncodeFormData = false;
+
+    public void addFormPart(final String string, final String charset) {
         try {
             addPart(string.getBytes(charset));
+            isUrlEncodeFormData = true;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -141,7 +144,7 @@ class SimpleMultipartEntity implements HttpEntity {
 
     private void updateProgress(int count) {
         bytesWritten += count;
-//		progressHandler.sendProgressMessage(bytesWritten, totalSize);
+        //		progressHandler.sendProgressMessage(bytesWritten, totalSize);
     }
 
     @Override
@@ -162,7 +165,8 @@ class SimpleMultipartEntity implements HttpEntity {
 
     @Override
     public Header getContentType() {
-        return new BasicHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
+        String contentType = isUrlEncodeFormData ? "application/x-www-form-urlencoded" : "multipart/form-data";
+        return new BasicHeader("Content-Type", contentType + "; boundary=" + boundary);
     }
 
     @Override
