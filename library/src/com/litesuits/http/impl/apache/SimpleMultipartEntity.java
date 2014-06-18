@@ -194,12 +194,13 @@ class SimpleMultipartEntity implements HttpEntity {
         totalSize = (int) getContentLength();
         out.writeTo(outstream);
         updateProgress(out.size());
-
         for (FilePart filePart : fileParts) {
             filePart.writeTo(outstream);
         }
-        outstream.write(boundaryEnd);
-        updateProgress(boundaryEnd.length);
+        if (!isUrlEncodeFormData) {
+            outstream.write(boundaryEnd);
+            updateProgress(boundaryEnd.length);
+        }
     }
 
     @Override
