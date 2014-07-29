@@ -36,8 +36,10 @@ import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.FileParser;
 import com.litesuits.http.request.Request;
 import com.litesuits.http.request.content.*;
+import com.litesuits.http.request.content.multi.BytesPart;
 import com.litesuits.http.request.content.multi.FilePart;
 import com.litesuits.http.request.content.multi.InputStreamPart;
+import com.litesuits.http.request.content.multi.StringPart;
 import com.litesuits.http.request.param.HttpMethod;
 import com.litesuits.http.request.param.HttpParam;
 import com.litesuits.http.response.Response;
@@ -514,11 +516,11 @@ public class LiteHttpSamplesActivity extends BaseActivity {
         Request req = new Request(url);
 
         MultipartBody body = new MultipartBody();
-        //body.addPart(new StringPart("key1", "hello"));
-        //body.addPart(new StringPart("key2", "很高兴见到你","utf-8",null));
-        //body.addPart(new BytesPart("key3", new byte[]{1, 2, 3}));
+        body.addPart(new StringPart("key1", "hello"));
+        body.addPart(new StringPart("key2", "很高兴见到你","utf-8",null));
+        body.addPart(new BytesPart("key3", new byte[]{1, 2, 3}));
         body.addPart(new FilePart("pic", new File("sdcard/apic.png"), "image/jpeg"));
-        //body.addPart(new FilePart("song", new File("sdcard/asong.mp3"), "audio/x-mpeg"));
+        body.addPart(new FilePart("song", new File("sdcard/asong.mp3"), "audio/x-mpeg"));
         body.addPart(new InputStreamPart("alog", fis, "alog.xml","text/xml"));
         req.setMethod(HttpMethod.Post).setHttpBody(body);
         Response res = client.execute(req);

@@ -27,8 +27,13 @@ public class InputStreamPart extends AbstractPart {
     }
 
     public long getTotalLength() throws IOException {
-        return header.length + inputStream.available();
+        return -1;
     }
+
+    //public long getTotalLength() throws IOException {
+    //    Log.i("ISP", "inputStream.available(): " + inputStream.available());
+    //    return header.length + inputStream.available();
+    //}
 
     @Override
     public byte[] getTransferEncoding() {

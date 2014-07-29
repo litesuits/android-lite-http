@@ -44,6 +44,8 @@ class MultipartEntity implements HttpEntity {
             buf.append(MULTIPART_CHARS[rand.nextInt(MULTIPART_CHARS.length)]);
         }
         boundary = buf.toString();
+        //Log.i("M","char: " + charset.displayName());
+        //Log.i("M", "def char: " + Charset.defaultCharset().displayName());
         boundaryLine = ("--" + boundary + "\r\n").getBytes(charset);
         boundaryEnd = ("--" + boundary + "--\r\n").getBytes(charset);
         if (body != null && body.getHttpParts() != null) {
