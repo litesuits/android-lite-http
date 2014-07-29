@@ -2,24 +2,21 @@ package com.litesuits.http.request;
 
 import com.litesuits.android.log.Log;
 import com.litesuits.http.LiteHttpClient;
-import com.litesuits.http.data.Json;
+import com.litesuits.http.data.Consts;
 import com.litesuits.http.exception.HttpClientException;
 import com.litesuits.http.exception.HttpClientException.ClientException;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.StringParser;
-import com.litesuits.http.request.RequestParams.FileEntity;
+import com.litesuits.http.request.content.AbstractBody;
 import com.litesuits.http.request.param.HttpMethod;
 import com.litesuits.http.request.param.HttpParam;
 import com.litesuits.http.request.query.AbstractQueryBuilder;
 import com.litesuits.http.request.query.JsonQueryBuilder;
 
-import java.io.File;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map.Entry;
 
 /**
@@ -45,26 +42,6 @@ public class Request {
      */
     private   LinkedHashMap<String, String>                          paramMap;
     /**
-     * input stream entity
-     */
-    private   LinkedHashMap<String, RequestParams.InputStreamEntity> streamEntity;
-    /**
-     * file entity
-     */
-    private   LinkedHashMap<String, RequestParams.FileEntity>        fileEntity;
-    /**
-     * bytes entity
-     */
-    private   LinkedList<RequestParams.ByteArrayEntity>              bytesEntity;
-    /**
-     * bytes entity
-     */
-    private   LinkedHashMap<String, String>                          urlEncodedFormEntity;
-    /**
-     * string entity
-     */
-    private   LinkedList<RequestParams.StringEntity>                 stringEntity;
-    /**
      * when parameter's value is complex, u can chose one buider, default mode
      * is build value into json string.
      */
@@ -73,15 +50,15 @@ public class Request {
      * defaul method is get(GET).
      */
     private   HttpMethod                                             method;
-    private String charSet       = LiteHttpClient.DEFAULT_CHARSET;
+    private String charSet       = Consts.DEFAULT_CHARSET;
     private int    retryMaxTimes = LiteHttpClient.DEFAULT_MAX_RETRY_TIMES;
     private DataParser<?> dataParser;
+    private AbstractBody  httpBody;
+
 
     public Request(String url) {
         this(url, (HttpParam) null);
     }
-
-    //	private HttpResponseHandler UiHanler;
 
     public Request(String url, HttpParam paramModel) {
         this(url, paramModel, new StringParser());
@@ -114,73 +91,18 @@ public class Request {
         return this;
     }
 
-    public Request addEntity(byte[] bytes, String contentType) {
-        if (bytes != null) {
-            if (bytesEntity == null) {
-                bytesEntity = new LinkedList<RequestParams.ByteArrayEntity>();
-            }
-            bytesEntity.add(new RequestParams.ByteArrayEntity(bytes, contentType));
-        }
-        return this;
-    }
-
-
-    public Request addUrlEncodedFormEntity(String key, String value) {
-        if (key != null && value != null) {
-            if (urlEncodedFormEntity == null) {
-                urlEncodedFormEntity = new LinkedHashMap<String, String>();
-            }
-            urlEncodedFormEntity.put(key, value);
-        }
-        return this;
+    /**
+     * 获取消息体
+     */
+    public AbstractBody getHttpBody() {
+        return httpBody;
     }
 
     /**
-     * 以Java Model为数据源，序列化为 Json String 以StringEntity的方式传递。
-     *
-     * @param paramModel 将会被
-     * @param charset    传null 默认utf-8
-     * @return
+     * 设置消息体
      */
-    public Request addEntity(HttpParam paramModel, String charset) {
-        if (paramModel != null) {
-            if (bytesEntity == null) {
-                stringEntity = new LinkedList<RequestParams.StringEntity>();
-            }
-            stringEntity.add(new RequestParams.StringEntity(Json.get().toString(paramModel),
-                    LiteHttpClient.DEFAULT_PLAIN_TEXT_TYPE, charset));
-
-        }
-        return this;
-    }
-
-    public Request addEntity(String string, String mimeType, String charset) {
-        if (string != null) {
-            if (bytesEntity == null) {
-                stringEntity = new LinkedList<RequestParams.StringEntity>();
-            }
-            stringEntity.add(new RequestParams.StringEntity(string, mimeType, charset));
-        }
-        return this;
-    }
-
-    public Request addEntity(String key, InputStream in, String streamName, String contentType) {
-        if (in != null) {
-            if (streamEntity == null) {
-                streamEntity = new LinkedHashMap<String, RequestParams.InputStreamEntity>();
-            }
-            streamEntity.put(key, new RequestParams.InputStreamEntity(in, streamName, contentType));
-        }
-        return this;
-    }
-
-    public Request addEntity(String key, File file, String contentType) {
-        if (file != null) {
-            if (fileEntity == null) {
-                fileEntity = new LinkedHashMap<String, RequestParams.FileEntity>();
-            }
-            fileEntity.put(key, new FileEntity(file, contentType));
-        }
+    public Request setHttpBody(AbstractBody httpBody) {
+        this.httpBody = httpBody;
         return this;
     }
 
@@ -236,7 +158,7 @@ public class Request {
             for (Entry<String, String> v : map.entrySet()) {
                 sb.append(URLEncoder.encode(v.getKey(), charSet)).append("=").append(URLEncoder.encode(v.getValue(), charSet)).append(++i == size ? "" : "&");
             }
-            if (Log.isPrint) Log.i(TAG, "Request URL: " + sb.toString());
+            if (Log.isPrint) Log.i(TAG, "Request url: " + sb.toString());
             return sb.toString();
         } catch (Exception e) {
             throw new HttpClientException(e);
@@ -305,25 +227,6 @@ public class Request {
         return this;
     }
 
-    public LinkedHashMap<String, RequestParams.InputStreamEntity> getStreamEntity() {
-        return streamEntity;
-    }
-
-    public LinkedHashMap<String, RequestParams.FileEntity> getFileEntity() {
-        return fileEntity;
-    }
-
-    public LinkedList<RequestParams.ByteArrayEntity> getBytesEntity() {
-        return bytesEntity;
-    }
-    public LinkedHashMap<String, String> getUrlEncodedFormEntity() {
-        return urlEncodedFormEntity;
-    }
-
-    public LinkedList<RequestParams.StringEntity> getStringEntity() {
-        return stringEntity;
-    }
-
     public String getCharSet() {
         return charSet;
     }
@@ -370,10 +273,7 @@ public class Request {
                 "\n\tdataParser = " + (dataParser != null ? dataParser.getClass().getSimpleName() : "null") +
                 "\n\tqueryBuilder = " + (queryBuilder != null ? queryBuilder.getClass().getSimpleName() : "null") +
                 "\n\tparamMap = " + paramMap +
-                "\n\tstreamEntity = " + streamEntity +
-                "\n\tfileEntity = " + fileEntity +
-                "\n\tbytesEntity = " + bytesEntity +
-                "\n\tstringEntity = " + stringEntity;
+                "\n\thttpBody = " + httpBody;
 
     }
 

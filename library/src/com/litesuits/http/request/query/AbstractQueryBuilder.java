@@ -1,5 +1,12 @@
 package com.litesuits.http.request.query;
 
+import com.litesuits.http.data.Charsets;
+import com.litesuits.http.data.Consts;
+import com.litesuits.http.request.param.CustomHttpParam;
+import com.litesuits.http.request.param.CustomHttpParam.CustomValueBuilder;
+import com.litesuits.http.request.param.HttpParam;
+import com.litesuits.http.request.param.NonHttpParam;
+
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -10,14 +17,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-import org.apache.http.protocol.HTTP;
-
-import com.litesuits.http.data.Charsets;
-import com.litesuits.http.request.param.CustomHttpParam;
-import com.litesuits.http.request.param.CustomHttpParam.CustomValueBuilder;
-import com.litesuits.http.request.param.HttpParam;
-import com.litesuits.http.request.param.NonHttpParam;
-
 /**
  * abstract class for build parameter of request url.
  * 
@@ -25,15 +24,7 @@ import com.litesuits.http.request.param.NonHttpParam;
  *         2014-1-4下午5:06:37
  */
 public abstract class AbstractQueryBuilder {
-	public static final String CODE_CHARSET = HTTP.UTF_8;
-	public static final String EQUALS = "=";
-	public static final String NONE_SPLIT = "";
-	public static final String ONE_LEVEL_SPLIT = "&";
-	public static final String SECOND_LEVEL_SPLIT = ",";
-	public static final String ARRAY_ECLOSING_LEFT = "[";
-	public static final String ARRAY_ECLOSING_RIGHT = "]";
-	public static final String KV_ECLOSING_LEFT = "{";
-	public static final String KV_ECLOSING_RIGHT = "}";
+
 	protected String charSet = Charsets.UTF_8;
 
 	public LinkedHashMap<String, String> buildPrimaryMap(HttpParam model) throws IllegalArgumentException,
@@ -81,7 +72,7 @@ public abstract class AbstractQueryBuilder {
 
 	/********************* utils method **************************/
 	protected StringBuilder buildUriKey(StringBuilder sb, String key) throws UnsupportedEncodingException {
-		if (key != null) sb.append(encode(key)).append(EQUALS);
+		if (key != null) sb.append(encode(key)).append(Consts.EQUALS);
 		return sb;
 	}
 

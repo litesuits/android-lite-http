@@ -1,8 +1,12 @@
 package com.litesuits.android.samples;
 
+import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.Menu;
@@ -31,6 +35,9 @@ import com.litesuits.http.parser.BitmapParser;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.FileParser;
 import com.litesuits.http.request.Request;
+import com.litesuits.http.request.content.*;
+import com.litesuits.http.request.content.multi.FilePart;
+import com.litesuits.http.request.content.multi.InputStreamPart;
 import com.litesuits.http.request.param.HttpMethod;
 import com.litesuits.http.request.param.HttpParam;
 import com.litesuits.http.response.Response;
@@ -41,14 +48,19 @@ import org.apache.http.util.CharArrayBuffer;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
+import java.util.LinkedList;
 import java.util.concurrent.FutureTask;
 
 public class LiteHttpSamplesActivity extends BaseActivity {
     private LiteHttpClient    client;
     private HttpAsyncExecutor asyncExcutor;
-    private String urlUser     = "http://litesuits.github.io/mockdata/user";
-    private String urlUserList = "http://litesuits.github.io/mockdata/user_list";
+    private String urlUser         = "http://litesuits.github.io/mockdata/user";
+    private String urlUserList     = "http://litesuits.github.io/mockdata/user_list";
+    private String localPath       = "/HttpServer/PostReceiver";
+    private String localHost       = "http://192.168.1.108:8080";
+    //private String localPath       = "/LiteHttpServer/ReceiveFile";
+    //private String localHost       = "http://192.168.1.100:8080";
+    private String urlLocalRequest = localHost + localPath;
 
     /**
      * 在{@link BaseActivity#onCreate(Bundle)}中设置视图
@@ -77,28 +89,29 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     }
 
     /**
-     * <item>1. Base Get Request</item>
-     * <item>2. Paramter Get Request</item>
-     * <item>3. Base Head Request</item>
-     * <item>4. Base Post Request</item>
-     * <item>5. Exeception Heanler</item>
-     * <item>6. Simple Get</item>
-     * <item>7. Simple Post</item>
-     * <item>8. Https Request</item>
-     * <item>9. Intelligent Json Model Maping</item>
-     * <item>10. Add Request Params By Java Model</item>
-     * <item>11. Upload File</item>
-     * <item>12. Load Bytes</item>
-     * <item>13. Load Bitmap</item>
-     * <item>14. Load File</item>
-     * <item>15. Custom DataParser</item>
-     * <item>16. Test Auto Redirect</item>
-     * <item>17. Inner AsyncExecutor:Get Response</item>
-     * <item>18. Inner AsyncExecutor:Get Model</item>
-     * <item>19. Use Thread Execute</item>
-     * <item>20. Use AsyncTask Execute</item>
-     * <item>21. Cancel HTTP Loading</item>
+     * <item>1. 基础get请求</item>
+     * <item>2. 带参数Get请求</item>
+     * <item>3. 基础head请求</item>
+     * <item>4. 基础Post请求</item>
+     * <item>5. 处理异常方案</item>
+     * <item>6. get简化模式</item>
+     * <item>7. post简化模式</item>
+     * <item>8. Https 安全协议</item>
+     * <item>9. 智能Json Model转化</item>
+     * <item>10. Java Model方式添加请求参数</item>
+     * <item>11. 上传文件</item>
+     * <item>12. 获取字节</item>
+     * <item>13. 下载图片</item>
+     * <item>14. 下载文件</item>
+     * <item>15. 自定义数据解析</item>
+     * <item>16. 自动重定向</item>
+     * <item>17. 自带异步执行器:获得响应</item>
+     * <item>18. 自带异步执行器:获得对象</item>
+     * <item>19. Thread方式开启异步</item>
+     * <item>20. AsyncTask方式开启异步</item>
+     * <item>21. HTTP加载取消</item>
      * <item>22. Post发送Model Entity</item>
+     * <item>23. Post 参数测试</item>
      */
     @Override
     public Runnable getRunnable(final int pos) {
@@ -124,6 +137,9 @@ public class LiteHttpSamplesActivity extends BaseActivity {
                 break;
             case 22:
                 innerAsyncPostModel();
+                break;
+            case 23:
+                innerAsyncPostParameters();
                 break;
         }
         // execute in child thread:
@@ -162,7 +178,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
                         makeJavaModeAsParamsRequest();
                         break;
                     case 11:
-                        makeUpLoadFileRequest();
+                        makeUpLoadMultiBodyRequest();
                         break;
                     case 12:
                         makeLoadBytesRequest();
@@ -216,10 +232,97 @@ public class LiteHttpSamplesActivity extends BaseActivity {
         });
     }
 
+    private void innerAsyncPostParameters() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("POST BODY TEST");
+        String[] array = getResources().getStringArray(R.array.http_test_post);
+        builder.setItems(array, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                String url = urlLocalRequest;
+
+                Request req = new Request(url);
+                req.setMethod(HttpMethod.Post);
+
+                switch (which) {
+                    case 0:
+                        req.setHttpBody(new StringBody("hello"));
+                        break;
+                    case 1:
+                        LinkedList<NameValuePair> pList = new LinkedList<NameValuePair>();
+                        pList.add(new NameValuePair("key1", "value1"));
+                        pList.add(new NameValuePair("key2", "value2"));
+                        req.setHttpBody(new UrlEncodedFormBody(pList));
+                        break;
+                    case 2:
+                        req.setHttpBody(new JsonBody(new BaiDuSearch()));
+                        break;
+                    case 3:
+
+                        ArrayList<String> list = new ArrayList<String>();
+                        list.add("a");
+                        list.add("b");
+                        list.add("c");
+                        req.setHttpBody(new SerializableBody(list));
+                        break;
+                    case 4:
+                        req.setHttpBody(new ByteArrayBody(new byte[]{1, 2, 3, 4, 5, 6, 7}));
+                        break;
+                    case 5:
+                        req.setHttpBody(new FileBody(new File("sdcard/alog.xml")));
+                        break;
+                    case 6:
+                        FileInputStream fis = null;
+                        try {
+                            fis = new FileInputStream(new File("sdcard/alog.xml"));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        req.setHttpBody(new InputStreamBody(fis));
+                        break;
+                    case 7:
+                        asyncExcutor.execute(new AsyncExecutor.Worker<String>() {
+                            @Override
+                            protected String doInBackground() {
+                                Response res = makeUpLoadMultiBodyRequest();
+                                //printLog(res);
+                                return "yes";
+                            }
+
+                            @Override
+                            protected void onPostExecute(String data) {
+                                toast("onSuccess : " + data);
+                            }
+                        });
+                        return;
+                }
+                asyncExcutor.execute(req, new HttpModelHandler<String>() {
+                    @Override
+                    protected void onSuccess(String data, Response res) {
+                        toast("onSuccess : " + data);
+                        printLog(res);
+                    }
+
+                    @Override
+                    protected void onFailure(HttpException e, Response res) {
+                        toast("onFailure: " + e);
+                    }
+
+                });
+            }
+        });
+        //builder.setNegativeButton("取消", null);
+        AlertDialog dialog = builder.create();
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.show();
+    }
+
     private void innerAsyncPostModel() {
         Request req = new Request(urlUser);
         req.setMethod(HttpMethod.Post);
-        req.addEntity(new BaiDuSearch(),"utf-8");
+        req.setHttpBody(new JsonBody(new BaiDuSearch()));
         asyncExcutor.execute(req, new HttpModelHandler<String>() {
             @Override
             protected void onSuccess(String data, Response res) {
@@ -400,21 +503,28 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     /**
      * 多文件上传
      */
-    private void makeUpLoadFileRequest() {
+    private Response makeUpLoadMultiBodyRequest() {
         FileInputStream fis = null;
         try {
-            fis = new FileInputStream(new File("sdcard/1.jpg"));
+            fis = new FileInputStream(new File("sdcard/alog.xml"));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String url = "http://192.168.2.108:8080/LiteHttpServer/ReceiveFile";
+        String url = urlLocalRequest;
         Request req = new Request(url);
-        req.setMethod(HttpMethod.Post).addEntity("lite", new File("sdcard/lite.jpg"), "image/jpeg")
-                .addEntity("feiq", new File("sdcard/feiq.exe"), "application/octet-stream");
-        if (fis != null) req.addEntity("meinv", fis, "sm.jpg", "image/jpeg");
+
+        MultipartBody body = new MultipartBody();
+        //body.addPart(new StringPart("key1", "hello"));
+        //body.addPart(new StringPart("key2", "很高兴见到你","utf-8",null));
+        //body.addPart(new BytesPart("key3", new byte[]{1, 2, 3}));
+        body.addPart(new FilePart("pic", new File("sdcard/apic.png"), "image/jpeg"));
+        //body.addPart(new FilePart("song", new File("sdcard/asong.mp3"), "audio/x-mpeg"));
+        body.addPart(new InputStreamPart("alog", fis, "alog.xml","text/xml"));
+        req.setMethod(HttpMethod.Post).setHttpBody(body);
         Response res = client.execute(req);
         System.out.println(res);
-        System.out.println("response string : " + res.getString());
+        //System.out.println("response string : " + res.getString());
+        return res;
     }
 
     private void makeLoadFileRequest() {
@@ -442,6 +552,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
         });
     }
 
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
     private void addImageViewToBottom(final Bitmap bitmap) {
         if (bitmap != null) {
             ImageView imageview = new ImageView(LiteHttpSamplesActivity.this);
@@ -529,10 +640,10 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     }
 
     private void makeRequestWithExceptionHandler() {
-        		url="http://h5.m.taobao.com/we/pc.htm";
+        url = "http://h5.m.taobao.com/we/pc.htm";
         //			InputStream is = new
 
-        String json =  "{\"a\":1}";
+        String json = "{\"a\":1}";
 
         Request req = new Request(url).setMethod(HttpMethod.Trace);
         req.addHeader("Content-Type", "application/json");

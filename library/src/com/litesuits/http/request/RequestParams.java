@@ -1,6 +1,6 @@
 package com.litesuits.http.request;
 
-import com.litesuits.http.impl.apache.ApacheHttpClient;
+import com.litesuits.http.data.Consts;
 import org.apache.http.protocol.HTTP;
 
 import java.io.File;
@@ -31,13 +31,16 @@ public class RequestParams {
         public String string;
         public String charset;
 
+        public StringEntity(String string) {
+            this(string, null,null);
+        }
         public StringEntity(String string, String mimeType, String charset) {
             this.string = string;
             if (mimeType == null) {
-                mimeType = ApacheHttpClient.DEFAULT_PLAIN_TEXT_TYPE;
+                mimeType = Consts.MIME_TYPE_TEXT;
             }
             if (charset == null) {
-                charset = ApacheHttpClient.DEFAULT_CHARSET;
+                charset = Consts.DEFAULT_CHARSET;
             }
             this.charset = charset;
             this.contentType = mimeType + HTTP.CHARSET_PARAM + charset;

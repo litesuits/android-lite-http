@@ -16,7 +16,7 @@
         <item>8. Https Request</item>
         <item>9. Intelligent Json Model Maping</item>
         <item>10. Add Request Params By Java Model</item>
-        <item>11. Upload File</item>
+        <item>11. Upload Many Files</item>
         <item>12. Load Bytes</item>
         <item>13. Load Bitmap</item>
         <item>14. Load File</item>
@@ -28,6 +28,17 @@
         <item>20. Use AsyncTask Execute</item>
         <item>21. Cancel HTTP Loading</item>
         <item>22. Post Send Model Entity</item>
+        <item>23. Post Parameters Test</item>
     </string-array>
 
+    <string-array name="http_test_post">
+        <item>1. StringBody</item>
+        <item>2. UrlEncodedFormBody</item>
+        <item>3. JsonBody</item>
+        <item>4. SerializableBody</item>
+        <item>5. ByteArrayBody</item>
+        <item>6. FileBody</item>
+        <item>7. InputStreamBody</item>
+        <item>8. Multipart Entity Body</item>
+    </string-array>
 </resources>

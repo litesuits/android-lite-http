@@ -1,4 +1,9 @@
 package com.litesuits.http.request.query;
+
+import com.litesuits.http.data.Consts;
+import com.litesuits.http.request.param.CustomHttpParam;
+import com.litesuits.http.request.param.CustomHttpParam.CustomValueBuilder;
+
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -7,9 +12,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.litesuits.http.request.param.CustomHttpParam;
-import com.litesuits.http.request.param.CustomHttpParam.CustomValueBuilder;
 /**
  * when uri query parameter's value is complex, build value into default style.
  * in this case, value will intelligently translate to default string.
@@ -36,30 +38,30 @@ public class SimpleQueryBuilder extends AbstractQueryBuilder {
 			// when value is array ,use '[' and ']' to enclose data, use ',' to
 			// split array value.
 			Object[] objs = model instanceof Collection<?> ? ((Collection<?>) model).toArray() : (Object[]) model;
-			buildUriKey(sb, null).append(ARRAY_ECLOSING_LEFT);
+			buildUriKey(sb, null).append(Consts.ARRAY_ECLOSING_LEFT);
 			int i = 0, size = objs.length;
 			for (Object v : objs) {
-				buildMoreLevelValue(sb, null, v, ++i == size ? NONE_SPLIT : SECOND_LEVEL_SPLIT);
+				buildMoreLevelValue(sb, null, v, ++i == size ? Consts.NONE_SPLIT : Consts.SECOND_LEVEL_SPLIT);
 			}
-			sb.append(ARRAY_ECLOSING_RIGHT);
+			sb.append(Consts.ARRAY_ECLOSING_RIGHT);
 		} else if (model instanceof Map<?, ?>) {
 			Map<?, ?> map = (Map<?, ?>) model;
 			// when value is map ,use '{' and '}' to enclose data, use ',' to
 			// split array value.
-			buildUriKey(sb, null).append(KV_ECLOSING_LEFT);
+			buildUriKey(sb, null).append(Consts.KV_ECLOSING_LEFT);
 			int i = 0, size = map.size();
 			for (Entry<?, ?> v : map.entrySet()) {
 				if (v.getKey() instanceof CharSequence || v.getKey() instanceof Character) {
 					buildMoreLevelValue(sb, v.getKey().toString(), v.getValue(), ++i == size
-							? NONE_SPLIT
-							: SECOND_LEVEL_SPLIT);
+							? Consts.NONE_SPLIT
+							: Consts.SECOND_LEVEL_SPLIT);
 				} else {
 					buildMoreLevelValue(sb, v.getKey().getClass().getSimpleName(), v.getValue(), ++i == size
-							? NONE_SPLIT
-							: SECOND_LEVEL_SPLIT);
+							? Consts.NONE_SPLIT
+							: Consts.SECOND_LEVEL_SPLIT);
 				}
 			}
-			sb.append(KV_ECLOSING_RIGHT);
+			sb.append(Consts.KV_ECLOSING_RIGHT);
 		} else {
 			// find all field.
 			ArrayList<Field> fieldList = getAllDeclaredFields(model.getClass());
@@ -72,9 +74,9 @@ public class SimpleQueryBuilder extends AbstractQueryBuilder {
 				Object value = f.get(model);
 				if (value != null) {
 					// value is primitive
-					sb.append(KV_ECLOSING_LEFT);
-					buildMoreLevelValue(sb, key, value, i == size ? NONE_SPLIT : SECOND_LEVEL_SPLIT);
-					sb.append(KV_ECLOSING_RIGHT);
+					sb.append(Consts.KV_ECLOSING_LEFT);
+					buildMoreLevelValue(sb, key, value, i == size ? Consts.NONE_SPLIT : Consts.SECOND_LEVEL_SPLIT);
+					sb.append(Consts.KV_ECLOSING_RIGHT);
 				}
 			}
 		}
@@ -108,33 +110,33 @@ public class SimpleQueryBuilder extends AbstractQueryBuilder {
 			// when value is array ,use '[' and ']' to enclose data, use ',' to
 			// split array value.
 			Object[] objs = value instanceof Collection<?> ? ((Collection<?>) value).toArray() : (Object[]) value;
-			buildUriKey(sb, key).append(ARRAY_ECLOSING_LEFT);
+			buildUriKey(sb, key).append(Consts.ARRAY_ECLOSING_LEFT);
 			int i = 0, size = objs.length;
 			for (Object v : objs) {
-				buildMoreLevelValue(sb, null, v, ++i == size ? NONE_SPLIT : SECOND_LEVEL_SPLIT);
+				buildMoreLevelValue(sb, null, v, ++i == size ? Consts.NONE_SPLIT : Consts.SECOND_LEVEL_SPLIT);
 			}
-			sb.append(ARRAY_ECLOSING_RIGHT).append(split);
+			sb.append(Consts.ARRAY_ECLOSING_RIGHT).append(split);
 		} else if (value instanceof Map<?, ?>) {
 			Map<?, ?> map = (Map<?, ?>) value;
 			// when value is map ,use '{' and '}' to enclose data, use ',' to
 			// split array value.
-			buildUriKey(sb, key).append(KV_ECLOSING_LEFT);
+			buildUriKey(sb, key).append(Consts.KV_ECLOSING_LEFT);
 			int i = 0, size = map.size();
 			for (Entry<?, ?> v : map.entrySet()) {
 				if (v.getKey() instanceof CharSequence || v.getKey() instanceof Character) {
 					buildMoreLevelValue(sb, v.getKey().toString(), v.getValue(), ++i == size
-							? NONE_SPLIT
-							: SECOND_LEVEL_SPLIT);
+							? Consts.NONE_SPLIT
+							: Consts.SECOND_LEVEL_SPLIT);
 				} else {
 					buildMoreLevelValue(sb, v.getKey().getClass().getSimpleName(), v.getValue(), ++i == size
-							? NONE_SPLIT
-							: SECOND_LEVEL_SPLIT);
+							? Consts.NONE_SPLIT
+							: Consts.SECOND_LEVEL_SPLIT);
 				}
 			}
-			sb.append(KV_ECLOSING_RIGHT).append(split);
+			sb.append(Consts.KV_ECLOSING_RIGHT).append(split);
 		} else {
 			buildUriKey(sb, key);
-			sb.append(KV_ECLOSING_LEFT);
+			sb.append(Consts.KV_ECLOSING_LEFT);
 			// find all field.
 			ArrayList<Field> fieldList = getAllDeclaredFields(value.getClass());
 			for (int i = 0, size = fieldList.size() - 1; i <= size; i++) {
@@ -143,12 +145,12 @@ public class SimpleQueryBuilder extends AbstractQueryBuilder {
 				String nextKey = f.getName();
 				Object nextValue = f.get(value);
 				if (nextValue != null) {
-					sb.append(KV_ECLOSING_LEFT);
-					buildMoreLevelValue(sb, nextKey, nextValue, i == size ? NONE_SPLIT : SECOND_LEVEL_SPLIT);
-					sb.append(KV_ECLOSING_RIGHT);
+					sb.append(Consts.KV_ECLOSING_LEFT);
+					buildMoreLevelValue(sb, nextKey, nextValue, i == size ? Consts.NONE_SPLIT : Consts.SECOND_LEVEL_SPLIT);
+					sb.append(Consts.KV_ECLOSING_RIGHT);
 				}
 			}
-			sb.append(KV_ECLOSING_RIGHT).append(split);
+			sb.append(Consts.KV_ECLOSING_RIGHT).append(split);
 		}
 	}
 

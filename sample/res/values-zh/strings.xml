@@ -16,7 +16,7 @@
         <item>8. Https 安全协议</item>
         <item>9. 智能Json Model转化</item>
         <item>10. Java Model方式添加请求参数</item>
-        <item>11. 上传文件</item>
+        <item>11. 多文件上传</item>
         <item>12. 获取字节</item>
         <item>13. 下载图片</item>
         <item>14. 下载文件</item>
@@ -28,6 +28,18 @@
         <item>20. AsyncTask方式开启异步</item>
         <item>21. HTTP加载取消</item>
         <item>22. Post发送Model Entity</item>
+        <item>23. Post 参数测试</item>
+    </string-array>
+
+    <string-array name="http_test_post">
+        <item>1. 字符串上传</item>
+        <item>2. UrlEncodedForm上传</item>
+        <item>3. 对象自动转JSON上传</item>
+        <item>4. 对象序列化后上传</item>
+        <item>5. 字节上传</item>
+        <item>6. 单文件上传</item>
+        <item>7. 单输入流上传</item>
+        <item>8. 多文件（表单）上传</item>
     </string-array>
 
 </resources>

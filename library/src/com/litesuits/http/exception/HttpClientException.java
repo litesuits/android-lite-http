@@ -38,7 +38,8 @@ public class HttpClientException extends HttpException {
 
     public enum ClientException {
         UrlIsNull("Url Is Null ", "Url 为空 "),
-        OtherException("Unknown Exception", "不可预知错误 ");
+        OtherException("Unknown Exception", "不可预知错误 "),
+        NetworkOnMainThreadException("NetworkOnMainThread ", "在主线程调用http请求");
 
         public String reason;
         public String chiReason;

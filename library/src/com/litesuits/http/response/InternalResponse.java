@@ -3,6 +3,7 @@ package com.litesuits.http.response;
 import android.graphics.Bitmap;
 import com.litesuits.android.log.Log;
 import com.litesuits.http.LiteHttpClient;
+import com.litesuits.http.data.Consts;
 import com.litesuits.http.data.HttpStatus;
 import com.litesuits.http.data.Json;
 import com.litesuits.http.data.NameValuePair;
@@ -25,7 +26,7 @@ import java.io.InputStream;
 public class InternalResponse implements Response {
     private static final String TAG = InternalResponse.class.getSimpleName();
     protected HttpStatus httpStatus;
-    protected String charSet = LiteHttpClient.DEFAULT_CHARSET;
+    protected String charSet = Consts.DEFAULT_CHARSET;
     protected int                            tryTimes;
     protected int                            redirectTimes;
     /**
@@ -273,6 +274,12 @@ public class InternalResponse implements Response {
     public void printInfo() {
         if (!Log.isPrint) return;
         String msg = "";
+        msg += "\n\t ";
+        try {
+            msg += "\n\turl = " + request.getUrl();
+        } catch (HttpClientException e) {
+            e.printStackTrace();
+        }
         msg += "\n\t" + httpStatus;
         msg += "\n\tcharSet = " + charSet;
         msg += "\n\tuseTime = " + useTime;
@@ -290,6 +297,7 @@ public class InternalResponse implements Response {
         if (headers == null) {
             msg = "null";
         } else {
+            msg += "\n\t ";
             for (NameValuePair nv : headers) {
                 msg += "\n\t" + nv;
             }
@@ -309,33 +317,33 @@ public class InternalResponse implements Response {
         }
         Log.i(TAG, "~~~~~~~~~~~~~~~~~~~~~~~~~~~-- Http Response Info End --~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
-//    @Override
-//    public String toString() {
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("~~~~~~~~~~~~~~~~~~~~~~~~~~~-- Http Response Info Start --~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-//                .append("\n  ").append(httpStatus)
-//                .append("\n  charSet = ").append(charSet)
-//                .append("\n  useTime = ").append(useTime)
-//                .append("\n  tryTimes = ").append(tryTimes).append(", redirectTimes = ").append(redirectTimes)
-//                .append("\n  readedLength = ").append(readedLength).append(", contentLength=").append(contentLength)
-//                .append("\n  -----header----- ");
-//        if (headers == null) {
-//            sb.append("\n  null ");
-//        } else {
-//            for (NameValuePair nv : headers) {
-//                sb.append("\n  ").append(nv);
-//            }
-//        }
-//        sb.append("\n  -----header----- ")
-//                .append("\n  -----requst----- ").append(request)
-//                .append("\n  -----requst----- ")
-//                .append("\n  -----data----- ")
-//                .append("\n  ").append(dataParser != null ? dataParser.getData() : "null")
-//                .append("\n  -----data----- ")
-//                .append("\n  exception : ").append(exception)
-//                .append("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~-- Http Response Info End --~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-//        if (exception != null) Log.e(this.getClass().getSimpleName(), "exception: " + exception);
-//        return sb.toString();
-//
-//    }
+    //    @Override
+    //    public String toString() {
+    //        StringBuilder sb = new StringBuilder();
+    //        sb.append("~~~~~~~~~~~~~~~~~~~~~~~~~~~-- Http Response Info Start --~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    //                .append("\n  ").append(httpStatus)
+    //                .append("\n  charSet = ").append(charSet)
+    //                .append("\n  useTime = ").append(useTime)
+    //                .append("\n  tryTimes = ").append(tryTimes).append(", redirectTimes = ").append(redirectTimes)
+    //                .append("\n  readedLength = ").append(readedLength).append(", contentLength=").append(contentLength)
+    //                .append("\n  -----header----- ");
+    //        if (headers == null) {
+    //            sb.append("\n  null ");
+    //        } else {
+    //            for (NameValuePair nv : headers) {
+    //                sb.append("\n  ").append(nv);
+    //            }
+    //        }
+    //        sb.append("\n  -----header----- ")
+    //                .append("\n  -----requst----- ").append(request)
+    //                .append("\n  -----requst----- ")
+    //                .append("\n  -----data----- ")
+    //                .append("\n  ").append(dataParser != null ? dataParser.getData() : "null")
+    //                .append("\n  -----data----- ")
+    //                .append("\n  exception : ").append(exception)
+    //                .append("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~-- Http Response Info End --~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    //        if (exception != null) Log.e(this.getClass().getSimpleName(), "exception: " + exception);
+    //        return sb.toString();
+    //
+    //    }
 }

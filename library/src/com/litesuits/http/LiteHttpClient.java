@@ -2,7 +2,6 @@ package com.litesuits.http;
 
 import android.content.Context;
 import com.litesuits.android.log.Log;
-import com.litesuits.http.data.Charsets;
 import com.litesuits.http.data.NameValuePair;
 import com.litesuits.http.exception.HttpNetException;
 import com.litesuits.http.exception.HttpNetException.NetException;
@@ -18,7 +17,6 @@ import com.litesuits.http.response.Response;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.protocol.HTTP;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
@@ -50,14 +48,7 @@ public abstract class LiteHttpClient {
     public static final int DEFAULT_TIMEOUT            = 20000;
     public static final int DEFAULT_BUFFER_SIZE        = 4096;
 
-    public static final String HEADER_ACCEPT_ENCODING = "Accept-Encoding";
-    public static final String ENCODING_GZIP          = "gzip";
-    public static final String REDIRECT_LOCATION      = "location";
-
-    public static final  String DEFAULT_CHARSET         = Charsets.UTF_8;
-    public static final  String DEFAULT_PLAIN_TEXT_TYPE = "text/plain";
-    public static final  String DEFAULT_CONTENT_TYPE    = DEFAULT_PLAIN_TEXT_TYPE + HTTP.CHARSET_PARAM + DEFAULT_CHARSET;
-    private static final String TAG                     = LiteHttpClient.class.getSimpleName();
+    private static final String TAG                  = LiteHttpClient.class.getSimpleName();
     /**
      * 是否统计时间和流量
      */
