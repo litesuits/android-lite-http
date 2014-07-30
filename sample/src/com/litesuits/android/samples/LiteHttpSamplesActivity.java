@@ -59,7 +59,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     private String urlUser         = "http://litesuits.github.io/mockdata/user";
     private String urlUserList     = "http://litesuits.github.io/mockdata/user_list";
     private String localPath       = "/HttpServer/PostReceiver";
-    private String localHost       = "http://192.168.1.108:8080";
+    private String localHost       = "http://10.0.1.32:8080";
     //private String localPath       = "/LiteHttpServer/ReceiveFile";
     //private String localHost       = "http://192.168.1.100:8080";
     private String urlLocalRequest = localHost + localPath;
@@ -524,7 +524,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
         body.addPart(new InputStreamPart("alog", fis, "alog.xml","text/xml"));
         req.setMethod(HttpMethod.Post).setHttpBody(body);
         Response res = client.execute(req);
-        System.out.println(res);
+        res.printInfo();
         //System.out.println("response string : " + res.getString());
         return res;
     }

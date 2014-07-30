@@ -1,5 +1,7 @@
 package com.litesuits.http.request.content.multi;
 
+import com.litesuits.android.log.Log;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -11,6 +13,7 @@ import java.io.OutputStream;
  */
 public class BytesPart extends AbstractPart {
     public byte[] bytes;
+    public static final String TAG = BytesPart.class.getSimpleName();
 
     public BytesPart(String key, byte[] bytes) {
         this(key, bytes, null);
@@ -22,7 +25,9 @@ public class BytesPart extends AbstractPart {
     }
 
     public long getTotalLength() {
-        return header.length + bytes.length;
+        if (Log.isPrint) if (Log.isPrint) Log.v(TAG, TAG + "内容长度 header ： " + header.length + " ,body: "
+                + bytes.length + " ," + "换行：" + CR_LF.length);
+        return header.length + bytes.length + CR_LF.length;
     }
 
     @Override

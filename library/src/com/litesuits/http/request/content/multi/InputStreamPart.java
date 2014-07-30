@@ -1,5 +1,7 @@
 package com.litesuits.http.request.content.multi;
 
+import com.litesuits.android.log.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,6 +14,7 @@ import java.io.OutputStream;
  */
 public class InputStreamPart extends AbstractPart {
     public InputStream inputStream;
+    public static final String TAG = InputStreamPart.class.getSimpleName();
 
     public InputStreamPart(String key, InputStream inputStream) {
         this(key, inputStream, null, null);
@@ -26,14 +29,16 @@ public class InputStreamPart extends AbstractPart {
         this.inputStream = inputStream;
     }
 
-    public long getTotalLength() throws IOException {
-        return -1;
-    }
-
     //public long getTotalLength() throws IOException {
-    //    Log.i("ISP", "inputStream.available(): " + inputStream.available());
-    //    return header.length + inputStream.available();
+    //    return -1;
     //}
+
+    public long getTotalLength() throws IOException {
+        long len = inputStream.available();
+        if (Log.isPrint) Log.v(TAG, TAG + "内容长度 header ： " + header.length + " ,body: " + len + " ," +
+                "换行：" + CR_LF.length);
+        return header.length + len + CR_LF.length;
+    }
 
     @Override
     public byte[] getTransferEncoding() {
