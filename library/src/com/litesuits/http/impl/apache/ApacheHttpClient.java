@@ -435,7 +435,7 @@ public class ApacheHttpClient extends LiteHttpClient {
                             } else {
                                 if (Log.isPrint) Log.w(TAG, "DataParser readInputStream :currentThread isInterrupted ");
                             }
-                            if (Log.isPrint) Log.v(TAG, "http response is " + parser.getData());
+                            //if (Log.isPrint) Log.v(TAG, "http response is " + parser.getData());
                         }
                     } else if (status.getStatusCode() <= 399) {
                         // redirect
