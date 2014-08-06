@@ -6,7 +6,7 @@ import java.io.File;
  * @author MaTianyu
  * @date 14-7-29
  */
-public class FileBody extends AbstractContentBody {
+public class FileBody extends HttpBody {
     public File file;
 
     public FileBody(File file) {

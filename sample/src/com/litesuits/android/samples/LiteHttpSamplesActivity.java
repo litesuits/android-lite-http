@@ -70,7 +70,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        client = LiteHttpClient.getInstance(this);
+        client = LiteHttpClient.newApacheHttpClient(this);
         asyncExcutor = HttpAsyncExecutor.newInstance(client);
         setSubTitile(getString(R.string.sub_title));
     }
@@ -616,7 +616,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     private void makeBaseGetRequest() {
         Context context = this;
         // default method is get.
-        LiteHttpClient client = LiteHttpClient.getInstance(context);
+        LiteHttpClient client = LiteHttpClient.newApacheHttpClient(context);
         Response res = client.execute(new Request("http://baidu.com"));
         String html = res.getString();
         printLog(res);

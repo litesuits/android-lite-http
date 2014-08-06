@@ -7,7 +7,7 @@ import org.apache.http.protocol.HTTP;
  * @author MaTianyu
  * @date 14-7-29
  */
-public class StringBody extends AbstractContentBody {
+public class StringBody extends HttpBody {
     public String string;
     public String charset;
 

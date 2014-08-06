@@ -9,6 +9,7 @@ import com.litesuits.http.response.handler.HttpResponseHandler;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 
 /**
@@ -18,15 +19,18 @@ import java.util.concurrent.FutureTask;
  */
 public class HttpAsyncExecutor extends AsyncExecutor {
     private LiteHttpClient client;
-    private static HttpAsyncExecutor ourInstance;
 
-    private HttpAsyncExecutor(LiteHttpClient client) {
+    private HttpAsyncExecutor(LiteHttpClient client, ExecutorService threadPool) {
+        super(threadPool);
         this.client = client;
     }
 
     public final static HttpAsyncExecutor newInstance(LiteHttpClient client) {
-        ourInstance = new HttpAsyncExecutor(client);
-        return ourInstance;
+        return new HttpAsyncExecutor(client, null);
+    }
+
+    public final static HttpAsyncExecutor newInstance(LiteHttpClient client, ExecutorService threadPool) {
+        return new HttpAsyncExecutor(client, threadPool);
     }
 
     /**

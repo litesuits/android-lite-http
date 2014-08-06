@@ -21,7 +21,7 @@ public class RequestBuilder {
 	private LiteHttpClient client;
 
 	public RequestBuilder(Context context, String uri) {
-		client = ApacheHttpClient.getInstance(context);
+		client = ApacheHttpClient.newApacheHttpClient(context);
 		req = new Request(uri);
 	}
 

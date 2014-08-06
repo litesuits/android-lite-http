@@ -1,16 +1,10 @@
 package com.litesuits.android.async;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-
 import android.os.Handler;
 import android.os.Looper;
-
 import com.litesuits.android.log.Log;
+
+import java.util.concurrent.*;
 
 /**
  * 异步执行
@@ -21,11 +15,17 @@ public class AsyncExecutor {
 	private static ExecutorService threadPool;
 	public static Handler handler = new Handler(Looper.getMainLooper());
 
-	public AsyncExecutor() {
-		if (threadPool == null) {
-			threadPool = Executors.newCachedThreadPool();
-		}
-	}
+    public AsyncExecutor() {
+        this(null);
+    }
+
+    public AsyncExecutor(ExecutorService threadPool) {
+        if (threadPool == null) {
+            AsyncExecutor.threadPool = Executors.newCachedThreadPool();
+        } else {
+            AsyncExecutor.threadPool = threadPool;
+        }
+    }
 
 	public static synchronized void shutdownNow() {
 		if (threadPool != null && !threadPool.isShutdown()) threadPool.shutdownNow();

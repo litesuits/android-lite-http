@@ -15,6 +15,7 @@ import com.litesuits.http.exception.HttpServerException.ServerException;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.StringParser;
 import com.litesuits.http.request.Request;
+import com.litesuits.http.request.content.HttpBody;
 import com.litesuits.http.request.param.HttpMethod;
 import com.litesuits.http.request.param.HttpParam;
 import com.litesuits.http.response.InternalResponse;
@@ -205,6 +206,13 @@ public class ApacheHttpClient extends LiteHttpClient {
 	/*----------------------------------  public method  ------------------------------------------*/
 
     @Override
+    public Response executeUnsafely(Request request) throws HttpException {
+        Response res = execute(request);
+        if(res.getException() != null) throw res.getException();
+        return res;
+    }
+
+    @Override
     public Response execute(Request request) {
         final InternalResponse innerResponse = getInternalResponse();
         if (request == null) return innerResponse;
@@ -248,7 +256,7 @@ public class ApacheHttpClient extends LiteHttpClient {
         return parser.getData();
     }
 
-    public HttpResponse execute(HttpUriRequest req) throws ClientProtocolException, IOException {
+    public HttpResponse execute(HttpUriRequest req) throws IOException {
         return mHttpClient.execute(req);
     }
 
@@ -296,8 +304,17 @@ public class ApacheHttpClient extends LiteHttpClient {
 
     @Override
     public <T> T post(String uri, HttpParam model, Class<T> claxx) {
-        Response res = execute(new Request(uri, model, HttpMethod.Post, new StringParser()));
-        return res.getObject(claxx);
+        return post(uri, model, null, claxx);
+    }
+
+    @Override
+    public <T> T post(String uri, HttpBody body, Class<T> claxx) {
+        return post(uri, null, body, claxx);
+    }
+
+    @Override
+    public <T> T post(String uri, HttpParam model, HttpBody body, Class<T> claxx) {
+        return execute(new Request(uri, model, body, HttpMethod.Post, new StringParser())).getObject(claxx);
     }
 
     @Override
@@ -325,7 +342,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 	/*----------------------------------  private method  ------------------------------------------*/
 
     private HttpUriRequest createApacheRequest(Request request) throws HttpClientException {
-        String rawUri = request.getRawUrl();
+        //String rawUri = request.getRawUrl();
         HttpEntityEnclosingRequestBase entityRequset = null;
         switch (request.getMethod()) {
             case Get:
@@ -393,7 +410,7 @@ public class ApacheHttpClient extends LiteHttpClient {
                 if (!Thread.currentThread().isInterrupted()) {
                     innerResponse.setTryTimes(++times);
                     // start
-                    if (Log.isPrint) Log.v(TAG, "http connect  to " + req.getURI());
+                    if (Log.isPrint) Log.v(TAG, "lite http request: " + req.getURI());
                     if (doStatistics) innerResponse.getExecuteListener().onPreConnect();
                     response = mHttpClient.execute(req);
                     if (doStatistics) innerResponse.getExecuteListener().onAfterConnect();
@@ -435,7 +452,7 @@ public class ApacheHttpClient extends LiteHttpClient {
                             } else {
                                 if (Log.isPrint) Log.w(TAG, "DataParser readInputStream :currentThread isInterrupted ");
                             }
-                            //if (Log.isPrint) Log.v(TAG, "http response is " + parser.getData());
+                            if (Log.isPrint) Log.v(TAG, "lite http response: " + parser.getData());
                         }
                     } else if (status.getStatusCode() <= 399) {
                         // redirect
@@ -478,8 +495,7 @@ public class ApacheHttpClient extends LiteHttpClient {
                 throw new HttpClientException(e);
             } catch (IllegalStateException e) {
                 // for apache http client. if url is illegal, it usually raises
-                // an exception as
-                // "IllegalStateException: Scheme 'xxx' not registered."
+                // an exception as "IllegalStateException: Scheme 'xxx' not registered."
                 throw new HttpClientException(e);
             } catch (IOException e) {
                 cause = e;

@@ -3,6 +3,7 @@ package com.litesuits.http;
 import android.content.Context;
 import com.litesuits.android.log.Log;
 import com.litesuits.http.data.NameValuePair;
+import com.litesuits.http.exception.HttpException;
 import com.litesuits.http.exception.HttpNetException;
 import com.litesuits.http.exception.HttpNetException.NetException;
 import com.litesuits.http.impl.apache.ApacheHttpClient;
@@ -10,12 +11,12 @@ import com.litesuits.http.network.Network;
 import com.litesuits.http.network.Network.NetType;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.request.Request;
+import com.litesuits.http.request.content.HttpBody;
 import com.litesuits.http.request.param.HttpMethod;
 import com.litesuits.http.request.param.HttpParam;
 import com.litesuits.http.response.InternalResponse;
 import com.litesuits.http.response.Response;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpUriRequest;
 
 import java.io.IOException;
@@ -48,7 +49,7 @@ public abstract class LiteHttpClient {
     public static final int DEFAULT_TIMEOUT            = 20000;
     public static final int DEFAULT_BUFFER_SIZE        = 4096;
 
-    private static final String TAG                  = LiteHttpClient.class.getSimpleName();
+    private static final String TAG = LiteHttpClient.class.getSimpleName();
     /**
      * 是否统计时间和流量
      */
@@ -58,7 +59,7 @@ public abstract class LiteHttpClient {
      */
     public static boolean errorInChinese = true;
     protected static Context        appContext;
-    private static   LiteHttpClient instance;
+    //private static   LiteHttpClient instance;
     /**
      * u cat set {@link #disableNetworkFlags } = {@link #FLAG_NET_DISABLE_MOBILE }
      * | {@link #FLAG_NET_DISABLE_OTHER} to enable http connect only in wifi
@@ -78,21 +79,21 @@ public abstract class LiteHttpClient {
      */
     protected        StatisticsInfo statisticsInfo;
 
-    public final static LiteHttpClient getInstance(Context context) {
-        return getInstance(context, false, true, false, true);
+    public final static LiteHttpClient newApacheHttpClient(Context context) {
+        return newApacheHttpClient(context, false, true, false, true);
     }
 
-    public final synchronized static LiteHttpClient getInstance(Context context, boolean detectNetwork, boolean doStatistics, boolean forceRetry, boolean errorInChinese) {
-        if (instance == null) {
-            instance = ApacheHttpClient.getInstance(context, 1500, false);
-            instance.config(context, detectNetwork, doStatistics, forceRetry, errorInChinese);
-        }
+    public final synchronized static LiteHttpClient newApacheHttpClient(Context context, boolean detectNetwork, boolean doStatistics, boolean forceRetry, boolean errorInChinese) {
+        LiteHttpClient instance = ApacheHttpClient.getInstance(context, 1500, false);
+        instance.config(context, detectNetwork, doStatistics, forceRetry, errorInChinese);
         return instance;
     }
 
     public abstract Response execute(Request req);
 
-    public abstract HttpResponse execute(HttpUriRequest req) throws ClientProtocolException, IOException;
+    public abstract Response executeUnsafely(Request req) throws HttpException;
+
+    public abstract HttpResponse execute(HttpUriRequest req) throws IOException;
 
     public abstract <T> T execute(String uri, DataParser<T> parser, HttpMethod method);
 
@@ -115,6 +116,10 @@ public abstract class LiteHttpClient {
     public abstract <T> T post(String uri, DataParser<T> parser);
 
     public abstract <T> T post(String uri, HttpParam model, Class<T> claxx);
+
+    public abstract <T> T post(String uri, HttpBody body, Class<T> claxx);
+
+    public abstract <T> T post(String uri, HttpParam model, HttpBody body, Class<T> claxx);
 
     public abstract String delete(String uri);
 
@@ -159,7 +164,11 @@ public abstract class LiteHttpClient {
     protected InternalResponse getInternalResponse() {
         final InternalResponse innerResponse = new InternalResponse();
         if (detectNetwork | doStatistics) innerResponse.setExecuteListener(new LiteHttpClient.ExecuteListener() {
-            private long start, connect, read;
+            private long start
+                    ,
+                    connect
+                    ,
+                    read;
 
             @Override
             public void onStart() throws HttpNetException {
@@ -187,7 +196,7 @@ public abstract class LiteHttpClient {
                     if (statisticsInfo == null) statisticsInfo = new StatisticsInfo();
                     statisticsInfo.addConnectTime(time);
                     if (Log.isPrint)
-                        Log.d(TAG, "http statistics : connect "+connect +"ms, read " +read +"ms, total "+ time + "ms, global total time " + statisticsInfo.getConnectTime()+"ms");
+                        Log.d(TAG, "http statistics : connect " + connect + "ms, read " + read + "ms, total " + time + "ms, global total time " + statisticsInfo.getConnectTime() + "ms");
 
                     long headLen = innerResponse.getContentLength();
                     long readLen = innerResponse.getReadedLength();
@@ -197,7 +206,7 @@ public abstract class LiteHttpClient {
                     }
                     statisticsInfo.addDataLength(len);
                     if (Log.isPrint)
-                        Log.d(TAG, "http statistics : len in header " + headLen + " B, len of readed " + readLen + " B, global total len " + statisticsInfo.getDataLength()+" B");
+                        Log.d(TAG, "http statistics : len in header " + headLen + " B, len of readed " + readLen + " B, global total len " + statisticsInfo.getDataLength() + " B");
                 }
             }
 

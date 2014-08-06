@@ -8,7 +8,7 @@ import java.io.InputStream;
  * @author MaTianyu
  * @date 14-7-29
  */
-public class InputStreamBody extends AbstractContentBody {
+public class InputStreamBody extends HttpBody {
     public InputStream inputStream;
 
     public InputStreamBody(InputStream inputStream) {

@@ -4,7 +4,7 @@ package com.litesuits.http.request.content;
  * @author MaTianyu
  * @date 14-7-29
  */
-public class ByteArrayBody extends AbstractContentBody {
+public class ByteArrayBody extends HttpBody {
     public byte[] bytes;
 
     public ByteArrayBody(byte[] bytes) {

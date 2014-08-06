@@ -1,5 +1,6 @@
 package com.litesuits.http.impl.apache;
 
+import com.litesuits.http.data.Consts;
 import com.litesuits.http.request.Request;
 import com.litesuits.http.request.content.*;
 import org.apache.http.HttpEntity;
@@ -19,8 +20,9 @@ public class EntityBuilder {
     public static HttpEntity build(Request req) {
         try {
 
-            AbstractBody body = req.getHttpBody();
+            HttpBody body = req.getHttpBody();
             if (body != null) {
+                req.addHeader(Consts.CONTENT_TYPE, body.getContentType());
                 if (body instanceof StringBody) {
                     // StringBody JsonBody UrlEncodedFormBody
                     StringBody b = (StringBody) body;
@@ -40,6 +42,7 @@ public class EntityBuilder {
                 } else {
                     throw new RuntimeException("Unpredictable Entity Body(非法实体)");
                 }
+
             }
         } catch (Exception e) {
             e.printStackTrace();

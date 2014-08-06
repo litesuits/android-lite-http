@@ -2,7 +2,7 @@ package com.litesuits.http.data;
 
 /**
  * with this, we can change json handler easily.
- * alibaba fastjson cant handle private attribute that without getter method.
+ * alibaba fastjson can not handle private attribute that without getter method.
  * so we choice the google gson.
  * @author MaTianyu
  *         2014-1-14下午11:32:32

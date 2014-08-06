@@ -7,7 +7,7 @@ import com.litesuits.http.exception.HttpClientException;
 import com.litesuits.http.exception.HttpClientException.ClientException;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.StringParser;
-import com.litesuits.http.request.content.AbstractBody;
+import com.litesuits.http.request.content.HttpBody;
 import com.litesuits.http.request.param.HttpMethod;
 import com.litesuits.http.request.param.HttpParam;
 import com.litesuits.http.request.query.AbstractQueryBuilder;
@@ -27,33 +27,33 @@ import java.util.Map.Entry;
  */
 public class Request {
     private static final String TAG = Request.class.getSimpleName();
-    protected Abortable                                              abort;
-    private   String                                                 url;
+    protected Abortable                     abort;
+    private   String                        url;
     /**
      * add custom header to request.
      */
-    private   LinkedHashMap<String, String>                          headers;
+    private   LinkedHashMap<String, String> headers;
     /**
      * intelligently translate java object into mapping(k=v) parameters
      */
-    private   HttpParam                                              paramModel;
+    private   HttpParam                     paramModel;
     /**
      * key value parameters
      */
-    private   LinkedHashMap<String, String>                          paramMap;
+    private   LinkedHashMap<String, String> paramMap;
     /**
      * when parameter's value is complex, u can chose one buider, default mode
      * is build value into json string.
      */
-    private   AbstractQueryBuilder                                   queryBuilder;
+    private   AbstractQueryBuilder          queryBuilder;
     /**
      * defaul method is get(GET).
      */
-    private   HttpMethod                                             method;
+    private   HttpMethod                    method;
     private String charSet       = Consts.DEFAULT_CHARSET;
     private int    retryMaxTimes = LiteHttpClient.DEFAULT_MAX_RETRY_TIMES;
     private DataParser<?> dataParser;
-    private AbstractBody  httpBody;
+    private HttpBody      httpBody;
 
 
     public Request(String url) {
@@ -70,12 +70,17 @@ public class Request {
 
     public Request(String url, HttpParam paramModel, DataParser<?> parser) {
         this(url, paramModel, HttpMethod.Get, parser);
-        if (url == null) throw new RuntimeException("Url Cannot be Null.");
     }
 
     public Request(String url, HttpParam paramModel, HttpMethod method, DataParser<?> parser) {
+        this(url, paramModel, null, method, parser);
+    }
+
+    public Request(String url, HttpParam paramModel, HttpBody httpBody, HttpMethod method, DataParser<?> parser) {
+        if (url == null) throw new RuntimeException("Url Cannot be Null.");
         this.url = url;
         this.paramModel = paramModel;
+        this.httpBody = httpBody;
         this.method = method;
         this.dataParser = parser;
         this.queryBuilder = new JsonQueryBuilder();
@@ -94,14 +99,14 @@ public class Request {
     /**
      * 获取消息体
      */
-    public AbstractBody getHttpBody() {
+    public HttpBody getHttpBody() {
         return httpBody;
     }
 
     /**
      * 设置消息体
      */
-    public Request setHttpBody(AbstractBody httpBody) {
+    public Request setHttpBody(HttpBody httpBody) {
         this.httpBody = httpBody;
         return this;
     }
@@ -158,7 +163,7 @@ public class Request {
             for (Entry<String, String> v : map.entrySet()) {
                 sb.append(URLEncoder.encode(v.getKey(), charSet)).append("=").append(URLEncoder.encode(v.getValue(), charSet)).append(++i == size ? "" : "&");
             }
-            if (Log.isPrint) Log.i(TAG, "Request url: " + sb.toString());
+            if (Log.isPrint) Log.i(TAG, "lite request url: " + sb.toString());
             return sb.toString();
         } catch (Exception e) {
             throw new HttpClientException(e);

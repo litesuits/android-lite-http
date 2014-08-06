@@ -1,6 +1,5 @@
 package com.litesuits.http.impl.apache;
 
-import com.litesuits.http.data.Consts;
 import com.litesuits.http.request.content.MultipartBody;
 import com.litesuits.http.request.content.multi.*;
 import org.apache.http.Header;
@@ -8,10 +7,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.message.BasicHeader;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 
 /**
@@ -21,9 +18,7 @@ import java.util.Random;
  */
 class MultipartEntity implements HttpEntity {
 
-    private static final Charset charset = Charset.forName(Consts.DEFAULT_CHARSET);
 
-    private final static char[] MULTIPART_CHARS = "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
     private String boundary;
     private byte[] boundaryLine;
     private byte[] boundaryEnd;
@@ -35,22 +30,21 @@ class MultipartEntity implements HttpEntity {
 
     public MultipartEntity() {
         this(null);
+        BoundaryCreater creater = new BoundaryCreater();
+        boundary = creater.getBoundary();
+        boundaryLine = creater.getBoundaryLine();
+        boundaryEnd = creater.getBoundaryEnd();
     }
 
     public MultipartEntity(MultipartBody body) {
-        final StringBuilder buf = new StringBuilder();
-        final Random rand = new Random();
-        for (int i = 0; i < 30; i++) {
-            buf.append(MULTIPART_CHARS[rand.nextInt(MULTIPART_CHARS.length)]);
-        }
-        boundary = buf.toString();
-        //Log.i("M","char: " + charset.displayName());
-        //Log.i("M", "def char: " + Charset.defaultCharset().displayName());
-        boundaryLine = ("--" + boundary + "\r\n").getBytes(charset);
-        boundaryEnd = ("--" + boundary + "--\r\n").getBytes(charset);
-        if (body != null && body.getHttpParts() != null) {
-            for (AbstractPart part : body.getHttpParts()) {
-                addPart(part);
+        if (body != null) {
+            boundary = body.getBoundary();
+            boundaryLine = body.getBoundaryLine();
+            boundaryEnd = body.getBoundaryEnd();
+            if (body.getHttpParts() != null) {
+                for (AbstractPart part : body.getHttpParts()) {
+                    addPart(part);
+                }
             }
         }
     }
