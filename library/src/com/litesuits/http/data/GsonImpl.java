@@ -11,7 +11,7 @@ public class GsonImpl extends Json {
 	private Gson gson = new Gson();
 
 	@Override
-	public String toString(Object src) {
+	public String toJson(Object src) {
 		return gson.toJson(src);
 	}
 

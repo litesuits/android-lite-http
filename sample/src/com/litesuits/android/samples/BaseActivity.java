@@ -2,15 +2,9 @@ package com.litesuits.android.samples;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Process;
 import android.view.View;
-import android.widget.AdapterView;
+import android.widget.*;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
-
 import com.litesuits.android.log.Log;
 import com.litesuits.http.R;
 
@@ -22,7 +16,7 @@ import com.litesuits.http.R;
  */
 public abstract class BaseActivity extends Activity {
 	protected String TAG = "BaseActivity";
-	protected TextView mTvSubTitle;
+	//protected TextView mTvSubTitle;
 	protected TextView mTitle;
 	protected ListView mListview;
 	protected BaseAdapter mAdapter;
@@ -37,11 +31,11 @@ public abstract class BaseActivity extends Activity {
 		mTitle = (TextView) findViewById(R.id.title);
 		mTitle.setText(getMainTitle());
 		//		mTvSubTitle = (TextView) findViewById(R.id.sub_title);
-		mTvSubTitle = new TextView(this);
-		mTvSubTitle.setPadding(20, 10, 10, 20);
+		//mTvSubTitle = new TextView(this);
+		//mTvSubTitle.setPadding(20, 10, 10, 20);
 
 		mListview = (ListView) findViewById(R.id.listview);
-		mListview.addHeaderView(mTvSubTitle);
+		//mListview.addHeaderView(mTvSubTitle);
 		mAdapter = new ArrayAdapter<String>(this, R.layout.list_item, R.id.tv_item, getResources().getStringArray(
 				R.array.http_test_list));
 		mListview.setAdapter(mAdapter);
@@ -61,6 +55,6 @@ public abstract class BaseActivity extends Activity {
 	public abstract Runnable getRunnable(final int pos);
 
 	public void setSubTitile(String st) {
-		mTvSubTitle.setText(st);
+		//mTvSubTitle.setText(st);
 	}
 }

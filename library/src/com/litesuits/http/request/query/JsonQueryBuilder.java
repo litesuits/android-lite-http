@@ -14,6 +14,6 @@ public class JsonQueryBuilder extends AbstractQueryBuilder {
 
 	@Override
 	protected CharSequence buildSencondaryValue(Object model) {
-		return Json.get().toString(model);
+		return Json.get().toJson(model);
 	}
 }

@@ -14,11 +14,7 @@ public class JsonBody extends StringBody {
     }
 
     public JsonBody(Object param, String charset) {
-        super(handleString(param), Consts.MIME_TYPE_JSON, charset);
-    }
-
-    private static String handleString(Object param) {
-        return Json.get().toString(param);
+        super(Json.get().toJson(param), Consts.MIME_TYPE_JSON, charset);
     }
 
     @Override

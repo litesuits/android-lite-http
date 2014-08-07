@@ -270,7 +270,9 @@ public class LiteHttpSamplesActivity extends BaseActivity {
                         req.setHttpBody(new SerializableBody(list));
                         break;
                     case 4:
-                        req.setHttpBody(new ByteArrayBody(new byte[]{1, 2, 3, 4, 5, 6, 7}));
+                        req.setHttpBody(new ByteArrayBody(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+                                18, 127
+                        }));
                         break;
                     case 5:
                         req.setHttpBody(new FileBody(new File("sdcard/alog.xml")));
@@ -517,11 +519,11 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 
         MultipartBody body = new MultipartBody();
         body.addPart(new StringPart("key1", "hello"));
-        body.addPart(new StringPart("key2", "很高兴见到你","utf-8",null));
+        body.addPart(new StringPart("key2", "很高兴见到你", "utf-8", null));
         body.addPart(new BytesPart("key3", new byte[]{1, 2, 3}));
         body.addPart(new FilePart("pic", new File("sdcard/apic.png"), "image/jpeg"));
         body.addPart(new FilePart("song", new File("sdcard/asong.mp3"), "audio/x-mpeg"));
-        body.addPart(new InputStreamPart("alog", fis, "alog.xml","text/xml"));
+        body.addPart(new InputStreamPart("alog", fis, "alog.xml", "text/xml"));
         req.setMethod(HttpMethod.Post).setHttpBody(body);
         Response res = client.execute(req);
         res.printInfo();
