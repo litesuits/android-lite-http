@@ -1,5 +1,14 @@
 package com.litesuits.http.impl.apache;
 
+import android.content.Context;
+import com.litesuits.android.log.Log;
+import com.litesuits.http.exception.HttpNetException;
+import com.litesuits.http.exception.HttpNetException.NetException;
+import com.litesuits.http.network.Network;
+import org.apache.http.NoHttpResponseException;
+import org.apache.http.protocol.HttpContext;
+
+import javax.net.ssl.SSLException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -8,19 +17,6 @@ import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashSet;
-
-import javax.net.ssl.SSLException;
-
-import org.apache.http.NoHttpResponseException;
-import org.apache.http.protocol.HttpContext;
-
-import android.content.Context;
-import android.os.SystemClock;
-
-import com.litesuits.android.log.Log;
-import com.litesuits.http.exception.HttpNetException;
-import com.litesuits.http.exception.HttpNetException.NetException;
-import com.litesuits.http.network.Network;
 
 /**
  * determine whether to send request try again.
@@ -45,21 +41,12 @@ public class ConnectRetryHandler extends StandardHttpRequestRetryHandler {
 	public ConnectRetryHandler(int retrySleepTimeMS, boolean requestSentRetryEnabled) {
 		super(0, requestSentRetryEnabled);
 		this.retrySleepTimeMS = retrySleepTimeMS;
-
-		// retry, sometimes network is unstable.
 		exceptionWhitelist.add(UnknownHostException.class);
-		// retry, sometimes network is unstable.
 		exceptionWhitelist.add(SocketException.class);
-		// retry, if the server dropped connection.
 		exceptionWhitelist.add(NoHttpResponseException.class);
 
 		exceptionBlacklist.add(FileNotFoundException.class);
-		// never retry, such as ConnectTimeoutException and
-		// SocketTimeoutException.
 		exceptionBlacklist.add(InterruptedIOException.class);
-		// if the url is Malformed, never retry.
-		// exceptionBlacklist.add(MalformedURLException.class);
-		// never retry SSL handshake failures
 		exceptionBlacklist.add(SSLException.class);
 		exceptionBlacklist.add(ConnectException.class);
 	}
@@ -68,17 +55,12 @@ public class ConnectRetryHandler extends StandardHttpRequestRetryHandler {
 			Context appContext) throws HttpNetException, InterruptedException {
 		boolean retry = true;
 		if (retryCount > maxRetries) {
-			// Do not retry if over max retry times and give an exception of
-			// network.
 			if (Log.isPrint) Log.w(TAG, "retry count > max retry times..");
 			throw new HttpNetException(exception);
 		} else if (isInList(exceptionBlacklist, exception)) {
-			// immediately cancel retry if the error is blacklisted
 			if (Log.isPrint) Log.w(TAG, "exception in blacklist..");
 			retry = false;
-			// throw exception;
 		} else if (isInList(exceptionWhitelist, exception)) {
-			// immediately retry if error is whitelisted
 			if (Log.isPrint) Log.w(TAG, "exception in whitelist..");
 			retry = true;
 		}
@@ -89,40 +71,27 @@ public class ConnectRetryHandler extends StandardHttpRequestRetryHandler {
 		if (retry) {
 			if (appContext != null) {
 				if (Log.isPrint) Log.v(TAG, "has app context..");
-				// if has app context. processing according to network state.
 				if (Network.isConnected(appContext)) {
 					Log.d(TAG, "Network isConnected, retry now");
 				} else if (Network.isConnectedOrConnecting(appContext)) {
-					// sleep, wait.
 					if (Log.isPrint) Log.v(TAG, "Network is Connected Or Connecting, wait for retey : "
 							+ retrySleepTimeMS + " ms");
 					Thread.sleep(retrySleepTimeMS);
-//					SystemClock.sleep(retrySleepTimeMS);
 				} else {
 					Log.d(TAG, "Without any Network , immediately cancel retry");
 					throw new HttpNetException(NetException.NetworkError);
-					// retry = false;
 				}
 			} else {
-				// if app context is null, just wait for retry except
-				// unknownHostException.
 				Log.v(TAG, "app context is null..");
 				if (exception instanceof UnknownHostException) {
 					Log.d(TAG, "UnknownHostException. Without app context, immediately cancel retry");
-					// retry = false;
-					// in this case , we treat it as without network..
 					throw new HttpNetException(NetException.NetworkError);
 				} else {
-					// sleep, wait.
 					if (Log.isPrint) Log.v(TAG, "wait for retry : " + retrySleepTimeMS + " ms");
 					Thread.sleep(retrySleepTimeMS);
-//					SystemClock.sleep(retrySleepTimeMS);
 				}
 			}
 		}
-		// if (!retry) {
-		// exception.printStackTrace();
-		// }
 		if (Log.isPrint) Log.i(TAG, "retry: " + retry + " , retryCount: " + retryCount + " , exception: " + exception);
 		return retry;
 	}

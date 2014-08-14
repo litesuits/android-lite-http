@@ -81,10 +81,7 @@ public class ApacheHttpClient extends LiteHttpClient {
     }
 
     /**
-     * initialize HttpParams , initialize settings such as total
-     * connextions,timeout ...
-     *
-     * @return BasicHttpParams
+     * initialize HttpParams , initialize settings such as total connextions,timeout ...
      */
     private BasicHttpParams createHttpParams() {
         BasicHttpParams params = new BasicHttpParams();
@@ -189,14 +186,6 @@ public class ApacheHttpClient extends LiteHttpClient {
      */
     private ThreadSafeClientConnManager createClientConnManager(BasicHttpParams httpParams) {
         SchemeRegistry schemeRegistry = new SchemeRegistry();
-        // Android had a bug where HTTPS made reverse DNS lookups (fixed in Ice Cream Sandwich)
-        // http://code.google.com/p/android/issues/detail?id=13117
-        //SocketFactory socketFactory = null;
-        //if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-        //    socketFactory = new MyLayeredSocketFactory();
-        //} else {
-        //    socketFactory = SSLSocketFactory.getSocketFactory();
-        //}
         SSLSocketFactory socketFactory = MySSLSocketFactory.getFixedSocketFactory();
         schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), DEFAULT_HTTP_PORT));
         schemeRegistry.register(new Scheme("https", socketFactory, DEFAULT_HTTPS_PORT));

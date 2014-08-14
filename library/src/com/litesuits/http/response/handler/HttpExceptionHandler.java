@@ -3,7 +3,6 @@ package com.litesuits.http.response.handler;
 import com.litesuits.http.data.HttpStatus;
 import com.litesuits.http.exception.HttpClientException;
 import com.litesuits.http.exception.HttpClientException.ClientException;
-import com.litesuits.http.exception.HttpException;
 import com.litesuits.http.exception.HttpNetException;
 import com.litesuits.http.exception.HttpNetException.NetException;
 import com.litesuits.http.exception.HttpServerException;
@@ -17,7 +16,7 @@ import com.litesuits.http.exception.HttpServerException.ServerException;
  */
 public abstract class HttpExceptionHandler {
 
-    public HttpExceptionHandler handleException(HttpException e) {
+    public HttpExceptionHandler handleException(Exception e) {
         if (e != null) {
             if (e instanceof HttpClientException) {
                 HttpClientException ce = ((HttpClientException) e);
@@ -28,8 +27,9 @@ public abstract class HttpExceptionHandler {
             } else if (e instanceof HttpServerException) {
                 HttpServerException se = ((HttpServerException) e);
                 onServerException(se, se.getExceptionType(), se.getHttpStatus());
-            } else {
-                onOtherException(e);
+            }else {
+                HttpClientException ce = new HttpClientException(e);
+                onClientException(ce, ce.getExceptionType());
             }
         }
         return this;
@@ -40,10 +40,7 @@ public abstract class HttpExceptionHandler {
      *
      * @param e
      */
-    protected void onClientException(HttpClientException e, ClientException type) {
-        // do nothing
-    }
-
+    protected abstract void onClientException(HttpClientException e, ClientException type);
     /**
      * 比如 无网络，网络不稳定，该网络类型已被禁用等。
      *
@@ -58,11 +55,5 @@ public abstract class HttpExceptionHandler {
      *
      * @param e
      */
-    protected void onServerException(HttpServerException e, ServerException type, HttpStatus status) {
-        // do nothing
-    }
-
-    protected void onOtherException(Exception e) {
-        // do nothing
-    }
+    protected abstract void onServerException(HttpServerException e, ServerException type, HttpStatus status);
 }

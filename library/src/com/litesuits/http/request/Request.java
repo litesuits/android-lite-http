@@ -1,6 +1,5 @@
 package com.litesuits.http.request;
 
-import com.litesuits.android.log.Log;
 import com.litesuits.http.LiteHttpClient;
 import com.litesuits.http.data.Consts;
 import com.litesuits.http.exception.HttpClientException;
@@ -104,9 +103,17 @@ public class Request {
     }
 
     /**
-     * 设置消息体
+     * 设置消息体：POST
      */
     public Request setHttpBody(HttpBody httpBody) {
+        return setHttpBody(httpBody, HttpMethod.Post);
+    }
+
+    /**
+     * 设置消息体与请求方式
+     */
+    public Request setHttpBody(HttpBody httpBody, HttpMethod method) {
+        setMethod(method);
         this.httpBody = httpBody;
         return this;
     }
@@ -135,7 +142,7 @@ public class Request {
 
     /**
      * if your url like this "http://tb.cn/i3.html" .
-     * you can setUrl("http://tb.cn/") then addUrlSuffix("i3.html") anywhere.
+     * you can setUrl("http://tb.cn/") then addUrlSuffix("i3.html").
      *
      * @param suffix
      * @throws HttpClientException
@@ -163,7 +170,7 @@ public class Request {
             for (Entry<String, String> v : map.entrySet()) {
                 sb.append(URLEncoder.encode(v.getKey(), charSet)).append("=").append(URLEncoder.encode(v.getValue(), charSet)).append(++i == size ? "" : "&");
             }
-            if (Log.isPrint) Log.i(TAG, "lite request url: " + sb.toString());
+            //if (Log.isPrint) Log.v(TAG, "lite request url: " + sb.toString());
             return sb.toString();
         } catch (Exception e) {
             throw new HttpClientException(e);
