@@ -1,6 +1,7 @@
 package com.litesuits.http.request.content.multi;
 
 import com.litesuits.android.log.Log;
+import com.litesuits.http.data.Consts;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,26 +14,39 @@ import java.io.OutputStream;
  * @date 14-7-29
  */
 public class InputStreamPart extends AbstractPart {
-    public InputStream inputStream;
-    public static final String TAG = InputStreamPart.class.getSimpleName();
+    protected InputStream inputStream;
+    protected           String mimeType = Consts.MIME_TYPE_OCTET_STREAM;
+    protected static final String TAG  = InputStreamPart.class.getSimpleName();
+    protected String fileName;
 
     public InputStreamPart(String key, InputStream inputStream) {
-        this(key, inputStream, null, null);
+        this(key, inputStream, null, Consts.MIME_TYPE_OCTET_STREAM);
     }
 
     public InputStreamPart(String key, InputStream inputStream, String contentType) {
         this(key, inputStream, null, contentType);
     }
 
-    public InputStreamPart(String key, InputStream inputStream, String fileName, String contentType) {
-        super(key, fileName, contentType);
+    public InputStreamPart(String key, InputStream inputStream, String fileName, String mimeType) {
+        super(key);
         this.inputStream = inputStream;
+        this.mimeType = mimeType;
+        this.fileName = fileName;
     }
 
-    //public long getTotalLength() throws IOException {
-    //    return -1;
-    //}
+    @Override
+    protected byte[] createContentType() {
+        return (Consts.CONTENT_TYPE + ": " + mimeType + "\r\n").getBytes(infoCharset);
+    }
 
+    @Override
+    protected byte[] createContentDisposition() {
+        String dis = "Content-Disposition: form-data; name=\"" + key;
+        return fileName == null ? (dis + "\"\r\n").getBytes(infoCharset)
+                : (dis + "\"; filename=\"" + fileName + "\"\r\n").getBytes(infoCharset);
+    }
+
+    @Override
     public long getTotalLength() throws IOException {
         long len = inputStream.available();
         if (Log.isPrint) Log.v(TAG, TAG + "内容长度 header ： " + header.length + " ,body: " + len + " ," +

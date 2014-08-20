@@ -1,6 +1,7 @@
 package com.litesuits.http.request.content.multi;
 
 import com.litesuits.android.log.Log;
+import com.litesuits.http.data.Consts;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,11 +19,11 @@ public class FilePart extends InputStreamPart {
     public static final String TAG = FilePart.class.getSimpleName();
 
     public FilePart(String key, File file) {
-        this(key, file, null);
+        this(key, file, Consts.MIME_TYPE_OCTET_STREAM);
     }
 
-    public FilePart(String key, File file, String contentType) {
-        super(key, getInputStream(file), file.getName(), contentType);
+    public FilePart(String key, File file, String mimeType) {
+        super(key, getInputStream(file), file.getName(), mimeType);
         this.file = file;
     }
 

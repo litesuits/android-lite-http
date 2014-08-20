@@ -10,7 +10,7 @@ import java.util.Random;
  * @date 2014-08-06
  */
 public class BoundaryCreater {
-    private static final Charset charset         = Charset.forName(Consts.DEFAULT_CHARSET);
+    public static final Charset charset         = Charset.forName(Consts.DEFAULT_CHARSET);
     private final static char[]  MULTIPART_CHARS = "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
     private String boundary;
     private byte[] boundaryLine;

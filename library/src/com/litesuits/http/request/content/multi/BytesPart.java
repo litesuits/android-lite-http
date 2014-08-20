@@ -1,6 +1,7 @@
 package com.litesuits.http.request.content.multi;
 
 import com.litesuits.android.log.Log;
+import com.litesuits.http.data.Consts;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,15 +14,22 @@ import java.io.OutputStream;
  */
 public class BytesPart extends AbstractPart {
     public byte[] bytes;
-    public static final String TAG = BytesPart.class.getSimpleName();
+    public static final String TAG  = BytesPart.class.getSimpleName();
+    protected           String type = Consts.MIME_TYPE_OCTET_STREAM;
 
     public BytesPart(String key, byte[] bytes) {
-        this(key, bytes, null);
+        super(key);
+        this.bytes = bytes;
     }
 
-    public BytesPart(String key, byte[] bytes, String contentType) {
-        super(key, null, contentType);
-        this.bytes = bytes;
+    @Override
+    protected byte[] createContentType() {
+        return (Consts.CONTENT_TYPE + ": " + type + "\r\n").getBytes(infoCharset);
+    }
+
+    @Override
+    protected byte[] createContentDisposition() {
+        return ("Content-Disposition: form-data; name=\"" + key + "\"\r\n").getBytes(infoCharset);
     }
 
     public long getTotalLength() {
