@@ -15,8 +15,8 @@ import java.io.OutputStream;
  */
 public class InputStreamPart extends AbstractPart {
     protected InputStream inputStream;
-    protected           String mimeType = Consts.MIME_TYPE_OCTET_STREAM;
-    protected static final String TAG  = InputStreamPart.class.getSimpleName();
+
+    protected static final String TAG = InputStreamPart.class.getSimpleName();
     protected String fileName;
 
     public InputStreamPart(String key, InputStream inputStream) {
@@ -28,9 +28,8 @@ public class InputStreamPart extends AbstractPart {
     }
 
     public InputStreamPart(String key, InputStream inputStream, String fileName, String mimeType) {
-        super(key);
+        super(key, mimeType);
         this.inputStream = inputStream;
-        this.mimeType = mimeType;
         this.fileName = fileName;
     }
 

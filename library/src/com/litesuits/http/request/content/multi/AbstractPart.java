@@ -1,5 +1,7 @@
 package com.litesuits.http.request.content.multi;
 
+import com.litesuits.http.data.Consts;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,9 +23,11 @@ public abstract class AbstractPart {
 
     protected String key;
     public    byte[] header;
+    protected String mimeType = Consts.MIME_TYPE_OCTET_STREAM;
 
-    protected AbstractPart(String key) {
+    protected AbstractPart(String key,String mimeType) {
         this.key = key;
+        if(mimeType != null) this.mimeType = mimeType;
     }
 
     //此方法需要被调用以产生header（开发者无需自己调用，Entity会调用它）

@@ -14,17 +14,22 @@ import java.io.OutputStream;
  */
 public class BytesPart extends AbstractPart {
     public byte[] bytes;
-    public static final String TAG  = BytesPart.class.getSimpleName();
-    protected           String type = Consts.MIME_TYPE_OCTET_STREAM;
+    public static final String TAG = BytesPart.class.getSimpleName();
+    //protected           String type = Consts.MIME_TYPE_OCTET_STREAM;
 
     public BytesPart(String key, byte[] bytes) {
-        super(key);
+        this(key, bytes, null);
+        this.bytes = bytes;
+    }
+
+    public BytesPart(String key, byte[] bytes, String mimeType) {
+        super(key, mimeType);
         this.bytes = bytes;
     }
 
     @Override
     protected byte[] createContentType() {
-        return (Consts.CONTENT_TYPE + ": " + type + "\r\n").getBytes(infoCharset);
+        return (Consts.CONTENT_TYPE + ": " + mimeType + "\r\n").getBytes(infoCharset);
     }
 
     @Override

@@ -17,9 +17,9 @@ public class StringPart extends BytesPart {
     }
 
     public StringPart(String key, String string, String charset, String mimeType) {
-        super(key, getBytes(string, charset));
-        this.charset = charset;
+        super(key, getBytes(string, charset),mimeType);
         this.mimeType = mimeType != null ? mimeType : Consts.MIME_TYPE_TEXT;
+        this.charset = charset;
     }
 
     public static byte[] getBytes(String string, String charset) {
@@ -33,7 +33,7 @@ public class StringPart extends BytesPart {
 
     @Override
     protected byte[] createContentType() {
-        return (Consts.CONTENT_TYPE + ": " + type + " " + Consts.CHARSET_PARAM + charset + "\r\n").getBytes(infoCharset);
+        return (Consts.CONTENT_TYPE + ": " + mimeType + " " + Consts.CHARSET_PARAM + charset + "\r\n").getBytes(infoCharset);
     }
 
     @Override
