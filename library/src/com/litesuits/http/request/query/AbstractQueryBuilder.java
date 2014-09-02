@@ -67,8 +67,7 @@ public abstract class AbstractQueryBuilder {
 		return map;
 	}
 
-	protected abstract CharSequence buildSencondaryValue(Object model) throws UnsupportedEncodingException,
-			IllegalArgumentException, IllegalAccessException, InvocationTargetException;
+	protected abstract CharSequence buildSencondaryValue(Object model);
 
 	/********************* utils method **************************/
 	protected StringBuilder buildUriKey(StringBuilder sb, String key) throws UnsupportedEncodingException {
@@ -101,11 +100,11 @@ public abstract class AbstractQueryBuilder {
 	protected ArrayList<Field> getAllDeclaredFields(Class<?> claxx) {
 		// find all field.
 		ArrayList<Field> fieldList = new ArrayList<Field>();
-		while (claxx != null) {
+		while (claxx != null && claxx != Object.class) {
 			Field[] fs = claxx.getDeclaredFields();
 			for (int i = 0; i < fs.length; i++) {
 				Field f = fs[i];
-				if (!isInvalidField(f)) {
+                if (!isInvalidField(f)) {
 					fieldList.add(f);
 				}
 			}

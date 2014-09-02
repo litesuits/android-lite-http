@@ -46,11 +46,21 @@ import com.litesuits.http.response.Response;
 import com.litesuits.http.response.handler.HttpExceptionHandler;
 import com.litesuits.http.response.handler.HttpModelHandler;
 import com.litesuits.http.response.handler.HttpResponseHandler;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.util.CharArrayBuffer;
+import org.apache.http.util.EntityUtils;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 public class LiteHttpSamplesActivity extends BaseActivity {
@@ -250,7 +260,8 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 
                 switch (which) {
                     case 0:
-                        req.setHttpBody(new StringBody("hello"));
+                        testHttpPost();
+                        //req.setHttpBody(new StringBody("hello"));
                         break;
                     case 1:
                         LinkedList<NameValuePair> pList = new LinkedList<NameValuePair>();
@@ -300,27 +311,57 @@ public class LiteHttpSamplesActivity extends BaseActivity {
                                 toast("onSuccess : " + data);
                             }
                         });
-                        return;
+                        break;
                 }
-                asyncExcutor.execute(req, new HttpModelHandler<String>() {
-                    @Override
-                    protected void onSuccess(String data, Response res) {
-                        toast("onSuccess : " + data);
-                        printLog(res);
-                    }
+                if (which != 0)
+                    asyncExcutor.execute(req, new HttpModelHandler<String>() {
+                        @Override
+                        protected void onSuccess(String data, Response res) {
+                            toast("onSuccess : " + data);
+                            printLog(res);
+                        }
 
-                    @Override
-                    protected void onFailure(HttpException e, Response res) {
-                        toast("onFailure: " + e);
-                    }
+                        @Override
+                        protected void onFailure(HttpException e, Response res) {
+                            toast("onFailure: " + e);
+                        }
 
-                });
+                    });
             }
         });
         //builder.setNegativeButton("取消", null);
         AlertDialog dialog = builder.create();
         dialog.setCanceledOnTouchOutside(true);
         dialog.show();
+    }
+
+    private void testHttpPost() {
+        asyncExcutor.execute(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                try {
+                    //创建连接
+                    HttpClient httpClient = new DefaultHttpClient();
+                    HttpPost post = new HttpPost(urlLocalRequest);
+                    //设置参数，仿html表单提交
+                    List<BasicNameValuePair> temp = new ArrayList<BasicNameValuePair>();
+                    temp.add(new BasicNameValuePair("key1", "value11"));
+                    temp.add(new BasicNameValuePair("key2", "value222"));
+                    post.setEntity(new UrlEncodedFormEntity(temp, HTTP.UTF_8));
+                    //发送HttpPost请求，并返回HttpResponse对象
+                    HttpResponse httpResponse = httpClient.execute(post);
+                    // 判断请求响应状态码，状态码为200表示服务端成功响应了客户端的请求
+                    if (httpResponse.getStatusLine().getStatusCode() == 200) {
+                        //获取返回结果
+                        String result = EntityUtils.toString(httpResponse.getEntity());
+                        Log.i(TAG, "Apache result: " + result);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        });
     }
 
     private void innerAsyncPostModel() {

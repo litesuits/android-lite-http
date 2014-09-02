@@ -12,7 +12,7 @@ public class GsonImpl extends Json {
 
 	@Override
 	public String toJson(Object src) {
-		return gson.toJson(src);
+ 		return gson.toJson(src);
 	}
 
 	@Override
