@@ -77,6 +77,7 @@ public class HttpAsyncExecutor extends AsyncExecutor {
             @Override
             public T doInBackground() {
                 res = client.execute(req);
+                res.printInfo();
                 Type type = ((ParameterizedType) UIHandler.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
                 if (type instanceof Class<?>) {
                     return res.getObject((Class<T>) type);
