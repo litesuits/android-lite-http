@@ -20,6 +20,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 //                              _oo0oo_
@@ -102,6 +103,8 @@ public abstract class LiteHttpClient {
      */
     protected        StatisticsInfo statisticsInfo;
 
+    protected List<NameValuePair> commonHeader;
+
     public final static LiteHttpClient newApacheHttpClient(Context context) {
         return newApacheHttpClient(context, false, true, false, true);
     }
@@ -110,6 +113,14 @@ public abstract class LiteHttpClient {
         LiteHttpClient instance = ApacheHttpClient.getInstance(context, 1500, false);
         instance.config(context, detectNetwork, doStatistics, forceRetry, errorInChinese);
         return instance;
+    }
+
+    public List<NameValuePair> getCommonHeader() {
+        return commonHeader;
+    }
+
+    public void setCommonHeader(List<NameValuePair> commonHeader) {
+        this.commonHeader = commonHeader;
     }
 
     public abstract Response execute(Request req);

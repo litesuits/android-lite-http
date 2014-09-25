@@ -197,7 +197,7 @@ public class ApacheHttpClient extends LiteHttpClient {
     @Override
     public Response executeUnsafely(Request request) throws HttpException {
         Response res = execute(request);
-        if(res.getException() != null) throw res.getException();
+        if (res.getException() != null) throw res.getException();
         return res;
     }
 
@@ -207,6 +207,9 @@ public class ApacheHttpClient extends LiteHttpClient {
         if (request == null) return innerResponse;
         try {
             if (innerResponse.getExecuteListener() != null) innerResponse.getExecuteListener().onStart();
+            if (getCommonHeader() != null) {
+                request.addHeader(getCommonHeader());
+            }
             innerResponse.setRequest(request);
             innerResponse.setDataParser(request.getDataParser());
             readDataWithRetries(request, innerResponse);
@@ -241,7 +244,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 
     @Override
     public <T> T execute(String uri, DataParser<T> parser, HttpMethod method) {
-        execute(new Request(uri, parser).setMethod(method));
+        execute(new Request(uri).setDataParser(parser).setMethod(method));
         return parser.getData();
     }
 
@@ -261,7 +264,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 
     @Override
     public <T> T get(String uri, HttpParam model, Class<T> claxx) {
-        Response res = execute(new Request(uri, model, HttpMethod.Get, new StringParser()));
+        Response res = execute(new Request(uri, model, new StringParser(), null, HttpMethod.Get));
         return res.getObject(claxx);
     }
 
@@ -277,7 +280,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 
     @Override
     public <T> T put(String uri, HttpParam model, Class<T> claxx) {
-        Response res = execute(new Request(uri, model, HttpMethod.Put, new StringParser()));
+        Response res = execute(new Request(uri, model, new StringParser(), null, HttpMethod.Put));
         return res.getObject(claxx);
     }
 
@@ -303,7 +306,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 
     @Override
     public <T> T post(String uri, HttpParam model, HttpBody body, Class<T> claxx) {
-        return execute(new Request(uri, model, body, HttpMethod.Post, new StringParser())).getObject(claxx);
+        return execute(new Request(uri, model, new StringParser(), body, HttpMethod.Post)).getObject(claxx);
     }
 
     @Override
@@ -324,7 +327,7 @@ public class ApacheHttpClient extends LiteHttpClient {
 
     @Override
     public <T> T delete(String uri, HttpParam model, Class<T> claxx) {
-        Response res = execute(new Request(uri, model, HttpMethod.Delete, new StringParser()));
+        Response res = execute(new Request(uri, model, new StringParser(), null, HttpMethod.Delete));
         return res.getObject(claxx);
     }
 

@@ -2,6 +2,7 @@ package com.litesuits.http.request;
 
 import com.litesuits.http.LiteHttpClient;
 import com.litesuits.http.data.Consts;
+import com.litesuits.http.data.NameValuePair;
 import com.litesuits.http.exception.HttpClientException;
 import com.litesuits.http.exception.HttpClientException.ClientException;
 import com.litesuits.http.parser.DataParser;
@@ -16,6 +17,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 /**
@@ -33,22 +35,24 @@ public class Request {
      */
     private   LinkedHashMap<String, String> headers;
     /**
-     * intelligently translate java object into mapping(k=v) parameters
-     */
-    private   HttpParam                     paramModel;
-    /**
      * key value parameters
      */
     private   LinkedHashMap<String, String> paramMap;
+
+    /**
+     * intelligently translate java object into mapping(k=v) parameters
+     */
+    private HttpParam            paramModel;
     /**
      * when parameter's value is complex, u can chose one buider, default mode
      * is build value into json string.
      */
-    private   AbstractQueryBuilder          queryBuilder;
+    private AbstractQueryBuilder queryBuilder;
     /**
      * defaul method is get(GET).
      */
-    private   HttpMethod                    method;
+    private HttpMethod           method;
+
     private String charSet       = Consts.DEFAULT_CHARSET;
     private int    retryMaxTimes = LiteHttpClient.DEFAULT_MAX_RETRY_TIMES;
     private DataParser<?> dataParser;
@@ -56,33 +60,33 @@ public class Request {
 
 
     public Request(String url) {
-        this(url, (HttpParam) null);
+        this(url, null);
     }
 
     public Request(String url, HttpParam paramModel) {
-        this(url, paramModel, new StringParser());
+        this(url, paramModel, new StringParser(), null, null);
     }
 
-    public Request(String url, DataParser<?> parser) {
-        this(url, null, parser);
-    }
-
-    public Request(String url, HttpParam paramModel, DataParser<?> parser) {
-        this(url, paramModel, HttpMethod.Get, parser);
-    }
-
-    public Request(String url, HttpParam paramModel, HttpMethod method, DataParser<?> parser) {
-        this(url, paramModel, null, method, parser);
-    }
-
-    public Request(String url, HttpParam paramModel, HttpBody httpBody, HttpMethod method, DataParser<?> parser) {
+    public Request(String url, HttpParam paramModel, DataParser<?> parser, HttpBody httpBody, HttpMethod method) {
         if (url == null) throw new RuntimeException("Url Cannot be Null.");
         this.url = url;
         this.paramModel = paramModel;
-        this.httpBody = httpBody;
-        this.method = method;
-        this.dataParser = parser;
         this.queryBuilder = new JsonQueryBuilder();
+        setMethod(method);
+        setDataParser(parser);
+        setHttpBody(httpBody);
+    }
+
+    public Request addHeader(List<NameValuePair> nps) {
+        if (nps != null) {
+            if (headers == null) {
+                headers = new LinkedHashMap<String, String>();
+            }
+            for (NameValuePair np : nps) {
+                headers.put(np.getName(), np.getValue());
+            }
+        }
+        return this;
     }
 
     public Request addHeader(String key, String value) {
@@ -103,10 +107,14 @@ public class Request {
     }
 
     /**
-     * 设置消息体：POST
+     * 设置消息体：默认POST方式
      */
     public Request setHttpBody(HttpBody httpBody) {
-        return setHttpBody(httpBody, HttpMethod.Post);
+        if (httpBody != null) {
+            return setHttpBody(httpBody, HttpMethod.Post);
+        } else {
+            return this;
+        }
     }
 
     /**
@@ -235,7 +243,11 @@ public class Request {
     }
 
     public Request setMethod(HttpMethod method) {
-        this.method = method;
+        if (method != null) {
+            this.method = method;
+        } else {
+            this.method = HttpMethod.Get;
+        }
         return this;
     }
 
@@ -262,7 +274,11 @@ public class Request {
     }
 
     public Request setDataParser(DataParser<?> dataParser) {
-        this.dataParser = dataParser;
+        if (dataParser != null) {
+            this.dataParser = dataParser;
+        } else {
+            this.dataParser = new StringParser();
+        }
         return this;
     }
 
