@@ -32,40 +32,43 @@ public class Request {
     /**
      * you can give an id to a request
      */
-    private int    id;
+    private   long      id;
     /**
      * custom tag of request
      */
-    private Object tag;
+    private   Object    tag;
     /**
-     *
+     * request abort
      */
-    protected Abortable                     abort;
+    protected Abortable abort;
     /**
      * url of http request
      */
-    private   String                        url;
+    private   String    url;
+
     /**
      * add custom header to request.
      */
-    private   LinkedHashMap<String, String> headers;
+    private LinkedHashMap<String, String> headers;
     /**
      * key value parameters
      */
-    private   LinkedHashMap<String, String> paramMap;
+    private LinkedHashMap<String, String> paramMap;
+
     /**
      * intelligently translate java object into mapping(k=v) parameters
      */
-    private   HttpParam                     paramModel;
+    private HttpParam            paramModel;
     /**
      * when parameter's value is complex, u can chose one buider, default mode
      * is build value into json string.
      */
-    private   AbstractQueryBuilder          queryBuilder;
+    private AbstractQueryBuilder queryBuilder;
+
     /**
      * defaul method is get(GET).
      */
-    private   HttpMethod                    method;
+    private HttpMethod method;
     /**
      * charset of request
      */
@@ -106,11 +109,11 @@ public class Request {
         setHttpBody(httpBody);
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
