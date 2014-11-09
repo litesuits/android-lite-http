@@ -3,10 +3,12 @@ package com.litesuits.http;
 import android.content.Context;
 import com.litesuits.android.log.Log;
 import com.litesuits.http.data.NameValuePair;
+import com.litesuits.http.data.StatisticsInfo;
 import com.litesuits.http.exception.HttpException;
 import com.litesuits.http.exception.HttpNetException;
 import com.litesuits.http.exception.HttpNetException.NetException;
 import com.litesuits.http.impl.apache.ApacheHttpClient;
+import com.litesuits.http.listener.HttpInnerListener;
 import com.litesuits.http.network.Network;
 import com.litesuits.http.network.Network.NetType;
 import com.litesuits.http.parser.DataParser;
@@ -21,7 +23,6 @@ import org.apache.http.client.methods.HttpUriRequest;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 //                              _oo0oo_
 //                             o8888888o
@@ -45,7 +46,6 @@ import java.util.concurrent.atomic.AtomicLong;
 //          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //
 //                  佛祖保佑                 永无BUG       永不修改
-
 /**
  * 可以由开发者自定义实现，目前默认实现为Apache的HttpClient实现
  * can be implemented by developer self, the default implement is Apache
@@ -110,7 +110,7 @@ public abstract class LiteHttpClient {
     }
 
     public final synchronized static LiteHttpClient newApacheHttpClient(Context context, boolean detectNetwork, boolean doStatistics, boolean forceRetry, boolean errorInChinese) {
-        LiteHttpClient instance = ApacheHttpClient.getInstance(context, 1500, false);
+        LiteHttpClient instance = ApacheHttpClient.createInstance(3000, false);
         instance.config(context, detectNetwork, doStatistics, forceRetry, errorInChinese);
         return instance;
     }
@@ -195,9 +195,10 @@ public abstract class LiteHttpClient {
         this.disableNetworkFlags = flag;
     }
 
-    protected InternalResponse getInternalResponse() {
+    protected InternalResponse getInternalResponse(Request request) {
         final InternalResponse innerResponse = new InternalResponse();
-        if (detectNetwork | doStatistics) innerResponse.setExecuteListener(new LiteHttpClient.ExecuteListener() {
+        innerResponse.setRequest(request);
+        if (detectNetwork | doStatistics) innerResponse.setHttpInnerListener(new HttpInnerListener() {
             private long start
                     ,
                     connect
@@ -205,7 +206,7 @@ public abstract class LiteHttpClient {
                     read;
 
             @Override
-            public void onStart() throws HttpNetException {
+            public void onStart(Request request) throws HttpNetException {
                 NetType type = null;
 
                 if (detectNetwork) {
@@ -223,7 +224,7 @@ public abstract class LiteHttpClient {
             }
 
             @Override
-            public void onEnd() {
+            public void onEnd(Response res) {
                 if (doStatistics) {
                     long time = start > 0 ? System.currentTimeMillis() - start : 0;
                     innerResponse.setUseTime(time);
@@ -245,62 +246,73 @@ public abstract class LiteHttpClient {
             }
 
             @Override
-            public void onPreConnect() {
+            public void onRetry(Request req, int max, int now) {
+
+            }
+
+            @Override
+            public void onRedirect(Request req) {
+
+            }
+
+            @Override
+            public void onPreConnect(Request request) {
                 if (doStatistics) connect = System.currentTimeMillis();
             }
 
             @Override
-            public void onAfterConnect() {
-                if (doStatistics) connect = System.currentTimeMillis() - connect;
+            public void onAfterConnect(Request request) {
+                if (doStatistics) connect += System.currentTimeMillis() - connect;
             }
 
             @Override
-            public void onPreRead() {
+            public void onPreRead(Request request) {
                 if (doStatistics) read = System.currentTimeMillis();
             }
 
             @Override
-            public void onAfterRead() {
-                if (doStatistics) read = System.currentTimeMillis() - read;
+            public void onAfterRead(Request request) {
+                if (doStatistics) read += System.currentTimeMillis() - read;
             }
         });
         return innerResponse;
     }
 
-    public static interface ExecuteListener {
-        public void onStart() throws HttpNetException;
 
-        public void onPreConnect();
+    //public static interface ExecuteListener {
+    //    public void onStart() throws HttpNetException;
+    //
+    //    public void onPreConnect();
+    //
+    //    public void onAfterConnect();
+    //
+    //    public void onPreRead();
+    //
+    //    public void onAfterRead();
+    //
+    //    public void onEnd();
+    //}
 
-        public void onAfterConnect();
-
-        public void onPreRead();
-
-        public void onAfterRead();
-
-        public void onEnd();
-    }
-
-    public static class StatisticsInfo {
-        private AtomicLong connectTime = new AtomicLong();
-        private AtomicLong dataLength  = new AtomicLong();
-
-        public void addConnectTime(long time) {
-            connectTime.addAndGet(time);
-        }
-
-        public void addDataLength(long len) {
-            dataLength.addAndGet(len);
-        }
-
-        public long getConnectTime() {
-            return connectTime.longValue();
-        }
-
-        public long getDataLength() {
-            return dataLength.longValue();
-        }
-
-    }
+    //public static class StatisticsInfo {
+    //    private AtomicLong connectTime = new AtomicLong();
+    //    private AtomicLong dataLength  = new AtomicLong();
+    //
+    //    public void addConnectTime(long time) {
+    //        connectTime.addAndGet(time);
+    //    }
+    //
+    //    public void addDataLength(long len) {
+    //        dataLength.addAndGet(len);
+    //    }
+    //
+    //    public long getConnectTime() {
+    //        return connectTime.longValue();
+    //    }
+    //
+    //    public long getDataLength() {
+    //        return dataLength.longValue();
+    //    }
+    //
+    //}
 
 }

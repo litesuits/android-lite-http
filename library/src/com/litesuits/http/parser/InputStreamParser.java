@@ -13,7 +13,7 @@ import java.io.InputStream;
 public abstract class InputStreamParser extends DataParser<InputStream> {
 
 	@Override
-	public InputStream parseData(InputStream stream, int len, String charSet) throws IOException {
+	public InputStream parseData(InputStream stream, long len, String charSet) throws IOException {
 		return stream;
 	}
 

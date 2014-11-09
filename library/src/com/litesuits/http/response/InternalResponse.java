@@ -9,6 +9,7 @@ import com.litesuits.http.data.Json;
 import com.litesuits.http.data.NameValuePair;
 import com.litesuits.http.exception.HttpClientException;
 import com.litesuits.http.exception.HttpException;
+import com.litesuits.http.listener.HttpInnerListener;
 import com.litesuits.http.parser.*;
 import com.litesuits.http.request.Request;
 
@@ -27,22 +28,22 @@ public class InternalResponse implements Response {
     private static final String TAG = InternalResponse.class.getSimpleName();
     protected HttpStatus httpStatus;
     protected String charSet = Consts.DEFAULT_CHARSET;
-    protected int                            tryTimes;
-    protected int                            redirectTimes;
+    protected int               tryTimes;
+    protected int               redirectTimes;
     /**
      * data real size
      */
-    protected int                            readedLength;
+    protected int               readedLength;
     /**
      * http header Content-Length
      */
-    protected long                           contentLength;
-    protected long                           useTime;
-    protected NameValuePair[]                headers;
-    protected Request                        request;
-    protected DataParser<?>                  dataParser;
-    protected LiteHttpClient.ExecuteListener executeListener;
-    protected HttpException                  exception;
+    protected long              contentLength;
+    protected long              useTime;
+    protected NameValuePair[]   headers;
+    protected Request           request;
+    protected DataParser<?>     dataParser;
+    protected HttpInnerListener httpInnerListener;
+    protected HttpException     exception;
 
     @Override
     public String getString() {
@@ -182,12 +183,12 @@ public class InternalResponse implements Response {
         this.httpStatus = httpStatus;
     }
 
-    public LiteHttpClient.ExecuteListener getExecuteListener() {
-        return executeListener;
+    public HttpInnerListener getHttpInnerListener() {
+        return httpInnerListener;
     }
 
-    public void setExecuteListener(LiteHttpClient.ExecuteListener listener) {
-        this.executeListener = listener;
+    public void setHttpInnerListener(HttpInnerListener listener) {
+        this.httpInnerListener = listener;
     }
 
     @Override

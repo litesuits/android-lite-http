@@ -5,6 +5,7 @@ import com.litesuits.http.data.Consts;
 import com.litesuits.http.data.NameValuePair;
 import com.litesuits.http.exception.HttpClientException;
 import com.litesuits.http.exception.HttpClientException.ClientException;
+import com.litesuits.http.listener.HttpListener;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.StringParser;
 import com.litesuits.http.request.content.HttpBody;
@@ -28,7 +29,21 @@ import java.util.Map.Entry;
  */
 public class Request {
     private static final String TAG = Request.class.getSimpleName();
+    /**
+     * you can give an id to a request
+     */
+    private int    id;
+    /**
+     * custom tag of request
+     */
+    private Object tag;
+    /**
+     *
+     */
     protected Abortable                     abort;
+    /**
+     * url of http request
+     */
     private   String                        url;
     /**
      * add custom header to request.
@@ -38,25 +53,39 @@ public class Request {
      * key value parameters
      */
     private   LinkedHashMap<String, String> paramMap;
-
     /**
      * intelligently translate java object into mapping(k=v) parameters
      */
-    private HttpParam            paramModel;
+    private   HttpParam                     paramModel;
     /**
      * when parameter's value is complex, u can chose one buider, default mode
      * is build value into json string.
      */
-    private AbstractQueryBuilder queryBuilder;
+    private   AbstractQueryBuilder          queryBuilder;
     /**
      * defaul method is get(GET).
      */
-    private HttpMethod           method;
-
+    private   HttpMethod                    method;
+    /**
+     * charset of request
+     */
     private String charSet       = Consts.DEFAULT_CHARSET;
+    /**
+     * max number of retry..
+     */
     private int    retryMaxTimes = LiteHttpClient.DEFAULT_MAX_RETRY_TIMES;
+    /**
+     * http inputsream parser
+     */
     private DataParser<?> dataParser;
+    /**
+     * body of post,put..
+     */
     private HttpBody      httpBody;
+    /**
+     * a callback of start,retry,redirect,loading,end,etc.
+     */
+    private HttpListener  httpListener;
 
 
     public Request(String url) {
@@ -75,6 +104,22 @@ public class Request {
         setMethod(method);
         setDataParser(parser);
         setHttpBody(httpBody);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Object getTag() {
+        return tag;
+    }
+
+    public void setTag(Object tag) {
+        this.tag = tag;
     }
 
     public Request addHeader(List<NameValuePair> nps) {
@@ -288,6 +333,15 @@ public class Request {
 
     public void abort() {
         if (abort != null) abort.abort();
+    }
+
+    public HttpListener getHttpListener() {
+        return httpListener;
+    }
+
+    public void setHttpListener(HttpListener httpListener) {
+        this.httpListener = httpListener;
+        if (dataParser != null) dataParser.setHttpReadingListener(httpListener);
     }
 
     @Override

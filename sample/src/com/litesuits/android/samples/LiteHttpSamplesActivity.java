@@ -522,9 +522,9 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     private void makeCustomParserRequest() {
         String customString = client.execute(url, new DataParser<String>() {
             @Override
-            protected String parseData(InputStream stream, int totalLength, String charSet) throws IOException {
+            protected String parseData(InputStream stream, long totalLength, String charSet) throws IOException {
                 Reader reader = new InputStreamReader(stream, charSet);
-                CharArrayBuffer buffer = new CharArrayBuffer(totalLength);
+                CharArrayBuffer buffer = new CharArrayBuffer((int) totalLength);
                 try {
                     char[] tmp = new char[buffSize];
                     int l;
@@ -532,7 +532,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
                     while (!Thread.currentThread().isInterrupted() && (l = reader.read(tmp)) != -1) {
                         buffer.append(tmp, 0, l);
                         //统计数据，不加此方法则数据统计不完整。
-                        if (statistics) readLength += l;
+                        readLength += l;
                     }
                 } finally {
                     reader.close();
