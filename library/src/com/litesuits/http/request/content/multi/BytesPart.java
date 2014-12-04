@@ -2,6 +2,7 @@ package com.litesuits.http.request.content.multi;
 
 import com.litesuits.android.log.Log;
 import com.litesuits.http.data.Consts;
+import com.litesuits.http.utils.StringCodingUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,12 +30,12 @@ public class BytesPart extends AbstractPart {
 
     @Override
     protected byte[] createContentType() {
-        return (Consts.CONTENT_TYPE + ": " + mimeType + "\r\n").getBytes(infoCharset);
+        return  StringCodingUtils.getBytes(Consts.CONTENT_TYPE + ": " + mimeType + "\r\n", infoCharset);
     }
 
     @Override
     protected byte[] createContentDisposition() {
-        return ("Content-Disposition: form-data; name=\"" + key + "\"\r\n").getBytes(infoCharset);
+        return StringCodingUtils.getBytes("Content-Disposition: form-data; name=\"" + key + "\"\r\n", infoCharset);
     }
 
     public long getTotalLength() {

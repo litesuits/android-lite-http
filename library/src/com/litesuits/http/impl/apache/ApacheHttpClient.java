@@ -56,7 +56,6 @@ import java.util.Map.Entry;
  */
 public class ApacheHttpClient extends LiteHttpClient {
     private static String TAG = ApacheHttpClient.class.getSimpleName();
-    ;
     private DefaultHttpClient mHttpClient;
     private HttpContext       mHttpContext;
     public static final int     DEFAULT_KEEP_LIVE         = 30000;
@@ -461,7 +460,7 @@ public class ApacheHttpClient extends LiteHttpClient {
                             Header locationHeader = response.getFirstHeader(Consts.REDIRECT_LOCATION);
                             if (locationHeader != null) {
                                 String location = locationHeader.getValue();
-                                if (location != null && !location.isEmpty()) {
+                                if (location != null && location.length() > 0) {
                                     if (!location.toLowerCase().startsWith("http")) {
                                         URI uri = new URI(request.getUrl());
                                         URI redirect = new URI("http", uri.getHost(), location, null);
@@ -533,7 +532,7 @@ public class ApacheHttpClient extends LiteHttpClient {
                     for (final NameValuePair param : params) {
                         if (param.getName().equalsIgnoreCase("charset")) {
                             String s = param.getValue();
-                            if (s != null && !s.isEmpty()) { return s; }
+                            if (s != null && s.length() > 0) { return s; }
                         }
                     }
                 }

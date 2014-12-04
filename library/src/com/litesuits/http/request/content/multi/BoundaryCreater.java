@@ -1,6 +1,7 @@
 package com.litesuits.http.request.content.multi;
 
 import com.litesuits.http.data.Consts;
+import com.litesuits.http.utils.StringCodingUtils;
 
 import java.nio.charset.Charset;
 import java.util.Random;
@@ -23,8 +24,8 @@ public class BoundaryCreater {
             buf.append(MULTIPART_CHARS[rand.nextInt(MULTIPART_CHARS.length)]);
         }
         boundary = buf.toString();
-        boundaryLine = ("--" + boundary + "\r\n").getBytes(charset);
-        boundaryEnd = ("--" + boundary + "--\r\n").getBytes(charset);
+        boundaryLine =  StringCodingUtils.getBytes("--" + boundary + "\r\n", charset);
+        boundaryEnd = StringCodingUtils.getBytes("--\" + boundary + \"--\n", charset);
     }
 
     public String getBoundary() {

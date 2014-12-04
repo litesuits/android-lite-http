@@ -1,6 +1,7 @@
 package com.litesuits.http.request.content.multi;
 
 import com.litesuits.http.data.Consts;
+import com.litesuits.http.utils.StringCodingUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,10 +16,12 @@ import java.nio.charset.Charset;
  */
 public abstract class AbstractPart {
 
-    protected static final Charset infoCharset              = BoundaryCreater.charset;
-    public static final    byte[]  CR_LF                    = ("\r\n").getBytes(infoCharset);
-    public static final    byte[]  TRANSFER_ENCODING_BINARY = "Content-Transfer-Encoding: binary\r\n".getBytes(infoCharset);
-    public static final    byte[]  TRANSFER_ENCODING_8BIT   = "Content-Transfer-Encoding: 8bit\r\n".getBytes(infoCharset);
+    protected static final Charset infoCharset = BoundaryCreater.charset;
+    public static final byte[] CR_LF = StringCodingUtils.getBytes("\r\n",infoCharset);
+    public static final byte[] TRANSFER_ENCODING_BINARY =
+            StringCodingUtils.getBytes("Content-Transfer-Encoding: binary\r\n", infoCharset );
+    public static final byte[] TRANSFER_ENCODING_8BIT =
+            StringCodingUtils.getBytes("Content-Transfer-Encoding: 8bit\r\n", infoCharset);
 
 
     protected String key;

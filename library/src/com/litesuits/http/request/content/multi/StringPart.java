@@ -1,6 +1,7 @@
 package com.litesuits.http.request.content.multi;
 
 import com.litesuits.http.data.Consts;
+import com.litesuits.http.utils.StringCodingUtils;
 
 import java.io.UnsupportedEncodingException;
 
@@ -33,7 +34,8 @@ public class StringPart extends BytesPart {
 
     @Override
     protected byte[] createContentType() {
-        return (Consts.CONTENT_TYPE + ": " + mimeType + " " + Consts.CHARSET_PARAM + charset + "\r\n").getBytes(infoCharset);
+        return StringCodingUtils.getBytes(Consts.CONTENT_TYPE + ": " + mimeType + " " + Consts.CHARSET_PARAM + charset +
+                "\r\n", infoCharset);
     }
 
     @Override

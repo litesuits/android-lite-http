@@ -555,6 +555,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        //View v;v.setBackground();
         String url = urlLocalRequest;
         Request req = new Request(url);
 
