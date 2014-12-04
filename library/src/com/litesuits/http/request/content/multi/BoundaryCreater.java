@@ -25,7 +25,7 @@ public class BoundaryCreater {
         }
         boundary = buf.toString();
         boundaryLine =  StringCodingUtils.getBytes("--" + boundary + "\r\n", charset);
-        boundaryEnd = StringCodingUtils.getBytes("--\" + boundary + \"--\n", charset);
+        boundaryEnd = StringCodingUtils.getBytes("--" + boundary + "--\r\n", charset);
     }
 
     public String getBoundary() {
