@@ -26,3 +26,7 @@
 # Application classes that will be serialized/deserialized over Gson
 -keep class com.google.gson.examples.android.model.** { *; }
 ##---------------End: proguard configuration for Gson  ----------
+
+# HTTP混淆建议：
+# 1. 最好保证每一个HTTP参数类（Java Model）不被混淆
+# 2. 最好保证每一个HTTP响应类（Java Model）不被混淆
