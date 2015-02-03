@@ -1,5 +1,7 @@
 package com.litesuits.http.request;
 
+import android.net.Uri;
+import com.litesuits.android.log.Log;
 import com.litesuits.http.LiteHttpClient;
 import com.litesuits.http.data.Consts;
 import com.litesuits.http.data.NameValuePair;
@@ -13,6 +15,7 @@ import com.litesuits.http.request.param.HttpMethod;
 import com.litesuits.http.request.param.HttpParam;
 import com.litesuits.http.request.query.AbstractQueryBuilder;
 import com.litesuits.http.request.query.JsonQueryBuilder;
+import com.litesuits.http.utils.UriUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
@@ -32,11 +35,11 @@ public class Request {
     /**
      * you can give an id to a request
      */
-    private   long      id;
+    private long id;
     /**
      * custom tag of request
      */
-    private   Object    tag;
+    private Object tag;
     /**
      * request abort
      */
@@ -44,7 +47,7 @@ public class Request {
     /**
      * url of http request
      */
-    private   String    url;
+    private String url;
 
     /**
      * add custom header to request.
@@ -58,7 +61,7 @@ public class Request {
     /**
      * intelligently translate java object into mapping(k=v) parameters
      */
-    private HttpParam            paramModel;
+    private HttpParam paramModel;
     /**
      * when parameter's value is complex, u can chose one buider, default mode
      * is build value into json string.
@@ -72,11 +75,11 @@ public class Request {
     /**
      * charset of request
      */
-    private String charSet       = Consts.DEFAULT_CHARSET;
+    private String charSet = Consts.DEFAULT_CHARSET;
     /**
      * max number of retry..
      */
-    private int    retryMaxTimes = LiteHttpClient.DEFAULT_MAX_RETRY_TIMES;
+    private int retryMaxTimes = LiteHttpClient.DEFAULT_MAX_RETRY_TIMES;
     /**
      * http inputsream parser
      */
@@ -84,11 +87,11 @@ public class Request {
     /**
      * body of post,put..
      */
-    private HttpBody      httpBody;
+    private HttpBody httpBody;
     /**
      * a callback of start,retry,redirect,loading,end,etc.
      */
-    private HttpListener  httpListener;
+    private HttpListener httpListener;
 
 
     public Request(String url) {
@@ -215,12 +218,33 @@ public class Request {
     public String getUrl() throws HttpClientException {
         // check raw url
         if (url == null) throw new HttpClientException(ClientException.UrlIsNull);
-        if (paramMap == null && paramModel == null) {
-            return url;
-        }
+
         try {
-            StringBuilder sb = new StringBuilder(url);
-            sb.append(url.contains("?") ? "&" : "?");
+            StringBuilder sb = new StringBuilder();
+            if (url.contains("?")) {
+                Uri uri = Uri.parse(url);
+                Uri.Builder builder = uri.buildUpon();
+                builder.query(null);
+                for (String key : UriUtil.getQueryParameterNames(uri)) {
+                    for (String value : UriUtil.getQueryParameters(uri, key)) {
+                        builder.appendQueryParameter(key, value);
+                    }
+                }
+                if (Log.isPrint) Log.d(TAG, "param url origin: " + uri);
+                uri = builder.build();
+                if (Log.isPrint) Log.d(TAG, "param url encode: " + uri);
+                sb.append(uri);
+            } else {
+                sb.append(url);
+            }
+            if (paramMap == null && paramModel == null) {
+                return sb.toString();
+            }
+            if (url.contains("?")) {
+                sb.append("&");
+            } else {
+                sb.append("?");
+            }
             LinkedHashMap<String, String> map = getBasicParams();
             int i = 0, size = map.size();
             for (Entry<String, String> v : map.entrySet()) {
