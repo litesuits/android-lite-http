@@ -31,13 +31,20 @@ public class BinaryParser extends DataParser<byte[]> {
             return buffer.toByteArray();
         } else {
             ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
-            byte[] buff = new byte[buffSize];
-            int l = 0;
-            while (!Thread.currentThread().isInterrupted() && (l = is.read(buff)) > 0) {
-                swapStream.write(buff, 0, l);
-                readLength += l;
+            try {
+                byte[] buff = new byte[buffSize];
+                int l = 0;
+                while (!Thread.currentThread().isInterrupted() && (l = is.read(buff)) > 0) {
+                    swapStream.write(buff, 0, l);
+                    readLength += l;
+                }
+                return swapStream.toByteArray();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                swapStream.close();
             }
-            return swapStream.toByteArray();
+            return null;
         }
 
     }

@@ -33,14 +33,36 @@ public class StringParser extends DataParser<String> {
             }
             return buffer.toString();
         } else {
+//            ByteArrayOutputStream baos = null;
+//            try {
+//                 baos = new ByteArrayOutputStream(1024);
+//                byte[] buffer = new byte[1024];
+//                int l = 0;
+//                while ((l = is.read(buffer)) != -1) {
+//                    baos.write(buffer, 0, l);
+//                }
+//                return baos.toString();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            } finally {
+//                if(baos != null) baos.close();
+//            }
+//            return null;
             ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
-            byte[] buff = new byte[buffSize];
-            int l = 0;
-            while (!Thread.currentThread().isInterrupted() && (l = is.read(buff)) > 0) {
-                swapStream.write(buff, 0, l);
-                readLength += l;
+            try {
+                byte[] buff = new byte[buffSize];
+                int l = 0;
+                while (!Thread.currentThread().isInterrupted() && (l = is.read(buff)) > 0) {
+                    swapStream.write(buff, 0, l);
+                    readLength += l;
+                }
+                return swapStream.toString(charSet);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                swapStream.close();
             }
-            return swapStream.toString(charSet);
+            return null;
         }
 
     }
