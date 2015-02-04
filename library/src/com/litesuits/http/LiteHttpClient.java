@@ -46,6 +46,7 @@ import java.util.List;
 //          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //
 //                  佛祖保佑                 永无BUG       永不修改
+
 /**
  * 可以由开发者自定义实现，目前默认实现为Apache的HttpClient实现
  * can be implemented by developer self, the default implement is Apache
@@ -55,23 +56,23 @@ import java.util.List;
  *         2014-1-1下午9:53:30
  */
 public abstract class LiteHttpClient {
-    public static final int FLAG_NET_DISABLE_ALL    = Network.NetType.None.value;
+    public static final int FLAG_NET_DISABLE_ALL = Network.NetType.None.value;
     public static final int FLAG_NET_DISABLE_MOBILE = Network.NetType.Mobile.value;
-    public static final int FLAG_NET_DISABLE_WIFI   = Network.NetType.Wifi.value;
-    public static final int FLAG_NET_DISABLE_OTHER  = Network.NetType.Other.value;
+    public static final int FLAG_NET_DISABLE_WIFI = Network.NetType.Wifi.value;
+    public static final int FLAG_NET_DISABLE_OTHER = Network.NetType.Other.value;
 
     /**
      * default retry times at most
      */
-    public static final int DEFAULT_MAX_RETRY_TIMES    = 3;
+    public static final int DEFAULT_MAX_RETRY_TIMES = 3;
     /**
      * max redirect times
      */
     public static final int DEFAULT_MAX_REDIRECT_TIMES = 10;
-    public static final int DEFAULT_HTTP_PORT          = 80;
-    public static final int DEFAULT_HTTPS_PORT         = 443;
-    public static final int DEFAULT_TIMEOUT            = 20000;
-    public static final int DEFAULT_BUFFER_SIZE        = 4096;
+    public static final int DEFAULT_HTTP_PORT = 80;
+    public static final int DEFAULT_HTTPS_PORT = 443;
+    public static final int DEFAULT_TIMEOUT = 20000;
+    public static final int DEFAULT_BUFFER_SIZE = 4096;
 
     private static final String TAG = LiteHttpClient.class.getSimpleName();
     /**
@@ -82,34 +83,44 @@ public abstract class LiteHttpClient {
      * 错误描述是否使用中文
      */
     public static boolean errorInChinese = true;
-    protected static Context        appContext;
+    /**
+     * User-Agent
+     */
+    public static String USER_AGENT = String.format("Lite %s ( http://litesuits.com )", "1.0");
+    protected static Context appContext;
     //private static   LiteHttpClient instance;
     /**
      * u cat set {@link #disableNetworkFlags } = {@link #FLAG_NET_DISABLE_MOBILE }
      * | {@link #FLAG_NET_DISABLE_OTHER} to enable http connect only in wifi
      * network.
      */
-    protected        int            disableNetworkFlags;
+    protected int disableNetworkFlags;
     /**
      * 连接前是否判断网络状态
      */
-    protected        boolean        detectNetwork;
+    protected boolean detectNetwork;
     /**
      * 非幂等请求是否强制重试
      */
-    protected        boolean        forceRetry;
+    protected boolean forceRetry;
     /**
      * 统计信息
      */
-    protected        StatisticsInfo statisticsInfo;
+    protected StatisticsInfo statisticsInfo;
 
     protected List<NameValuePair> commonHeader;
 
     public final static LiteHttpClient newApacheHttpClient(Context context) {
-        return newApacheHttpClient(context, false, true, false, true);
+        return newApacheHttpClient(context, null);
     }
 
-    public final synchronized static LiteHttpClient newApacheHttpClient(Context context, boolean detectNetwork, boolean doStatistics, boolean forceRetry, boolean errorInChinese) {
+
+    public final static LiteHttpClient newApacheHttpClient(Context context, String UA) {
+        return newApacheHttpClient(context, UA, false, true, false, true);
+    }
+
+    public final synchronized static LiteHttpClient newApacheHttpClient(Context context, String UA, boolean detectNetwork, boolean doStatistics, boolean forceRetry, boolean errorInChinese) {
+        LiteHttpClient.USER_AGENT = UA;
         LiteHttpClient instance = ApacheHttpClient.createInstance(3000, false);
         instance.config(context, detectNetwork, doStatistics, forceRetry, errorInChinese);
         return instance;

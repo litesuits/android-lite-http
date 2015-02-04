@@ -56,7 +56,16 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.CharArrayBuffer;
 import org.apache.http.util.EntityUtils;
 
+import javax.net.ssl.*;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,12 +73,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 public class LiteHttpSamplesActivity extends BaseActivity {
-    private LiteHttpClient    client;
+    private LiteHttpClient client;
     private HttpAsyncExecutor asyncExcutor;
-    private String urlUser         = "http://litesuits.github.io/mockdata/user";
-    private String urlUserList     = "http://litesuits.github.io/mockdata/user_list";
-    private String localPath       = "/HttpServer/PostReceiver";
-    private String localHost       = "http://10.0.1.32:8080";
+    private String urlUser = "http://litesuits.github.io/mockdata/user";
+    private String urlUserList = "http://litesuits.github.io/mockdata/user_list";
+    private String localPath = "/HttpServer/PostReceiver";
+    private String localHost = "http://10.0.1.32:8080";
     //private String localPath       = "/LiteHttpServer/ReceiveFile";
     //private String localHost       = "http://192.168.1.100:8080";
     private String urlLocalRequest = localHost + localPath;
@@ -505,7 +514,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 
     public class Man implements HttpParam {
         private String name;
-        private int    age;
+        private int age;
 
         public Man(String name, int age) {
             this.name = name;
@@ -658,12 +667,107 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     }
 
     private void makeBaseGetRequest() {
+//        String url = "https://ibsbjstar.ccb.com.cn/app/ccbMain?%u9EC4%u5FD7%u52C7=%u9EC4%u5FD7%u52C7&MERCHANTID=105441883990003&POSID=114449357&BRANCHID=441000000&ORDERID=201502032248052848&PAYMENT=13.0&CURCODE=01&TXCODE=520100&REMARK1=&REMARK2=&TYPE=1&GATEWAY=W2Z1&CLIENTIP=&PROINFO=%u9EC4%u5FD7%u52C7%u7F34%u7EB31%u4E2A%u6708%u515A%u8D39&REFERER=&MAC=9346a5fb7fa11f3e512ffbeb5ebd63b6";
+        String url = "https://ibsbjstar.ccb.com.cn/app/ccbMain?REGINFO=%u9EC4%u5FD7%u52C7&MERCHANTID=105441883990003&POSID=114449357&BRANCHID=441000000&ORDERID=201502032248052848&PAYMENT=13.0&CURCODE=01&TXCODE=520100&REMARK1=&REMARK2=&TYPE=1&GATEWAY=W2Z1&CLIENTIP=&PROINFO=%u9EC4%u5FD7%u52C7%u7F34%u7EB31%u4E2A%u6708%u515A%u8D39&REFERER=&MAC=9346a5fb7fa11f3e512ffbeb5ebd63b6";
         Context context = this;
         // default method is get.
-        LiteHttpClient client = LiteHttpClient.newApacheHttpClient(context);
-        Response res = client.execute(new Request("http://baidu.com"));
+        LiteHttpClient client = LiteHttpClient.newApacheHttpClient(context,"Mozilla/5.0");
+        Response res = client.execute(new Request(url));
         String html = res.getString();
-        printLog(res);
+        System.out.println("html: " + html);
+//        printLog(res);
+//        if (url.contains("?")) {
+//            Uri uri = Uri.parse(url);
+//            Uri.Builder builder = uri.buildUpon();
+//            builder.query(null);
+//            System.out.println(" q: " + uri.getQuery());
+//            System.out.println("encode q: " + uri.getEncodedQuery());
+//            for (String key : UriUtil.getQueryParameterNames(uri)) {
+//                for (String value : UriUtil.getQueryParameters(uri, key)) {
+//                    builder.appendQueryParameter(key, value);
+//                }
+//            }
+//            uri = builder.build();
+//            System.out.println("encode rui: " + uri.toString());
+//            html = sendHttpRequst(uri.toString());
+//            System.out.println("html: " + html);
+//        }
+    }
+
+
+    /**
+     * 关闭流顺序：先打开的后关闭；被依赖的后关闭。
+     *
+     * @return string info
+     */
+    public static String sendHttpRequst(String apiUrl) {
+        HttpURLConnection conn = null;
+        InputStream is = null;
+        ByteArrayOutputStream baos = null;
+        try {
+            URL url = new URL(apiUrl);
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, new TrustManager[]{new MyTrustManager()}, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            HttpsURLConnection.setDefaultHostnameVerifier(new MyHostnameVerifier());
+            conn = (HttpURLConnection) url.openConnection();
+            conn.connect();
+            is = conn.getInputStream();
+            int len = conn.getContentLength();
+            if (len < 1) len = 1024;
+            baos = new ByteArrayOutputStream(len);
+            byte[] buffer = new byte[1024];
+            len = 0;
+            while ((len = is.read(buffer)) != -1) {
+                baos.write(buffer, 0, len);
+            }
+            return baos.toString();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (baos != null) baos.close();
+                if (is != null) is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (conn != null) conn.disconnect();
+        }
+        return null;
+    }
+
+    static class MyHostnameVerifier implements HostnameVerifier {
+
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+            // TODO Auto-generated method stub
+            return true;
+        }
+    }
+
+    static class MyTrustManager implements X509TrustManager {
+
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
     }
 
     private void makeParamteredGetRequest() {

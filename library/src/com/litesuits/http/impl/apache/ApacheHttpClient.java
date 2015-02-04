@@ -93,7 +93,7 @@ public class ApacheHttpClient extends LiteHttpClient {
         HttpConnectionParams.setSoTimeout(params, DEFAULT_TIMEOUT);
         HttpConnectionParams.setSocketBufferSize(params, DEFAULT_BUFFER_SIZE);
         HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-        HttpProtocolParams.setUserAgent(params, String.format("Lite %s ( http://litesuits.com )", "1.0"));
+        HttpProtocolParams.setUserAgent(params, USER_AGENT);
         // settingOthers(params);
         return params;
     }
