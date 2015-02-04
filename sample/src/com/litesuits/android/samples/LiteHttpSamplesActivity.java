@@ -82,14 +82,15 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     //private String localPath       = "/LiteHttpServer/ReceiveFile";
     //private String localHost       = "http://192.168.1.100:8080";
     private String urlLocalRequest = localHost + localPath;
-
+    private Context context;
     /**
      * 在{@link BaseActivity#onCreate(Bundle)}中设置视图
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        client = LiteHttpClient.newApacheHttpClient(this);
+        context = this;
+        client = LiteHttpClient.newApacheHttpClient(context);
         asyncExcutor = HttpAsyncExecutor.newInstance(client);
         setSubTitile(getString(R.string.sub_title));
     }
@@ -232,8 +233,11 @@ public class LiteHttpSamplesActivity extends BaseActivity {
      * 是的 没有第二步
      */
     private void makeSimpleGetRequest() {
+        String url = "https://ibsbjstar.ccb.com.cn/app/ccbMain?REGINFO=%u9EC4%u5FD7%u52C7&MERCHANTID=105441883990003&POSID=114449357&BRANCHID=441000000&ORDERID=201502032248052848&PAYMENT=13.0&CURCODE=01&TXCODE=520100&REMARK1=&REMARK2=&TYPE=1&GATEWAY=W2Z1&CLIENTIP=&PROINFO=%u9EC4%u5FD7%u52C7%u7F34%u7EB31%u4E2A%u6708%u515A%u8D39&REFERER=&MAC=9346a5fb7fa11f3e512ffbeb5ebd63b6";
+        LiteHttpClient client = LiteHttpClient.newApacheHttpClient(context,"Mozilla/5.0");
         String s = client.get(url);
-        Log.d(TAG, s);
+        System.out.println(s);
+        //Log.d(TAG, s);
     }
 
     private void innerAsyncGetResponse() {
@@ -667,9 +671,6 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     }
 
     private void makeBaseGetRequest() {
-//        String url = "https://ibsbjstar.ccb.com.cn/app/ccbMain?%u9EC4%u5FD7%u52C7=%u9EC4%u5FD7%u52C7&MERCHANTID=105441883990003&POSID=114449357&BRANCHID=441000000&ORDERID=201502032248052848&PAYMENT=13.0&CURCODE=01&TXCODE=520100&REMARK1=&REMARK2=&TYPE=1&GATEWAY=W2Z1&CLIENTIP=&PROINFO=%u9EC4%u5FD7%u52C7%u7F34%u7EB31%u4E2A%u6708%u515A%u8D39&REFERER=&MAC=9346a5fb7fa11f3e512ffbeb5ebd63b6";
-        String url = "https://ibsbjstar.ccb.com.cn/app/ccbMain?REGINFO=%u9EC4%u5FD7%u52C7&MERCHANTID=105441883990003&POSID=114449357&BRANCHID=441000000&ORDERID=201502032248052848&PAYMENT=13.0&CURCODE=01&TXCODE=520100&REMARK1=&REMARK2=&TYPE=1&GATEWAY=W2Z1&CLIENTIP=&PROINFO=%u9EC4%u5FD7%u52C7%u7F34%u7EB31%u4E2A%u6708%u515A%u8D39&REFERER=&MAC=9346a5fb7fa11f3e512ffbeb5ebd63b6";
-        Context context = this;
         // default method is get.
         LiteHttpClient client = LiteHttpClient.newApacheHttpClient(context,"Mozilla/5.0");
         Response res = client.execute(new Request(url));
