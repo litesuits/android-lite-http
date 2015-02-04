@@ -220,7 +220,7 @@ public class HttpStatus {
     /**
      * 服务器不支持，或者拒绝支持在请求中使用的 HTTP 版本。
      */
-    public static final String STATUS_50  = "不支持的HTTP版本";
+    public static final String STATUS_505 = "不支持的HTTP版本";
     /**
      * 由《透明内容协商协议》（RFC 2295）扩展，代表服务器存在内部配置错误
      */
