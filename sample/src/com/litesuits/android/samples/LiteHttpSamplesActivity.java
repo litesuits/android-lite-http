@@ -83,6 +83,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     //private String localHost       = "http://192.168.1.100:8080";
     private String urlLocalRequest = localHost + localPath;
     private Context context;
+
     /**
      * 在{@link BaseActivity#onCreate(Bundle)}中设置视图
      */
@@ -233,14 +234,13 @@ public class LiteHttpSamplesActivity extends BaseActivity {
      * 是的 没有第二步
      */
     private void makeSimpleGetRequest() {
-        String url = "https://ibsbjstar.ccb.com.cn/app/ccbMain?REGINFO=%u9EC4%u5FD7%u52C7&MERCHANTID=105441883990003&POSID=114449357&BRANCHID=441000000&ORDERID=201502032248052848&PAYMENT=13.0&CURCODE=01&TXCODE=520100&REMARK1=&REMARK2=&TYPE=1&GATEWAY=W2Z1&CLIENTIP=&PROINFO=%u9EC4%u5FD7%u52C7%u7F34%u7EB31%u4E2A%u6708%u515A%u8D39&REFERER=&MAC=9346a5fb7fa11f3e512ffbeb5ebd63b6";
-        LiteHttpClient client = LiteHttpClient.newApacheHttpClient(context,"Mozilla/5.0");
+        LiteHttpClient client = LiteHttpClient.newApacheHttpClient(context, "Mozilla/5.0");
         String s = client.get(url);
-        System.out.println(s);
-        //Log.d(TAG, s);
+        Log.i(TAG, s);
     }
 
     private void innerAsyncGetResponse() {
+
         HttpAsyncExecutor asyncExcutor = HttpAsyncExecutor.newInstance(client);
 
         asyncExcutor.execute(new Request(url), new HttpResponseHandler() {
@@ -326,7 +326,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
                         });
                         break;
                 }
-                if (which != 0)
+                if (which != 0) {
                     asyncExcutor.execute(req, new HttpModelHandler<String>() {
                         @Override
                         protected void onSuccess(String data, Response res) {
@@ -340,6 +340,7 @@ public class LiteHttpSamplesActivity extends BaseActivity {
                         }
 
                     });
+                }
             }
         });
         //builder.setNegativeButton("取消", null);
@@ -625,7 +626,9 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 
     private void makeLoadBytesRequest() {
         byte[] bytes = client.execute(url, new BinaryParser(), HttpMethod.Get);
-        if (bytes != null) Log.d(TAG, "bytes length is : " + bytes.length);
+        if (bytes != null) {
+            Log.d(TAG, "bytes length is : " + bytes.length);
+        }
     }
 
     /**
@@ -667,32 +670,23 @@ public class LiteHttpSamplesActivity extends BaseActivity {
 
     private void makeSimplePostRequest() {
         byte[] bytes = client.post("https://passport.csdn.net/account/login", new BinaryParser());
-        if (bytes != null) Log.d(TAG, new String(bytes));
+        if (bytes != null) {
+            Log.d(TAG, new String(bytes));
+        }
     }
 
     private void makeBaseGetRequest() {
+        //有escape方法
+        //String url = "https://ibsbjstar.ccb.com.cn/app/ccbMain?REGINFO=%u9EC4%u5FD7%u52C7&MERCHANTID=105441883990003&POSID=114449357&BRANCHID=441000000&ORDERID=201502032248052848&PAYMENT=13.0&CURCODE=01&TXCODE=520100&REMARK1=&REMARK2=&TYPE=1&GATEWAY=W2Z1&CLIENTIP=&PROINFO=%u9EC4%u5FD7%u52C7%u7F34%u7EB31%u4E2A%u6708%u515A%u8D39&REFERER=&MAC=9346a5fb7fa11f3e512ffbeb5ebd63b6";
+
+        // 重定向2次
+        //String url = "http://wap.cmread.com/r/400270618/400644484/index.htm?vt=9&cm=M2040002";
+
         // default method is get.
-        LiteHttpClient client = LiteHttpClient.newApacheHttpClient(context,"Mozilla/5.0");
+        LiteHttpClient client = LiteHttpClient.newApacheHttpClient(context, "Mozilla/5.0");
         Response res = client.execute(new Request(url));
         String html = res.getString();
         System.out.println("html: " + html);
-//        printLog(res);
-//        if (url.contains("?")) {
-//            Uri uri = Uri.parse(url);
-//            Uri.Builder builder = uri.buildUpon();
-//            builder.query(null);
-//            System.out.println(" q: " + uri.getQuery());
-//            System.out.println("encode q: " + uri.getEncodedQuery());
-//            for (String key : UriUtil.getQueryParameterNames(uri)) {
-//                for (String value : UriUtil.getQueryParameters(uri, key)) {
-//                    builder.appendQueryParameter(key, value);
-//                }
-//            }
-//            uri = builder.build();
-//            System.out.println("encode rui: " + uri.toString());
-//            html = sendHttpRequst(uri.toString());
-//            System.out.println("html: " + html);
-//        }
     }
 
 
@@ -715,7 +709,9 @@ public class LiteHttpSamplesActivity extends BaseActivity {
             conn.connect();
             is = conn.getInputStream();
             int len = conn.getContentLength();
-            if (len < 1) len = 1024;
+            if (len < 1) {
+                len = 1024;
+            }
             baos = new ByteArrayOutputStream(len);
             byte[] buffer = new byte[1024];
             len = 0;
@@ -733,12 +729,18 @@ public class LiteHttpSamplesActivity extends BaseActivity {
             e.printStackTrace();
         } finally {
             try {
-                if (baos != null) baos.close();
-                if (is != null) is.close();
+                if (baos != null) {
+                    baos.close();
+                }
+                if (is != null) {
+                    is.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (conn != null) conn.disconnect();
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
         return null;
     }
@@ -840,7 +842,9 @@ public class LiteHttpSamplesActivity extends BaseActivity {
     }
 
     private void printLog(Response response) {
-        if (response.getString() != null) Log.i(TAG, "http result lengh : " + response.getString().length());
+        if (response.getString() != null) {
+            Log.i(TAG, "http result lengh : " + response.getString().length());
+        }
         Log.v(TAG, "http result :\n " + response.getString());
         Log.d(TAG, response.toString());
     }

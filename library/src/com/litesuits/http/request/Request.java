@@ -32,6 +32,8 @@ import java.util.Map.Entry;
  */
 public class Request {
     private static final String TAG = Request.class.getSimpleName();
+    private static final String ENCODE_PATTERN_URL = "^.+\\?(%[0-9a-fA-F]+|[=&A-Za-z0-9_#\\-\\.\\*])+$";
+    private static final String ENCODE_PATTERN_PARAM = "[A-Za-z0-9%_#\\-\\.\\*]+";
     /**
      * you can give an id to a request
      */
@@ -93,7 +95,10 @@ public class Request {
      */
     private HttpListener httpListener;
 
-
+    /**
+     * disable parameter urlencode
+     */
+    //private boolean disableUrlEncode = false;
     public Request(String url) {
         this(url, null);
     }
@@ -103,7 +108,9 @@ public class Request {
     }
 
     public Request(String url, HttpParam paramModel, DataParser<?> parser, HttpBody httpBody, HttpMethod method) {
-        if (url == null) throw new RuntimeException("Url Cannot be Null.");
+        if (url == null) {
+            throw new RuntimeException("Url Cannot be Null.");
+        }
         this.url = url;
         this.paramModel = paramModel;
         this.queryBuilder = new JsonQueryBuilder();
@@ -217,11 +224,15 @@ public class Request {
 
     public String getUrl() throws HttpClientException {
         // check raw url
-        if (url == null) throw new HttpClientException(ClientException.UrlIsNull);
+        if (url == null) {
+            throw new HttpClientException(ClientException.UrlIsNull);
+        }
 
         try {
             StringBuilder sb = new StringBuilder();
-            if (url.contains("?")) {
+            if (url.matches(ENCODE_PATTERN_URL)) {
+                sb.append(url);
+            } else {
                 Uri uri = Uri.parse(url);
                 Uri.Builder builder = uri.buildUpon();
                 builder.query(null);
@@ -230,12 +241,15 @@ public class Request {
                         builder.appendQueryParameter(key, value);
                     }
                 }
-                if (Log.isPrint) Log.d(TAG, "param url origin: " + uri);
+                if (Log.isPrint) {
+                    Log.d(TAG, "param url origin: " + uri);
+                }
                 uri = builder.build();
-                if (Log.isPrint) Log.d(TAG, "param url encode: " + uri);
+                if (Log.isPrint) {
+                    Log.d(TAG, "param url encode: " + uri);
+                }
                 sb.append(uri);
-            } else {
-                sb.append(url);
+
             }
             if (paramMap == null && paramModel == null) {
                 return sb.toString();
@@ -268,9 +282,13 @@ public class Request {
     public LinkedHashMap<String, String> getBasicParams() throws IllegalArgumentException, UnsupportedEncodingException, IllegalAccessException,
             InvocationTargetException {
         LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
-        if (paramMap != null) map.putAll(paramMap);
+        if (paramMap != null) {
+            map.putAll(paramMap);
+        }
         LinkedHashMap<String, String> modelMap = queryBuilder.buildPrimaryMap(paramModel);
-        if (modelMap != null) map.putAll(modelMap);
+        if (modelMap != null) {
+            map.putAll(modelMap);
+        }
         return map;
     }
 
@@ -359,7 +377,9 @@ public class Request {
     }
 
     public void abort() {
-        if (abort != null) abort.abort();
+        if (abort != null) {
+            abort.abort();
+        }
     }
 
     public HttpListener getHttpListener() {
@@ -368,7 +388,9 @@ public class Request {
 
     public void setHttpListener(HttpListener httpListener) {
         this.httpListener = httpListener;
-        if (dataParser != null) dataParser.setHttpReadingListener(httpListener);
+        if (dataParser != null) {
+            dataParser.setHttpReadingListener(httpListener);
+        }
     }
 
     @Override
