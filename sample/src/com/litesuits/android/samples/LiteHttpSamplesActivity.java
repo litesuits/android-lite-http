@@ -56,16 +56,7 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.CharArrayBuffer;
 import org.apache.http.util.EntityUtils;
 
-import javax.net.ssl.*;
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -75,8 +66,8 @@ import java.util.concurrent.FutureTask;
 public class LiteHttpSamplesActivity extends BaseActivity {
     private LiteHttpClient client;
     private HttpAsyncExecutor asyncExcutor;
-    private String urlUser = "http://litesuits.github.io/mockdata/user";
-    private String urlUserList = "http://litesuits.github.io/mockdata/user_list";
+    private String urlUser = "http://litesuits.com/mockdata/user";
+    private String urlUserList = "http://litesuits.com/mockdata/user_list";
     private String localPath = "/HttpServer/PostReceiver";
     private String localHost = "http://10.0.1.32:8080";
     //private String localPath       = "/LiteHttpServer/ReceiveFile";
@@ -687,90 +678,6 @@ public class LiteHttpSamplesActivity extends BaseActivity {
         Response res = client.execute(new Request(url));
         String html = res.getString();
         System.out.println("html: " + html);
-    }
-
-
-    /**
-     * 关闭流顺序：先打开的后关闭；被依赖的后关闭。
-     *
-     * @return string info
-     */
-    public static String sendHttpRequst(String apiUrl) {
-        HttpURLConnection conn = null;
-        InputStream is = null;
-        ByteArrayOutputStream baos = null;
-        try {
-            URL url = new URL(apiUrl);
-            SSLContext sc = SSLContext.getInstance("TLS");
-            sc.init(null, new TrustManager[]{new MyTrustManager()}, new SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-            HttpsURLConnection.setDefaultHostnameVerifier(new MyHostnameVerifier());
-            conn = (HttpURLConnection) url.openConnection();
-            conn.connect();
-            is = conn.getInputStream();
-            int len = conn.getContentLength();
-            if (len < 1) {
-                len = 1024;
-            }
-            baos = new ByteArrayOutputStream(len);
-            byte[] buffer = new byte[1024];
-            len = 0;
-            while ((len = is.read(buffer)) != -1) {
-                baos.write(buffer, 0, len);
-            }
-            return baos.toString();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (baos != null) {
-                    baos.close();
-                }
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-        return null;
-    }
-
-    static class MyHostnameVerifier implements HostnameVerifier {
-
-        @Override
-        public boolean verify(String hostname, SSLSession session) {
-            // TODO Auto-generated method stub
-            return true;
-        }
-    }
-
-    static class MyTrustManager implements X509TrustManager {
-
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return null;
-        }
     }
 
     private void makeParamteredGetRequest() {

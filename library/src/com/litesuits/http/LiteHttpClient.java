@@ -44,8 +44,7 @@ import java.util.List;
 //                              '=---='
 //
 //          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//
-//                  佛祖保佑                 永无BUG       永不修改
+//               佛祖保佑          永无BUG       镇类之宝
 
 /**
  * 可以由开发者自定义实现，目前默认实现为Apache的HttpClient实现
@@ -288,42 +287,5 @@ public abstract class LiteHttpClient {
         });
         return innerResponse;
     }
-
-
-    //public static interface ExecuteListener {
-    //    public void onStart() throws HttpNetException;
-    //
-    //    public void onPreConnect();
-    //
-    //    public void onAfterConnect();
-    //
-    //    public void onPreRead();
-    //
-    //    public void onAfterRead();
-    //
-    //    public void onEnd();
-    //}
-
-    //public static class StatisticsInfo {
-    //    private AtomicLong connectTime = new AtomicLong();
-    //    private AtomicLong dataLength  = new AtomicLong();
-    //
-    //    public void addConnectTime(long time) {
-    //        connectTime.addAndGet(time);
-    //    }
-    //
-    //    public void addDataLength(long len) {
-    //        dataLength.addAndGet(len);
-    //    }
-    //
-    //    public long getConnectTime() {
-    //        return connectTime.longValue();
-    //    }
-    //
-    //    public long getDataLength() {
-    //        return dataLength.longValue();
-    //    }
-    //
-    //}
 
 }

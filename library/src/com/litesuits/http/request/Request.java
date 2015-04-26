@@ -26,14 +26,16 @@ import java.util.Map.Entry;
 
 /**
  * Base request for {@link LiteHttpClient} method
- *
+ *  1. 多态化
+ *  2. 加入缓存：仅用网络，缓存优先，网络优先，时限缓存
+ *  3. 优化异步
+ *  4. 上传进度 上传下载超大文件
  * @author MaTianyu
  *         2014-1-1下午9:51:59
  */
 public class Request {
     private static final String TAG = Request.class.getSimpleName();
     private static final String ENCODE_PATTERN_URL = "^.+\\?(%[0-9a-fA-F]+|[=&A-Za-z0-9_#\\-\\.\\*])+$";
-    private static final String ENCODE_PATTERN_PARAM = "[A-Za-z0-9%_#\\-\\.\\*]+";
     /**
      * you can give an id to a request
      */
@@ -95,10 +97,6 @@ public class Request {
      */
     private HttpListener httpListener;
 
-    /**
-     * disable parameter urlencode
-     */
-    //private boolean disableUrlEncode = false;
     public Request(String url) {
         this(url, null);
     }
@@ -397,6 +395,8 @@ public class Request {
     public String toString() {
         return "\turl = " + url +
                 "\n\tmethod = " + method +
+                "\n\tid = " + id +
+                "\n\ttag = " + tag +
                 "\n\theaders = " + headers +
                 "\n\tcharSet = " + charSet +
                 "\n\tretryMaxTimes = " + retryMaxTimes +

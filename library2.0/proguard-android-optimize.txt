@@ -1,0 +1,32 @@
+# 使用注解
+-keepattributes *Annotation*,Signature
+
+# 保持混淆时类的实名及行号(--------------- 调试时打开 --------------)
+-keepattributes SourceFile,LineNumberTable
+
+# 枚举须保住 see http://proguard.sourceforge.net/manual/examples.html#enumerations
+-keepclassmembers enum * {
+    **[] $VALUES;
+    public *;
+}
+
+# LiteHttp Http状态用了反射，不可混淆。
+-keep class com.litesuits.http.data.HttpStatus { *; }
+
+# http参数不可混淆
+-keep class * implements com.litesuits.http.request.param.HttpParam { *; }
+
+##---------------Begin: proguard configuration for Gson  ----------
+# Gson uses generic type information stored in a class file when working with fields. Proguard
+# removes such information by default, so configure it to keep all of it.
+-keep class com.google.gson.** { *; }
+# Gson specific classes
+-keep class sun.misc.Unsafe { *; }
+-keep class com.google.gson.stream.** { *; }
+# Application classes that will be serialized/deserialized over Gson
+-keep class com.google.gson.examples.android.model.** { *; }
+##---------------End: proguard configuration for Gson  ----------
+
+# HTTP混淆建议：
+# 1. 最好保证每一个HTTP参数类（Java Model）不被混淆
+# 2. 最好保证每一个HTTP响应类（Java Model）不被混淆
