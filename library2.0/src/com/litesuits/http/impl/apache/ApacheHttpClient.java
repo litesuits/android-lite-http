@@ -2,7 +2,9 @@ package com.litesuits.http.impl.apache;
 
 import android.os.Build;
 import android.os.NetworkOnMainThreadException;
+import android.util.Log;
 import com.litesuits.http.LiteHttp;
+import com.litesuits.http.concurrent.SmartExecutor;
 import com.litesuits.http.config.HttpConfig;
 import com.litesuits.http.data.Charsets;
 import com.litesuits.http.data.Consts;
@@ -15,6 +17,7 @@ import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.request.AbstractRequest;
 import com.litesuits.http.response.InternalResponse;
 import org.apache.http.*;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.RedirectHandler;
 import org.apache.http.client.methods.*;
@@ -36,6 +39,7 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.SyncBasicHttpContext;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -65,6 +69,14 @@ public class ApacheHttpClient extends LiteHttp {
         retryHandler = new HttpRetryHandler(this.config.retrySleepMills, this.config.forceRetry);
         mHttpContext = new SyncBasicHttpContext(new BasicHttpContext());
         mHttpClient = createApacheHttpClient(createHttpParams());
+    }
+
+    public void setNewConfig(HttpConfig config) {
+        super.setNewConfig(config);
+        if (mHttpClient != null) {
+            mHttpClient.setParams(createHttpParams());
+            HttpLog.i(TAG, "apache httpclient set new params...");
+        }
     }
 
     /*__________________________ initialization_methods __________________________*/
@@ -134,7 +146,9 @@ public class ApacheHttpClient extends LiteHttp {
             @Override
             public void process(HttpResponse response, HttpContext context) {
                 final HttpEntity entity = response.getEntity();
-                if (entity == null) { return; }
+                if (entity == null) {
+                    return;
+                }
                 final Header encoding = entity.getContentEncoding();
                 if (encoding != null) {
                     for (HeaderElement element : encoding.getElements()) {
@@ -174,9 +188,9 @@ public class ApacheHttpClient extends LiteHttp {
     private ThreadSafeClientConnManager createClientConnManager(BasicHttpParams httpParams) {
         SchemeRegistry schemeRegistry = new SchemeRegistry();
         SSLSocketFactory socketFactory = MySSLSocketFactory.getFixedSocketFactory();
-        schemeRegistry
-                .register(new Scheme(Consts.SCHEME_HTTP, PlainSocketFactory.getSocketFactory(),
-                                     HttpConfig.DEFAULT_HTTP_PORT));
+        schemeRegistry.register(new Scheme(Consts.SCHEME_HTTP,
+                PlainSocketFactory.getSocketFactory(),
+                HttpConfig.DEFAULT_HTTP_PORT));
         schemeRegistry.register(new Scheme(Consts.SCHEME_HTTPS, socketFactory, HttpConfig.DEFAULT_HTTPS_PORT));
         return new ThreadSafeClientConnManager(httpParams, schemeRegistry);
     }
@@ -402,7 +416,9 @@ public class ApacheHttpClient extends LiteHttp {
                     for (final NameValuePair param : params) {
                         if (param.getName().equalsIgnoreCase("charset")) {
                             String s = param.getValue();
-                            if (s != null && s.length() > 0) { return s; }
+                            if (s != null && s.length() > 0) {
+                                return s;
+                            }
                         }
                     }
                 }

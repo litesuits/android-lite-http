@@ -1,5 +1,11 @@
 package com.litesuits.http.utils;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.text.Html;
+import android.view.View;
 import com.litesuits.http.log.HttpLog;
 
 import java.io.File;
@@ -23,6 +29,7 @@ public class HttpUtil {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return format.format(new Date(millis));
     }
+
     /**
      * Get available processors.
      */
@@ -69,5 +76,31 @@ public class HttpUtil {
         }
         HttpLog.i(TAG, "CPU cores: " + CPU_CORES);
         return CPU_CORES;
+    }
+
+    public static AlertDialog.Builder dialogBuilder(Context context, String title, String msg) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        if (msg != null) {
+            builder.setMessage(msg);
+        }
+        if (title != null) {
+            builder.setTitle(title);
+        }
+        return builder;
+    }
+
+
+    public static Dialog showTips(Context context, String title, String des) {
+        return showTips(context, title, des, null, null);
+    }
+
+    public static Dialog showTips(Context context, String title, String des, String btn, DialogInterface.OnDismissListener dismissListener) {
+        AlertDialog.Builder builder = dialogBuilder(context, title, des);
+        builder.setCancelable(true);
+        builder.setPositiveButton(btn, null);
+        Dialog dialog = builder.show();
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setOnDismissListener(dismissListener);
+        return dialog;
     }
 }

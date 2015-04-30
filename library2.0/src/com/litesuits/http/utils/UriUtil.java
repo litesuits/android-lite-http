@@ -5,9 +5,8 @@ import android.net.Uri;
 import java.util.*;
 
 /**
- *
  * @author matianyu
- * @date   2015-04-24
+ * @date 2015-04-24
  */
 public class UriUtil {
     /**

@@ -80,7 +80,7 @@ public class HttpRetryHandler extends StandardHttpRequestRetryHandler {
                 } else if (Network.isConnectedOrConnecting(appContext)) {
                     if (HttpLog.isPrint) {
                         HttpLog.v(TAG, "Network is Connected Or Connecting, wait for retey : "
-                                       + retrySleepTimeMS + " ms");
+                                + retrySleepTimeMS + " ms");
                     }
                     Thread.sleep(retrySleepTimeMS);
                 } else {
@@ -103,7 +103,9 @@ public class HttpRetryHandler extends StandardHttpRequestRetryHandler {
 
     protected boolean isInList(HashSet<Class<?>> list, Throwable error) {
         for (Class<?> aList : list) {
-            if (aList.isInstance(error)) { return true; }
+            if (aList.isInstance(error)) {
+                return true;
+            }
         }
         return false;
     }

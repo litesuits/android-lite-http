@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">LiteHttp2.0</string>
+    <string name="title">LiteLib : lite-http 2.0</string>
+    <string name="sub_title">see more via code and log.</string>
+    <!--
+    LiteHttp   1.0 Features
+    * 1. 单线程：基于当前线程高效率运作。
+    * 2. 轻量级：微小的内存开销与Jar包体积，仅约 86K 。
+    * 3. 全支持：GET, POST, PUT, DELETE, HEAD, TRACE, OPTIONS, PATCH.
+    * 4. 全自动：一行代码将请求Java Model 转化为 Http Parameter，结果Json String 转化为 Java Model 。
+    * 5. 易拓展：自定义 DataParser，将网络数据流自由转化为你想要的任意数据类型。
+    * 6. 基于接口：架构灵活，轻松替换网络连接方式的核心实现方式，以及 Json 序列化库。
+    * 7. 文件上传：支持单个、多个大文件上传。
+    * 8. 文件下载：支持文件、Bimtap下载及其进度通知。
+    * 9. 网络禁用：快速禁用一种、多种网络环境，比如禁用 2G，3G 。
+    * 10. 数据统计：链接、读取时长统计，以及流量统计。
+    * 11. 异常体系：统一的异常处理体系，简明清晰地抛出可再细分的三大类异常：客户端、网络、服务器异常。
+    * 12. GZIP压缩：Request, Response 自动 GZIP 压缩节省流量。
+    * 13. 自动重试：结合探测异常类型和当前网络状况，智能执行重试策略。
+    * 14. 自动重定向：基于 30X 状态的重试，且可设置最大次数防止过度跳转。
+    * 15. 自带简单异步执行器，方便开发者实现异步请求方案。
+
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    LiteHttp   2.0 Features
+    * 1. 可配置：更多更灵活的配置选择项，多达 23+ 项。
+    * 2. 多态化：更加直观的API，输入和输出更加明确。
+    * 3. 强并发：智能高效的并发调度，有效控制核心并发与队列控制策略。
+    * 4. 注解化：信息配置约定更多样，如果你喜欢，可以注解 API、Method、ID、TAG、CacheMode 等参数。
+    * 5. 多层缓存：内存命中更高效！支持多样的缓存模式，支持设置缓存有效期。
+    * 6. 完善回调：自由设置回调当前或UI线程，自由开启上传、下载进度通知。
+    * 7. 完善构建：提供 jar 包支持，后边支持 gradle 和 maven 。
+    -->
+
+    <string-array name="http_test_list">
+        <item>0. 快速配置（可忽略）</item>
+        <item>1. 发起异步请求</item>
+        <item>2. 发起同步请求</item>
+        <item>3. 同步请求简化</item>
+        <item>4. 非安全请求</item>
+        <item>5. HTTPS请求</item>
+        <item>6. 全自动模型转换</item>
+        <item>7. 自定义数据解析</item>
+        <item>8. 替换Json序列化库</item>
+        <item>9. 文件上传</item>
+        <item>10. 文件、位图下载</item>
+        <item>11. 禁用网络</item>
+        <item>12. 流量、时长统计</item>
+        <item>13. 重试和重定向</item>
+        <item>14. 异常处理最佳实践</item>
+        <item>15. 取消请求最佳实践</item>
+
+        <item>16. POST多形态数据</item>
+        <item>17. 并发与调度策略</item>
+        <item>18. 参数配置详解</item>
+        <item>19. 使用注解</item>
+        <item>20. 双层缓存机制</item>
+        <item>21. 回调机制详解</item>
+        <item>22. 最佳实践：使用SmartExecutor</item>
+    </string-array>
+
+    <string-array name="http_test_post">
+
+        <item>1. 字符串上传</item>
+        <item>2. UrlEncodedForm上传</item>
+        <item>3. 对象自动转JSON上传</item>
+        <item>4. 对象序列化后上传</item>
+        <item>5. 字节上传</item>
+        <item>6. 单文件上传</item>
+        <item>7. 单输入流上传</item>
+        <item>8. 多文件（表单）上传</item>
+    </string-array>
+
+</resources>

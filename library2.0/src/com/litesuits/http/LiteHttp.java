@@ -53,18 +53,20 @@ import java.util.concurrent.atomic.AtomicLong;
 //        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //        LiteHttp   1.0 Features
 //        * 1. 单线程：基于当前线程高效率运作。
-//        * 2. 全自动：一行代码将请求Java Model 转化为 Http Parameter，结果Json String 转化为 Java Model 。
-//        * 3. 易拓展：自定义 DataParser，将网络数据流自由转化为你想要的任意数据类型。
-//        * 4. 轻量级：微小的内存开销与Jar包体积，仅约 86K 。
-//        * 5. 全支持：GET, POST, PUT, DELETE, HEAD, TRACE, OPTIONS, PATCH.
+//        * 2. 轻量级：微小的内存开销与Jar包体积，仅约 86K 。
+//        * 3. 全支持：GET, POST, PUT, DELETE, HEAD, TRACE, OPTIONS, PATCH.
+//        * 4. 全自动：一行代码将请求Java Model 转化为 Http Parameter，结果Json String 转化为 Java Model 。
+//        * 5. 易拓展：自定义 DataParser，将网络数据流自由转化为你想要的任意数据类型。
 //        * 6. 基于接口：架构灵活，轻松替换网络连接方式的核心实现方式，以及 Json 序列化库。
 //        * 7. 文件上传：支持单个、多个大文件上传。
-//        * 8. 网络禁用：快速禁用一种、多种网络环境，比如禁用 2G，3G 。
-//        * 9. 异常体系：统一的异常处理体系，简明清晰地抛出可再细分的三大类异常：客户端、网络、服务器异常。
-//        * 10. GZIP压缩：Request, Response 自动 GZIP 压缩节省流量。
-//        * 11. 自动重试：结合探测异常类型和当前网络状况，智能执行重试策略。
-//        * 12. 自动重定向：基于 30X 状态的重试，且可设置最大次数防止过度跳转。
-//        * 13. 自带简单异步执行器，方便开发者实现异步请求方案。
+//        * 8. 文件下载：支持文件、Bimtap下载及其进度通知。
+//        * 9. 网络禁用：快速禁用一种、多种网络环境，比如禁用 2G，3G 。
+//        * 10. 数据统计：链接、读取时长统计，以及流量统计。
+//        * 11. 异常体系：统一的异常处理体系，简明清晰地抛出可再细分的三大类异常：客户端、网络、服务器异常。
+//        * 12. GZIP压缩：Request, Response 自动 GZIP 压缩节省流量。
+//        * 13. 自动重试：结合探测异常类型和当前网络状况，智能执行重试策略。
+//        * 14. 自动重定向：基于 30X 状态的重试，且可设置最大次数防止过度跳转。
+//        * 15. 自带简单异步执行器，方便开发者实现异步请求方案。
 //
 //        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //        LiteHttp   2.0 Features
@@ -85,17 +87,17 @@ import java.util.concurrent.atomic.AtomicLong;
  * rander the response JSON as a java model intelligently.
  * And you can extend the abstract class {@link DataParser} to parse inputstream to any you want.
  * </p>
- *
+ * <p/>
  * {@link #connectWithRetries(AbstractRequest, InternalResponse)} is an abstract method,
  * it can be implemented by developer self, the default implement use Apache HttpClient.
  * </p>
- *
+ * <p/>
  * we will need permission:
  * </br>
  * <uses-permission android:name="android.permission.INTERNET"/>
  * <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
  * </br>
- *
+ * <p/>
  * if set cache directory on SD card, we will need this permisson:
  * </br>
  * <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -114,17 +116,26 @@ public abstract class LiteHttp {
     protected AtomicLong memCachedSize = new AtomicLong();
     protected ConcurrentHashMap<String, HttpCache> memCache = new ConcurrentHashMap<String, HttpCache>();
 
-    /**
-     * Set config and smart-executor to lite-http.
-     */
     protected LiteHttp(HttpConfig config) {
-        setConfig(config);
+        setNewConfig(config);
+    }
+
+    public static LiteHttp newApacheHttpClient(HttpConfig config) {
+        return new ApacheHttpClient(config);
+    }
+
+    public void setNewConfig(HttpConfig config) {
+        if (config == null) {
+            config = new HttpConfig(null);
+        }
+        this.config = config;
         Log.d(TAG, config.toString());
         File file = new File(config.cacheDirPath);
         if (!file.exists()) {
             boolean mkdirs = file.mkdirs();
             HttpLog.i(TAG, file.getAbsolutePath() + "  mkdirs: " + mkdirs);
         }
+        // Set config and smart-executor to lite-http.
         smartExecutor = new SmartExecutor(config.concurrentSize, config.waitingQueueSize);
         if (config.schedulePolicy != null) {
             smartExecutor.setSchedulePolicy(config.schedulePolicy);
@@ -134,20 +145,8 @@ public abstract class LiteHttp {
         }
     }
 
-    public static LiteHttp newApacheHttpClient(HttpConfig config) {
-        return new ApacheHttpClient(config);
-    }
-
     public HttpConfig getConfig() {
         return config;
-    }
-
-    private void setConfig(HttpConfig config) {
-        if (config != null) {
-            this.config = config;
-        } else {
-            this.config = new HttpConfig(null);
-        }
     }
 
     public Context getAppContext() {
@@ -221,11 +220,11 @@ public abstract class LiteHttp {
         if (HttpLog.isPrint) {
             Thread t = Thread.currentThread();
             HttpLog.i(TAG, "lite http request: " + request.getUri()
-                           + " tag: " + request.getTag()
-                           + " method: " + request.getMethod()
-                           + " cache mode: " + request.getCacheMode()
-                           + " thread ID: " + t.getId()
-                           + " thread name: " + t.getName());
+                    + " tag: " + request.getTag()
+                    + " method: " + request.getMethod()
+                    + " cache mode: " + request.getCacheMode()
+                    + " thread ID: " + t.getId()
+                    + " thread name: " + t.getName());
         }
         HttpException httpException = null;
         final InternalResponse<T> response = handleRequest(request);
@@ -242,8 +241,8 @@ public abstract class LiteHttp {
                     tryToConnectNetwork(request, response);
                 } finally {
                     if (mode == CacheMode.NetFirst
-                        && !response.isResultOk()
-                        && !request.isCancelledOrInterrupted()) {
+                            && !response.isResultOk()
+                            && !request.isCancelledOrInterrupted()) {
                         tryHitCache(response);
                     }
                 }
@@ -282,8 +281,8 @@ public abstract class LiteHttp {
                 statistic.onStart(request);
             }
             if (!request.isCancelledOrInterrupted()) {
-                HttpLog.v(TAG, "lite http try to connect network...  tag: " + request.getTag()
-                               + "  url:" + request.getUri());
+                HttpLog.v(TAG, "lite http try to connect network...  url: " + request.getUri()
+                        + "  tag:" + request.getTag());
                 tryToDetectNetwork();
                 connectWithRetries(request, response);
                 tryToKeepCacheInMemory(response);
@@ -300,7 +299,7 @@ public abstract class LiteHttp {
     protected abstract <T> void connectWithRetries(AbstractRequest<T> request, InternalResponse response)
             throws HttpClientException, HttpNetException, HttpServerException;
 
-    public <T> Response<T> executeUnsafely(AbstractRequest<T> request) throws HttpException {
+    public <T> Response<T> executeOrThrow(AbstractRequest<T> request) throws HttpException {
         final Response<T> response = execute(request);
         HttpException e = response.getException();
         if (e != null) {
@@ -309,8 +308,8 @@ public abstract class LiteHttp {
         return response;
     }
 
-    public <T> T performUnsafely(AbstractRequest<T> request) throws HttpException {
-        return executeUnsafely(request).getResult();
+    public <T> T performOrThrow(AbstractRequest<T> request) throws HttpException {
+        return executeOrThrow(request).getResult();
     }
 
     public <T> T perform(AbstractRequest<T> request) {
@@ -427,12 +426,12 @@ public abstract class LiteHttp {
                 if (expire <= 0 || expire > getCurrentTimeMillis() - cache.time) {
                     request.getDataParser().readMemory(cache.data);
                     response.setCacheHit(true);
-                    HttpLog.i(TAG, "lite-http mem cache hit!  tag: "
-                                   + request.getTag()
-                                   + "  url:" + request.getUri()
-                                   + "  key:" + key
-                                   + "  cache time:" + HttpUtil.formatDate(cache.time)
-                                   + "  expire: " + expire);
+                    HttpLog.i(TAG, "lite-http mem cache hit!  "
+                            + "  url:" + request.getUri()
+                            + "  tag:" + request.getTag()
+                            + "  key:" + key
+                            + "  cache time:" + HttpUtil.formatDate(cache.time)
+                            + "  expire: " + expire);
                     return true;
                 }
             }
@@ -445,12 +444,12 @@ public abstract class LiteHttp {
             if (expire <= 0 || expire > getCurrentTimeMillis() - file.lastModified()) {
                 request.getDataParser().readDisk(file);
                 response.setCacheHit(true);
-                HttpLog.i(TAG, "lite-http disk cache hit!  tag: "
-                               + request.getTag()
-                               + "  url:" + request.getUri()
-                               + "  key:" + key
-                               + "  cache time:" + HttpUtil.formatDate(file.lastModified())
-                               + "  expire: " + expire);
+                HttpLog.i(TAG, "lite-http disk cache hit!  "
+                        + "  url:" + request.getUri()
+                        + "  tag:" + request.getTag()
+                        + "  key:" + key
+                        + "  cache time:" + HttpUtil.formatDate(file.lastModified())
+                        + "  expire: " + expire);
                 return true;
             }
         }
@@ -465,10 +464,10 @@ public abstract class LiteHttp {
         if (request.needCache()) {
             DataParser<T> dataParser = request.getDataParser();
             HttpLog.v(TAG, "lite http try to keep cache.. maximum cache len: " + config.maxMemCacheBytesSize
-                           + "   now cache len: " + memCachedSize.get()
-                           + "   wanna put len: " + dataParser.getReadedLength()
-                           + "   tag: " + request.getTag()
-                           + "   url: " + request.getUri()
+                            + "   now cache len: " + memCachedSize.get()
+                            + "   wanna put len: " + dataParser.getReadedLength()
+                            + "   url: " + request.getUri()
+                            + "   tag: " + request.getTag()
             );
             if (dataParser.isMemCacheSupport()) {
                 if (memCachedSize.get() + dataParser.getReadedLength() > config.maxMemCacheBytesSize) {
@@ -486,10 +485,10 @@ public abstract class LiteHttp {
                         memCache.put(cache.key, cache);
                         memCachedSize.addAndGet(cache.length);
                         HttpLog.v(TAG, "lite http keep mem cache success, "
-                                       + "   tag: " + request.getTag()
-                                       + "   url: " + request.getUri()
-                                       + "   key: " + cache.key
-                                       + "   len: " + cache.length);
+                                + "   url: " + request.getUri()
+                                + "   tag: " + request.getTag()
+                                + "   key: " + cache.key
+                                + "   len: " + cache.length);
                     }
                 }
                 return true;
