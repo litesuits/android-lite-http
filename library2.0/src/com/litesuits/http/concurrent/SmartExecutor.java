@@ -45,14 +45,19 @@ public class SmartExecutor implements Executor {
             },
             new ThreadPoolExecutor.DiscardPolicy());
 
-    private int coreSize = Runtime.getRuntime().availableProcessors();
-    private int queueSize = coreSize * 20;
+    private int coreSize = HttpUtil.getCoresNumbers();
+    private int queueSize = coreSize * 32;
     private final Object lock = new Object();
     private ArrayList<Runnable> runningList;
     private ArrayDeque<Runnable> waitingQueue;
     private SchedulePolicy schedulePolicy = SchedulePolicy.FirstInFistRun;
-    private OverloadPolicy overloadPolicy = OverloadPolicy.DiscardOld;
+    private OverloadPolicy overloadPolicy = OverloadPolicy.DiscardOldTaskInQueue;
 
+
+    public SmartExecutor() {
+        waitingQueue = new ArrayDeque<Runnable>(queueSize);
+        runningList = new ArrayList<Runnable>(coreSize);
+    }
 
     public SmartExecutor(int coreSize, int queueSize) {
         this.coreSize = coreSize;
@@ -101,16 +106,18 @@ public class SmartExecutor implements Executor {
             } else {
                 HttpLog.w(TAG, "SmartExecutor overload , policy is: " + overloadPolicy);
                 switch (overloadPolicy) {
-                    case DiscardNew:
+                    case DiscardNewTaskInQueue:
                         waitingQueue.pollLast();
                         waitingQueue.addLast(scheduler);
                         break;
-                    case DiscardOld:
+                    case DiscardOldTaskInQueue:
                         waitingQueue.pollFirst();
                         waitingQueue.addLast(scheduler);
                         break;
                     case CallerRuns:
                         callerRun = true;
+                        break;
+                    case DiscardCurrentTask:
                         break;
                     case ThrowExecption:
                         throw new RuntimeException("Task rejected from lite smart executor. " + command.toString());
@@ -186,7 +193,17 @@ public class SmartExecutor implements Executor {
         return coreSize;
     }
 
+    /**
+     * Set maximum number of concurrent tasks at the same time.
+     * Recommended core size is CPU count.
+     *
+     * @param coreSize number of concurrent tasks at the same time
+     * @return this
+     */
     public SmartExecutor setCoreSize(int coreSize) {
+        if (coreSize <= 0) {
+            throw new NullPointerException("coreSize can not <= 0 !");
+        }
         this.coreSize = coreSize;
         return this;
     }
@@ -195,7 +212,17 @@ public class SmartExecutor implements Executor {
         return queueSize;
     }
 
+    /**
+     * Adjust maximum number of waiting queue size based phone performance.
+     * For example: CPU count * 32;
+     *
+     * @param queueSize waiting queue size
+     * @return this
+     */
     public SmartExecutor setQueueSize(int queueSize) {
+        if (queueSize < 0) {
+            throw new NullPointerException("queueSize can not < 0 !");
+        }
         this.queueSize = queueSize;
         return this;
     }
@@ -206,6 +233,9 @@ public class SmartExecutor implements Executor {
     }
 
     public void setOverloadPolicy(OverloadPolicy overloadPolicy) {
+        if (overloadPolicy == null) {
+            throw new NullPointerException("OverloadPolicy can not be null !");
+        }
         this.overloadPolicy = overloadPolicy;
     }
 
@@ -214,6 +244,9 @@ public class SmartExecutor implements Executor {
     }
 
     public void setSchedulePolicy(SchedulePolicy schedulePolicy) {
+        if (schedulePolicy == null) {
+            throw new NullPointerException("SchedulePolicy can not be null !");
+        }
         this.schedulePolicy = schedulePolicy;
     }
 

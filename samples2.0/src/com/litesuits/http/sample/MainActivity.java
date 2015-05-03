@@ -3,21 +3,23 @@ package com.litesuits.http.sample;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.*;
 import com.alibaba.fastjson.JSON;
+import com.litesuits.http.HttpConfig;
 import com.litesuits.http.LiteHttp;
 import com.litesuits.http.annotation.*;
 import com.litesuits.http.concurrent.OverloadPolicy;
 import com.litesuits.http.concurrent.SchedulePolicy;
 import com.litesuits.http.concurrent.SmartExecutor;
-import com.litesuits.http.config.HttpConfig;
 import com.litesuits.http.data.HttpStatus;
 import com.litesuits.http.data.Json;
 import com.litesuits.http.data.NameValuePair;
@@ -29,19 +31,26 @@ import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.MemeoryDataParser;
 import com.litesuits.http.request.*;
+import com.litesuits.http.request.content.*;
+import com.litesuits.http.request.content.multi.*;
 import com.litesuits.http.request.param.CacheMode;
 import com.litesuits.http.request.param.HttpMethods;
 import com.litesuits.http.request.param.HttpParamModel;
 import com.litesuits.http.request.param.HttpRichParamModel;
+import com.litesuits.http.request.query.JsonQueryBuilder;
 import com.litesuits.http.response.Response;
 import com.litesuits.http.utils.HttpUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -106,10 +115,12 @@ public class MainActivity extends Activity {
      * <item>20. Multi Cache Mechanism</item>
      * <item>21. CallBack Mechanism</item>
      * <item>22. Best Practices of SmartExecutor</item>
+     * <item>23. Automatic Conversion of Complex Model</item>
      */
     private void clickTestItem(final int which) {
 
         final String url = "http://baidu.com";
+        final String uploadUrl = "http://192.168.8.105:8080/upload";
         final String httpsUrl = "https://www.baidu.com";
         final String userGet = "http://litesuits.com/mockdata/user_get";
         final String picUrl = "http://www.88xm.com/uploads/allimg/150311/1-150311160U0.jpg";
@@ -117,7 +128,7 @@ public class MainActivity extends Activity {
 
         // restore http config
         if (needRestore) {
-            liteHttp.setNewConfig(liteHttp.getConfig().restoreDefault());
+            liteHttp.getConfig().restoreToDefault();
             needRestore = false;
         }
 
@@ -127,27 +138,18 @@ public class MainActivity extends Activity {
 
                 HttpConfig config = liteHttp.getConfig();
                 // set app context
-                config.context = this.getApplicationContext();
-                // open traffic/time statistics
-                config.doStatistics = true;
-                // 10 seconds timeout
-                config.connectTimeout = 10000;
+                config.setContext(activity);
                 // custom User-Agent
-                config.USER_AGENT = "Mozilla/5.0 (Linux; U; Android 4.1.2; en-us; Nexus One Build/FRF91)";
+                config.setUserAgent("Mozilla/5.0 (Linux; U; Android 4.1.2; en-us; Nexus One Build/FRF91)");
+                // connect timeout: 10s,  socket timeout: 10s,  socket buffer size: 4096
+                config.setForHttpParams(1000, 1500, 4096);
                 // set the number of concurrent tasks at the same time
-                config.concurrentSize = HttpUtil.getProcessorsCount();
+                config.setConcurrentSize(HttpUtil.getProcessorsCount());
                 // set the maximum number of waiting tasks. if request number greater than #concurrentSize then wait.
-                config.waitingQueueSize = 32;
-                // policy of execute next waiting task
-                config.schedulePolicy = SchedulePolicy.FirstInFistRun;
-                // policy of execute overload : request number greater than #waitingQueueSize + #concurrentSize
-                config.overloadPolicy = OverloadPolicy.DiscardOld;
+                config.setWaitingQueueSize(64);
                 // set max retry times
-                config.defaultMaxRetryTimes = 2;
+                config.setDefaultMaxRetryTimes(2);
                 // other configuration...
-
-                // note : finally you have to set config to make it effective.
-                liteHttp.setNewConfig(config);
 
                 HttpUtil.showTips(activity, "LiteHttp2.0", "配置参数成功");
                 break;
@@ -390,26 +392,54 @@ public class MainActivity extends Activity {
                 break;
             case 9:
                 // 9. File Upload
+                final ProgressDialog upProgress = new ProgressDialog(this);
+                upProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                upProgress.setIndeterminate(false);
+                upProgress.show();
+                StringRequest uploadRequest = new StringRequest(uploadUrl)
+                        .setMethod(HttpMethods.Post)
+                        .setHttpBody(new FileBody(new File("/sdcard/aaa.jpg")))
+                        .setHttpListener(new HttpListener<String>(true, false, true) {
+                            @Override
+                            public void onSuccess(String s, Response<String> response) {
+                                upProgress.dismiss();
+                                HttpUtil.showTips(activity, "Upload Success", s);
+                                response.printInfo();
+                            }
+
+                            @Override
+                            public void onFailure(HttpException e, Response<String> response) {
+                                upProgress.dismiss();
+                                HttpUtil.showTips(activity, "Upload Failed", e.toString());
+                            }
+
+                            @Override
+                            public void onUploading(AbstractRequest<String> request, long total, long len) {
+                                upProgress.setMax((int) total);
+                                upProgress.setProgress((int) len);
+                            }
+                        });
+                liteHttp.executeAsync(uploadRequest);
                 break;
             case 10:
                 // 10. File/Bitmap Download
 
-                final ProgressDialog pd = new ProgressDialog(this);
-                pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                pd.setIndeterminate(false);
-                pd.show();
+                final ProgressDialog downProgress = new ProgressDialog(this);
+                downProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                downProgress.setIndeterminate(false);
+                downProgress.show();
                 // load and show bitmap
                 liteHttp.executeAsync(
                         new BitmapRequest(picUrl).setHttpListener(new HttpListener<Bitmap>(true, true, false) {
                             @Override
                             public void onLoading(AbstractRequest<Bitmap> request, long total, long len) {
-                                pd.setMax((int) total);
-                                pd.setProgress((int) len);
+                                downProgress.setMax((int) total);
+                                downProgress.setProgress((int) len);
                             }
 
                             @Override
                             public void onSuccess(Bitmap bitmap, Response<Bitmap> response) {
-                                pd.dismiss();
+                                downProgress.dismiss();
                                 AlertDialog.Builder b = HttpUtil.dialogBuilder(activity, "LiteHttp2.0", "");
                                 ImageView iv = new ImageView(activity);
                                 iv.setImageBitmap(bitmap);
@@ -419,7 +449,7 @@ public class MainActivity extends Activity {
 
                             @Override
                             public void onFailure(HttpException e, Response<Bitmap> response) {
-                                pd.dismiss();
+                                downProgress.dismiss();
                                 HttpUtil.showTips(activity, "LiteHttp2.0", e.toString());
                             }
                         }));
@@ -432,11 +462,9 @@ public class MainActivity extends Activity {
 
                 config = liteHttp.getConfig();
                 // disable network need context
-                config.context = activity.getApplicationContext();
+                config.setContext(activity);
                 // disable mobile(2G/3G/4G..) network
-                config.disableNetworkFlags = HttpConfig.FLAG_NET_DISABLE_MOBILE;
-                // note : finally you have to set config to make it effective.
-                liteHttp.setNewConfig(config);
+                config.setDisableNetworkFlags(HttpConfig.FLAG_NET_DISABLE_MOBILE);
                 needRestore = true;
 
                 liteHttp.executeAsync(new StringRequest(url).setHttpListener(new HttpListener<String>() {
@@ -449,8 +477,6 @@ public class MainActivity extends Activity {
                     public void onFailure(HttpException e, Response<String> response) {
                         HttpUtil.showTips(activity, "LiteHttp2.0", e.toString());
 
-                        // restore network
-                        liteHttp.getConfig().disableNetworkFlags = HttpConfig.FLAG_NET_DISABLE_NONE;
                         needRestore = false;
                     }
                 }));
@@ -460,7 +486,7 @@ public class MainActivity extends Activity {
                 // 12. Traffic/Time Statistics
 
                 // turn on
-                liteHttp.getConfig().doStatistics = true;
+                liteHttp.getConfig().setDoStatistics(true);
                 // see detail
                 liteHttp.executeAsync(new FileRequest(picUrl).setHttpListener(new HttpListener<File>() {
                     @Override
@@ -482,11 +508,9 @@ public class MainActivity extends Activity {
                 // 13. Retry/Redirect
 
                 // maximum retry times
-                liteHttp.getConfig().defaultMaxRetryTimes = 2;
+                liteHttp.getConfig().setDefaultMaxRetryTimes(2);
                 // maximum redirect times
-                liteHttp.getConfig().defaultMaxRedirectTimes = 5;
-                // note : finally you have to set config to make it effective.
-                liteHttp.setNewConfig(liteHttp.getConfig());
+                liteHttp.getConfig().setDefaultMaxRedirectTimes(5);
                 // test it
                 liteHttp.executeAsync(new StringRequest(redirectUrl).setHttpListener(new HttpListener<String>() {
 
@@ -518,7 +542,7 @@ public class MainActivity extends Activity {
             case 14:
                 // 14. Best Practices of Exception Handling
                 liteHttp.executeAsync(
-                        new StringRequest(url).setMethod(HttpMethods.Trace).setHttpListener(new HttpListener<String>() {
+                        new StringRequest("invalid url").setHttpListener(new HttpListener<String>() {
                             @Override
                             public void onSuccess(String s, Response<String> response) {
                                 HttpUtil.showTips(activity, "LiteHttp2.0", "Execute Success");
@@ -534,8 +558,6 @@ public class MainActivity extends Activity {
                                                 break;
                                             case ContextNeeded:
                                                 // some action need app context
-                                                break;
-                                            case NetworkOnMainThread:
                                                 break;
                                             case PermissionDenied:
                                                 break;
@@ -587,54 +609,203 @@ public class MainActivity extends Activity {
                 break;
             case 15:
                 // 15. Best Practices of Cancel Request
-                StringRequest stringRequest = new StringRequest(url).setHttpListener(new HttpListener<String>() {
-                    @Override
-                    public void onCancel(String s, Response<String> response) {
-                        HttpUtil.showTips(activity, "LiteHttp2.0",
-                                          "Request Canceld:" + response.getRequest().isCancelled()
-                                          + "\nTask Interrupted:" + response.getRequest().isInterrupted());
-                    }
-                });
+                final boolean isInterrupted = count++ % 2 != 0;
+                StringRequest stringRequest = new StringRequest(redirectUrl)
+                        .setHttpListener(new HttpListener<String>() {
+                            @Override
+                            public void onCancel(String s, Response<String> response) {
+                                HttpUtil.showTips(activity, "LiteHttp2.0",
+                                                  "Request Canceld: " + response.getRequest().isCancelled()
+                                                  + "\nTask Interrupted: " + isInterrupted);
+                            }
+                        });
                 FutureTask futureTask = liteHttp.performAsync(stringRequest);
-                SystemClock.sleep(200);
-
-                if (count++ % 2 == 0) {
+                SystemClock.sleep(100);
+                if (!isInterrupted) {
                     // one correct way is cancel this request
                     stringRequest.cancel();
                 } else {
                     // other correct way is interrupt this thread or task.
-                    futureTask.cancel(true);
+                    futureTask.cancel(isInterrupted);
                 }
                 break;
             case 16:
                 // 16. POST Multi-Form Data
+                final ProgressDialog postProgress = new ProgressDialog(this);
+                postProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                postProgress.setIndeterminate(false);
+                postProgress.show();
+                final StringRequest postRequest = new StringRequest(uploadUrl)
+                        .setMethod(HttpMethods.Post)
+                        .setHttpListener(new HttpListener<String>(true, false, true) {
+                            @Override
+                            public void onSuccess(String s, Response<String> response) {
+                                //                                postProgress.dismiss();
+                                HttpUtil.showTips(activity, "Upload Success", s);
+                                response.printInfo();
+                            }
+
+                            @Override
+                            public void onFailure(HttpException e, Response<String> response) {
+                                postProgress.dismiss();
+                                HttpUtil.showTips(activity, "Upload Failed", e.toString());
+                            }
+
+                            @Override
+                            public void onUploading(AbstractRequest<String> request, long total, long len) {
+                                postProgress.setMax((int) total);
+                                postProgress.setProgress((int) len);
+                            }
+                        });
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("POST DATA TEST");
+                String[] array = getResources().getStringArray(R.array.http_test_post);
+                builder.setItems(array, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                postRequest.setHttpBody(new StringBody("hello lite: 你好，Lite！"));
+                                break;
+                            case 1:
+                                LinkedList<NameValuePair> pList = new LinkedList<NameValuePair>();
+                                pList.add(new NameValuePair("key1", "value-haha"));
+                                pList.add(new NameValuePair("key2", "value-hehe"));
+                                postRequest.setHttpBody(new UrlEncodedFormBody(pList));
+                                break;
+                            case 2:
+                                postRequest.setHttpBody(new JsonBody(new UserParam(168, "haha-key")));
+                                break;
+                            case 3:
+                                ArrayList<String> list = new ArrayList<String>();
+                                list.add("a");
+                                list.add("b");
+                                list.add("c");
+                                postRequest.setHttpBody(new SerializableBody(list));
+                                break;
+                            case 4:
+                                postRequest.setHttpBody(new ByteArrayBody(
+                                        new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 127
+                                        }));
+                                break;
+                            case 5:
+                                postRequest.setHttpBody(new FileBody(new File("/sdcard/litehttp.txt")));
+                                break;
+                            case 6:
+                                FileInputStream fis = null;
+                                try {
+                                    fis = new FileInputStream(new File("/sdcard/aaa.jpg"));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                postRequest.setHttpBody(new InputStreamBody(fis));
+                                break;
+                            case 7:
+                                fis = null;
+                                try {
+                                    fis = new FileInputStream(new File("/sdcard/litehttp.txt"));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                //View v;v.setBackground();
+
+                                MultipartBody body = new MultipartBody();
+                                body.addPart(new StringPart("key1", "hello"));
+                                body.addPart(new StringPart("key2", "很高兴见到你", "utf-8", null));
+                                body.addPart(new BytesPart("key3", new byte[]{1, 2, 3}));
+                                body.addPart(new FilePart("pic", new File("/sdcard/aaa.jpg"), "image/jpeg"));
+                                body.addPart(new InputStreamPart("litehttp", fis, "litehttp.txt", "text/plain"));
+                                postRequest.setHttpBody(body);
+                                break;
+                        }
+
+                        liteHttp.executeAsync(postRequest);
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.setCanceledOnTouchOutside(true);
+                dialog.show();
+
                 break;
             case 17:
                 // 17. Concurrent and Scheduling
 
-                HttpConfig newConfig = liteHttp.getConfig();
+                HttpConfig csConfig = liteHttp.getConfig();
                 // only one task can be executed at the same time
-                newConfig.concurrentSize = 1;
+                csConfig.setConcurrentSize(1);
                 // at most two tasks be hold in waiting queue at the same time
-                newConfig.waitingQueueSize = 2;
+                csConfig.setWaitingQueueSize(2);
                 // the last waiting task executed first
-                newConfig.schedulePolicy = SchedulePolicy.LastInFirstRun;
+                csConfig.setSchedulePolicy(SchedulePolicy.LastInFirstRun);
                 // when task more than 3(1+2), new task will be discard.
-                newConfig.overloadPolicy = OverloadPolicy.DiscardNew;
+                csConfig.setOverloadPolicy(OverloadPolicy.DiscardCurrentTask);
 
-                // note : finally you have to set config to make it effective.
-                liteHttp.setNewConfig(newConfig);
+                // note : restore config to default, next click.
                 needRestore = true;
 
-                // executed order: 0 -> 2 -> 1 , by [DiscardNew Policy] 3 will be discard.
+                // executed order: 0 -> 2 -> 1 , by [DiscardNewTaskInQueue Policy] 3 will be discard.
                 for (int i = 0; i < 4; i++) {
                     liteHttp.executeAsync(new StringRequest(url).setTag(i));
                 }
 
                 break;
             case 18:
-                // 18. Detail of Config
+                // 18. Detail of Configuration
 
+                List<NameValuePair> headers = new ArrayList<NameValuePair>();
+                headers.add(new NameValuePair("cookies", "this is cookies"));
+                headers.add(new NameValuePair("custom-key", "custom-value"));
+
+                HttpConfig newConfig = new HttpConfig(activity);
+
+                // common headers will be set to all request
+                newConfig.setCommonHeaders(headers);
+                // set default cache path to all request
+                newConfig.setCacheDirPath(Environment.getExternalStorageDirectory() + "/a-cache");
+                // app context(be used to detect network and get app files path)
+                newConfig.setContext(activity);
+                // set default cache expire time to all request
+                newConfig.setDefaultCacheExpireMillis(30 * 60 * 1000);
+                // set default cache mode to all request
+                newConfig.setDefaultCacheMode(CacheMode.NetFirst);
+                // set default charset to all request
+                newConfig.setDefaultCharSet("utf-8");
+                // set default http method to all request
+                newConfig.setDefaultHttpMethod(HttpMethods.Get);
+                // set default maximum redirect-times to all request
+                newConfig.setDefaultMaxRedirectTimes(5);
+                // set default maximum retry-times to all request
+                newConfig.setDefaultMaxRetryTimes(1);
+                // set defsult model query builder to all request
+                newConfig.setDefaultModelQueryBuilder(new JsonQueryBuilder());
+                // whether to detect network before conneting.
+                newConfig.setDetectNetwork(true);
+                // disable some network
+                newConfig.setDisableNetworkFlags(HttpConfig.FLAG_NET_DISABLE_NONE);
+                // whether open the traffic & time statistics
+                newConfig.setDoStatistics(true);
+                // set connect timeout: 10s,  socket timeout: 10s,  socket buffer size: 4096
+                newConfig.setForHttpParams(10000, 5000, 4096);
+                // if the network is unstable, wait 3000 milliseconds then start retry.
+                newConfig.setForRetryHandler(3000, false);
+                // set global http listener to all request
+                newConfig.setGlobalHttpListener(null);
+                // set maximum size of memory cache space
+                newConfig.setMaxMemCacheBytesSize(1024 * 300);
+                // maximum number of concurrent tasks(http-request) at the same time
+                newConfig.setConcurrentSize(3);
+                // maximum number of waiting tasks(http-request) at the same time
+                newConfig.setWaitingQueueSize(100);
+                // set overload policy of thread pool executor
+                newConfig.setOverloadPolicy(OverloadPolicy.DiscardOldTaskInQueue);
+                // set schedule policy of thread pool executor
+                newConfig.setSchedulePolicy(SchedulePolicy.LastInFirstRun);
+                // set user-agent
+                newConfig.setUserAgent("Mozilla/5.0");
+
+                // set a new config to lite-http
+                liteHttp.initConfig(newConfig);
                 break;
             case 19:
                 // 19. The Use of Annotation
@@ -656,7 +827,7 @@ public class MainActivity extends Activity {
                 }
 
                 UserAnnoParam p = new UserAnnoParam();
-                liteHttp.executeAsync(new JsonAbsRequest<User>(p) {}.setHttpListener(new HttpListener<User>() {
+                liteHttp.executeAsync(new UserRequest(p).setHttpListener(new HttpListener<User>() {
                     @Override
                     public void onSuccess(User user, Response<User> response) {
                         HttpUtil.showTips(activity, "UserAnnoParam", user.toString());
@@ -678,8 +849,9 @@ public class MainActivity extends Activity {
                             }
                         };
                     }
+
                 }
-                liteHttp.execute(new JsonAbsRequest(new UserRichParam()) {});
+                liteHttp.executeAsync(new UserRequest(new UserRichParam()));
                 break;
 
             case 20:
@@ -688,6 +860,13 @@ public class MainActivity extends Activity {
                 cacheRequest.setCacheMode(CacheMode.CacheFirst);
                 cacheRequest.setCacheExpire(20, TimeUnit.SECONDS);
                 cacheRequest.setCacheKey(userGet + "-20");
+                cacheRequest.setHttpListener(new HttpListener<User>() {
+                    @Override
+                    public void onSuccess(User user, Response<User> response) {
+                        String title = response.isCacheHit() ? "Hit Cache(使用缓存)" : "No Cache(未用缓存)";
+                        HttpUtil.showTips(activity, title, user.toString());
+                    }
+                });
                 liteHttp.executeAsync(cacheRequest);
                 break;
             case 21:
@@ -807,14 +986,12 @@ public class MainActivity extends Activity {
                 };
 
                 // the correct way to set global http listener for all request.
-                liteHttp.getConfig().globalHttpListener = globalHttpListener;
+                liteHttp.getConfig().setGlobalHttpListener(globalHttpListener);
                 // create a bitmap request.
                 BitmapRequest bitmapRequest = new BitmapRequest(picUrl);
                 // correct way to set the initial and only http listener
                 bitmapRequest.setHttpListener(httpListener);
-                // correct way to set another listener
-                bitmapRequest.setLinkedHttpListener(newHttpListener);
-                // correct way to set the third listener
+                // correct way to set another (linked)listener
                 bitmapRequest.setLinkedHttpListener(newHttpListener);
 
                 //load and show bitmap
@@ -823,9 +1000,37 @@ public class MainActivity extends Activity {
                 break;
             case 22:
                 // 22. Best Practices of SmartExecutor
-                SmartExecutor smartExecutor = new SmartExecutor(2, 2);
-                smartExecutor.setOverloadPolicy(OverloadPolicy.DiscardOld);
+
+                /**
+                 * <ul>
+                 *
+                 * <li>keep coreSize tasks concurrent, and put them in runningList,
+                 * maximum number of running-tasks at the same time is coreSize.</li>
+                 *
+                 * <li>when runningList is full, put new task in waitingQueue waiting for execution,
+                 * maximum of waiting-tasks number is queueSize.</li>
+                 *
+                 * <li>when waitingQueue is full, new task is performed by OverloadPolicy.</li>
+                 *
+                 * <li>when running task is completed, take it out from runningList.</li>
+                 *
+                 * <li>schedule next by SchedulePolicy, take next task out from waitingQueue to execute,
+                 * and so on until waitingQueue is empty.</li>
+                 *
+                 * </ul>
+                 */
+                SmartExecutor smartExecutor = new SmartExecutor();
+
+                // recommended core size is CPU count
+                // set this temporary parameter, just for test
+                smartExecutor.setCoreSize(2);
+
+                //  Adjust maximum number of waiting queue size based phone performance
+                // set this temporary parameter, just for test
+                smartExecutor.setQueueSize(2);
+                smartExecutor.setOverloadPolicy(OverloadPolicy.DiscardOldTaskInQueue);
                 smartExecutor.setSchedulePolicy(SchedulePolicy.LastInFirstRun);
+
                 for (int i = 0; i < 6; i++) {
                     final int j = i;
                     smartExecutor.execute(new Runnable() {
@@ -836,6 +1041,10 @@ public class MainActivity extends Activity {
                         }
                     });
                 }
+                break;
+
+            case 23:
+                // 23. Automatic Conversion of Complex Model
                 break;
         }
     }

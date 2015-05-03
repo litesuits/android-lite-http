@@ -7,8 +7,9 @@ package com.litesuits.http.concurrent;
  * @date 2015-04-23
  */
 public enum OverloadPolicy {
-    DiscardNew,
-    DiscardOld,
+    DiscardNewTaskInQueue,
+    DiscardOldTaskInQueue,
+    DiscardCurrentTask,
     CallerRuns,
     ThrowExecption
 }

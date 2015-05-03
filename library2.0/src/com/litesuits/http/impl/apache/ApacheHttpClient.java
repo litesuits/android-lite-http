@@ -2,7 +2,7 @@ package com.litesuits.http.impl.apache;
 
 import android.os.Build;
 import com.litesuits.http.LiteHttp;
-import com.litesuits.http.config.HttpConfig;
+import com.litesuits.http.HttpConfig;
 import com.litesuits.http.data.Charsets;
 import com.litesuits.http.data.Consts;
 import com.litesuits.http.data.HttpStatus;
@@ -30,6 +30,7 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
@@ -60,17 +61,60 @@ public class ApacheHttpClient extends LiteHttp {
     private HttpRetryHandler retryHandler;
 
     public ApacheHttpClient(HttpConfig config) {
-        super(config);
-        retryHandler = new HttpRetryHandler(this.config.retrySleepMills, this.config.forceRetry);
+        super();
+        initConfig(config);
         mHttpContext = new SyncBasicHttpContext(new BasicHttpContext());
         mHttpClient = createApacheHttpClient(createHttpParams());
     }
 
-    public void setNewConfig(HttpConfig config) {
-        super.setNewConfig(config);
+    @Override
+    public void initConfig(HttpConfig config) {
+        if (config == null) {
+            config = new HttpConfig(null);
+        }
+        super.initConfig(config);
+        retryHandler = new HttpRetryHandler(config.getRetrySleepMillis(), config.isRequestSentRetryEnabled());
         if (mHttpClient != null) {
-            mHttpClient.setParams(createHttpParams());
-            HttpLog.i(TAG, "apache httpclient set new params...");
+            HttpParams params = mHttpClient.getParams();
+            HttpConnectionParams.setConnectionTimeout(params, config.getConnectTimeout());
+            HttpConnectionParams.setSoTimeout(params, config.getSocketTimeout());
+            HttpConnectionParams.setSocketBufferSize(params, config.getSocketBufferSize());
+            HttpProtocolParams.setUserAgent(params, config.getUserAgent());
+            mHttpClient.setParams(params);
+        }
+    }
+
+    @Override
+    protected void setConfigForRetryHandler(int retrySleepMillis, boolean requestSentRetryEnabled) {
+        super.setConfigForRetryHandler(retrySleepMillis, requestSentRetryEnabled);
+        retryHandler = new HttpRetryHandler(config.getRetrySleepMillis(), config.isRequestSentRetryEnabled());
+        HttpLog.i(TAG, "lite-http set retrySleepMillis" + retrySleepMillis
+                       + " , requestSentRetryEnabled: " + requestSentRetryEnabled);
+    }
+
+    @Override
+    protected void setConfigForHttpParams(int connectTimeout, int socketTimeout, int socketBufferSize) {
+        super.setConfigForHttpParams(connectTimeout, socketTimeout, socketBufferSize);
+        if (mHttpClient != null) {
+            HttpParams params = mHttpClient.getParams();
+            HttpConnectionParams.setConnectionTimeout(params, config.getConnectTimeout());
+            HttpConnectionParams.setSoTimeout(params, config.getSocketTimeout());
+            HttpConnectionParams.setSocketBufferSize(params, config.getSocketBufferSize());
+            mHttpClient.setParams(params);
+            HttpLog.i(TAG, "lite-http set connectTimeout" + connectTimeout
+                           + " , socketTimeout: " + socketTimeout
+                           + " , socketBufferSize: " + socketBufferSize);
+        }
+    }
+
+    @Override
+    protected void setUserAgent(String userAgent) {
+        super.setUserAgent(userAgent);
+        if (mHttpClient != null) {
+            HttpParams params = mHttpClient.getParams();
+            HttpProtocolParams.setUserAgent(params, config.getUserAgent());
+            mHttpClient.setParams(params);
+            HttpLog.i(TAG, "lite-http set User-Agent: " + userAgent);
         }
     }
 
@@ -81,15 +125,15 @@ public class ApacheHttpClient extends LiteHttp {
      */
     private BasicHttpParams createHttpParams() {
         BasicHttpParams params = new BasicHttpParams();
-        ConnManagerParams.setTimeout(params, config.connectTimeout);
+        ConnManagerParams.setTimeout(params, config.getConnectTimeout());
         ConnManagerParams.setMaxConnectionsPerRoute(params, new ConnPerRouteBean(DEFAULT_MAX_CONN_PER_ROUT));
         ConnManagerParams.setMaxTotalConnections(params, DEFAULT_MAX_CONN_TOTAL);
         HttpConnectionParams.setTcpNoDelay(params, TCP_NO_DELAY);
-        HttpConnectionParams.setConnectionTimeout(params, config.connectTimeout);
-        HttpConnectionParams.setSoTimeout(params, config.socketTimeout);
-        HttpConnectionParams.setSocketBufferSize(params, config.bufferSize);
+        HttpConnectionParams.setConnectionTimeout(params, config.getConnectTimeout());
+        HttpConnectionParams.setSoTimeout(params, config.getSocketTimeout());
+        HttpConnectionParams.setSocketBufferSize(params, config.getSocketBufferSize());
         HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-        HttpProtocolParams.setUserAgent(params, config.USER_AGENT);
+        HttpProtocolParams.setUserAgent(params, config.getUserAgent());
         // settingOthers(params);
         return params;
     }
@@ -184,8 +228,8 @@ public class ApacheHttpClient extends LiteHttp {
         SchemeRegistry schemeRegistry = new SchemeRegistry();
         SSLSocketFactory socketFactory = MySSLSocketFactory.getFixedSocketFactory();
         schemeRegistry.register(new Scheme(Consts.SCHEME_HTTP,
-                PlainSocketFactory.getSocketFactory(),
-                HttpConfig.DEFAULT_HTTP_PORT));
+                                           PlainSocketFactory.getSocketFactory(),
+                                           HttpConfig.DEFAULT_HTTP_PORT));
         schemeRegistry.register(new Scheme(Consts.SCHEME_HTTPS, socketFactory, HttpConfig.DEFAULT_HTTPS_PORT));
         return new ThreadSafeClientConnManager(httpParams, schemeRegistry);
     }
@@ -271,7 +315,7 @@ public class ApacheHttpClient extends LiteHttp {
                         if (statistic != null) {
                             statistic.onPreRead(request);
                         }
-                        parser.readFromNetStream(entity.getContent(), len, charSet, config.cacheDirPath);
+                        parser.readFromNetStream(entity.getContent(), len, charSet, config.getCacheDirPath());
                         if (statistic != null) {
                             statistic.onAfterRead(request);
                         }
@@ -341,7 +385,7 @@ public class ApacheHttpClient extends LiteHttp {
                         return;
                     }
                     times++;
-                    retry = retryHandler.retryRequest(cause, times, maxRetryTimes, mHttpContext, config.context);
+                    retry = retryHandler.retryRequest(cause, times, maxRetryTimes, mHttpContext, config.getContext());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     return;

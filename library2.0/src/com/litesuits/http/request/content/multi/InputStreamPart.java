@@ -30,6 +30,9 @@ public class InputStreamPart extends AbstractPart {
 
     public InputStreamPart(String key, InputStream inputStream, String fileName, String mimeType) {
         super(key, mimeType);
+        if (inputStream == null) {
+            throw new NullPointerException("InputStream not be null !");
+        }
         this.inputStream = inputStream;
         this.fileName = fileName;
     }
@@ -49,8 +52,9 @@ public class InputStreamPart extends AbstractPart {
     @Override
     public long getTotalLength() throws IOException {
         long len = inputStream.available();
-        if (HttpLog.isPrint) HttpLog.v(TAG, TAG + "内容长度 header ： " + header.length + " ,body: " + len + " ," +
-                "换行：" + CR_LF.length);
+        if (HttpLog.isPrint)
+            HttpLog.v(TAG, TAG + "内容长度 header ： " + header.length + " ,body: " + len + " ," +
+                           "换行：" + CR_LF.length);
         return header.length + len + CR_LF.length;
     }
 
@@ -73,7 +77,8 @@ public class InputStreamPart extends AbstractPart {
         } catch (final IOException e) {
             e.printStackTrace();
         } finally {
-            if (inputStream != null) inputStream.close();
+            if (inputStream != null)
+                inputStream.close();
         }
     }
 }

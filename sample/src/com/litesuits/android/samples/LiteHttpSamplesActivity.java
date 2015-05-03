@@ -1,12 +1,10 @@
 package com.litesuits.android.samples;
 
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.Menu;
@@ -603,13 +601,12 @@ public class LiteHttpSamplesActivity extends BaseActivity {
         });
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
     private void addImageViewToBottom(final Bitmap bitmap) {
         if (bitmap != null) {
             ImageView imageview = new ImageView(LiteHttpSamplesActivity.this);
             imageview.setImageBitmap(bitmap);
             mListview.addFooterView(imageview);
-            Toast.makeText(LiteHttpSamplesActivity.this, "Bitmap 加载完成，RowBytes：" + bitmap.getRowBytes() + ", ByteCount: " + bitmap.getByteCount(),
+            Toast.makeText(LiteHttpSamplesActivity.this, "Bitmap 加载完成，RowBytes：" + bitmap.getRowBytes() + ", ByteCount: " + bitmap.getRowBytes(),
                     Toast.LENGTH_LONG).show();
             mListview.setSelection(mListview.getAdapter().getCount());
         }

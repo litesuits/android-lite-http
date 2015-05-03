@@ -4,8 +4,9 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.util.Log;
+import com.litesuits.http.concurrent.OverloadPolicy;
+import com.litesuits.http.concurrent.SchedulePolicy;
 import com.litesuits.http.concurrent.SmartExecutor;
-import com.litesuits.http.config.HttpConfig;
 import com.litesuits.http.data.NameValuePair;
 import com.litesuits.http.data.StatisticsInfo;
 import com.litesuits.http.exception.*;
@@ -119,57 +120,65 @@ public abstract class LiteHttp {
     protected AtomicLong memCachedSize = new AtomicLong();
     protected ConcurrentHashMap<String, HttpCache> memCache = new ConcurrentHashMap<String, HttpCache>();
 
-    protected LiteHttp(HttpConfig config) {
-        setNewConfig(config);
-    }
+//    protected LiteHttp(HttpConfig config) {
+//        initConfig(config);
+//    }
+    protected LiteHttp(){}
 
     public static LiteHttp newApacheHttpClient(HttpConfig config) {
         return new ApacheHttpClient(config);
     }
 
-    public void setNewConfig(HttpConfig config) {
-        if (config == null) {
-            config = new HttpConfig(null);
-        }
+    /* ____________________________ may be overridden by sub class ____________________________*/
+    public void initConfig(HttpConfig config) {
         this.config = config;
+        this.config.setLiteHttp(this);
         Log.d(TAG, config.toString());
-        File file = new File(config.cacheDirPath);
-        if (!file.exists()) {
-            boolean mkdirs = file.mkdirs();
-            HttpLog.i(TAG, file.getAbsolutePath() + "  mkdirs: " + mkdirs);
-        }
+
         // Set config and smart-executor to lite-http.
         if (smartExecutor == null) {
             smartExecutor = new SmartExecutor(config.concurrentSize, config.waitingQueueSize);
         } else {
-            smartExecutor.setCoreSize(config.concurrentSize);
-            smartExecutor.setQueueSize(config.waitingQueueSize);
+            setConfigForSmartExecutor(config.concurrentSize, config.waitingQueueSize);
         }
-        if (config.schedulePolicy != null) {
-            smartExecutor.setSchedulePolicy(config.schedulePolicy);
+        setConfigForSmartExecutor(config.schedulePolicy, config.overloadPolicy);
+    }
+
+    protected void setUserAgent(String userAgent) {}
+
+    protected void setConfigForHttpParams(int connectTimeout, int socketTimeout, int socketBufferSize) { }
+
+    protected void setConfigForRetryHandler(int retrySleepMillis, boolean requestSentRetryEnabled) { }
+
+    /* ____________________________ main methods ____________________________*/
+    protected final void setConfigForSmartExecutor(int concurrentSize, int waitingQueueSize) {
+        smartExecutor.setCoreSize(concurrentSize);
+        smartExecutor.setQueueSize(waitingQueueSize);
+    }
+
+    protected final void setConfigForSmartExecutor(SchedulePolicy schedulePolicy, OverloadPolicy overloadPolicy) {
+        if (schedulePolicy != null) {
+            smartExecutor.setSchedulePolicy(schedulePolicy);
         }
-        if (config.overloadPolicy != null) {
-            smartExecutor.setOverloadPolicy(config.overloadPolicy);
+        if (overloadPolicy != null) {
+            smartExecutor.setOverloadPolicy(overloadPolicy);
         }
     }
 
-    public HttpConfig getConfig() {
+    public final HttpConfig getConfig() {
         return config;
     }
 
-    public Context getAppContext() {
+
+    public final Context getAppContext() {
         return config.context;
     }
 
-    public StatisticsInfo getStatisticsInfo() {
+    public final StatisticsInfo getStatisticsInfo() {
         return statisticsInfo;
     }
 
-    public SmartExecutor getSmartExecutor() {
-        return smartExecutor;
-    }
-
-    public long clearMemCache() {
+    public final long clearMemCache() {
         long len;
         synchronized (lock) {
             len = memCachedSize.get();
@@ -179,7 +188,12 @@ public abstract class LiteHttp {
         return len;
     }
 
-    public long deleteCacheFiles() {
+    public final boolean deleteCachedFile(String cacehKey) {
+        File file = new File(config.cacheDirPath, cacehKey);
+        return file.delete();
+    }
+
+    public final long deleteCachedFiles() {
         File file = new File(config.cacheDirPath);
         long len = 0;
         if (file.isDirectory()) {
@@ -288,33 +302,6 @@ public abstract class LiteHttp {
             }
         }
         return response;
-    }
-
-    protected <T> boolean tryToConnectNetwork(AbstractRequest<T> request, InternalResponse<T> response)
-            throws HttpNetException, HttpClientException, HttpServerException {
-        StatisticsListener statistic = null;
-        if (config.doStatistics) {
-            statistic = new StatisticsListener(response, statisticsInfo);
-            response.setStatistics(statistic);
-        }
-        try {
-            if (statistic != null) {
-                statistic.onStart(request);
-            }
-            if (!request.isCancelledOrInterrupted()) {
-                HttpLog.v(TAG, "lite http try to connect network...  url: " + request.getUri()
-                               + "  tag: " + request.getTag());
-                tryToDetectNetwork();
-                connectWithRetries(request, response);
-                tryToKeepCacheInMemory(response);
-                return true;
-            }
-        } finally {
-            if (statistic != null) {
-                statistic.onEnd(response);
-            }
-        }
-        return false;
     }
 
     protected abstract <T> void connectWithRetries(AbstractRequest<T> request, InternalResponse response)
@@ -428,6 +415,36 @@ public abstract class LiteHttp {
                 throw new HttpClientException(e, ClientException.PermissionDenied);
             }
         }
+    }
+
+    /**
+     * connect to network
+     */
+    protected <T> boolean tryToConnectNetwork(AbstractRequest<T> request, InternalResponse<T> response)
+            throws HttpNetException, HttpClientException, HttpServerException {
+        StatisticsListener statistic = null;
+        if (config.doStatistics) {
+            statistic = new StatisticsListener(response, statisticsInfo);
+            response.setStatistics(statistic);
+        }
+        try {
+            if (statistic != null) {
+                statistic.onStart(request);
+            }
+            if (!request.isCancelledOrInterrupted()) {
+                HttpLog.v(TAG, "lite http try to connect network...  url: " + request.getUri()
+                               + "  tag: " + request.getTag());
+                tryToDetectNetwork();
+                connectWithRetries(request, response);
+                tryToKeepCacheInMemory(response);
+                return true;
+            }
+        } finally {
+            if (statistic != null) {
+                statistic.onEnd(response);
+            }
+        }
+        return false;
     }
 
     /**

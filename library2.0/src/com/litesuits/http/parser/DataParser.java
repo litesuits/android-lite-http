@@ -1,6 +1,6 @@
 package com.litesuits.http.parser;
 
-import com.litesuits.http.config.HttpConfig;
+import com.litesuits.http.HttpConfig;
 import com.litesuits.http.data.Consts;
 import com.litesuits.http.listener.HttpListener;
 import com.litesuits.http.request.AbstractRequest;

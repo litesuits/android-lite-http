@@ -127,7 +127,7 @@ public abstract class AbstractRequest<T> {
      * {@link com.litesuits.http.parser.impl.BitmapParser}
      * {@link com.litesuits.http.parser.impl.JsonParser}
      */
-//    protected DataParser<T> dataParser;
+    //    protected DataParser<T> dataParser;
     /**
      * add custom header to request.
      */
@@ -142,7 +142,7 @@ public abstract class AbstractRequest<T> {
     private GlobalHttpListener globalHttpListener;
 
     /*________________________ constructors  ________________________*/
-//    public AbstractRequest() {}
+    //    public AbstractRequest() {}
 
     public AbstractRequest(String uri) {
         this.uri = uri;
@@ -162,7 +162,7 @@ public abstract class AbstractRequest<T> {
     /**
      * create a dataparser
      */
-//    protected abstract DataParser<T> createDataParser();
+    //    protected abstract DataParser<T> createDataParser();
 
     /**
      * create or get the dataparser
@@ -255,10 +255,10 @@ public abstract class AbstractRequest<T> {
     }
 
     @SuppressWarnings("unchecked")
-//    public <S extends AbstractRequest<T>> S setCancel(boolean cancel) {
-//        this.cancel.set(cancel);
-//        return (S) this;
-//    }
+    //    public <S extends AbstractRequest<T>> S setCancel(boolean cancel) {
+    //        this.cancel.set(cancel);
+    //        return (S) this;
+    //    }
 
     public CacheMode getCacheMode() {
         return cacheMode;
@@ -383,7 +383,9 @@ public abstract class AbstractRequest<T> {
 
     @SuppressWarnings("unchecked")
     public <S extends AbstractRequest<T>> S setHttpBody(HttpBody httpBody) {
-        httpBody.setRequest(this);
+        if (httpBody != null) {
+            httpBody.setRequest(this);
+        }
         this.httpBody = httpBody;
         return (S) this;
     }
@@ -441,6 +443,15 @@ public abstract class AbstractRequest<T> {
     @SuppressWarnings("unchecked")
     public <S extends AbstractRequest<T>> S setLinkedHttpListener(HttpListener<T> httpListener) {
         if (this.httpListener != null) {
+            HttpListener<T> temp = this.httpListener;
+            if (httpListener == temp) {
+                throw new RuntimeException("Circular refrence:  " + httpListener);
+            }
+            while ((temp = temp.getLinkedListener()) != null) {
+                if (httpListener == temp) {
+                    throw new RuntimeException("Circular refrence:  " + httpListener);
+                }
+            }
             httpListener.setLinkedListener(this.httpListener);
         }
         this.httpListener = httpListener;
@@ -453,6 +464,7 @@ public abstract class AbstractRequest<T> {
         this.cacheKey = key;
         return (S) this;
     }
+
     @SuppressWarnings("unchecked")
     public <S extends AbstractRequest<T>> S setCacheExpire(long expire, TimeUnit unit) {
         this.cacheExpireMillis = unit.toMillis(expire);
@@ -468,10 +480,6 @@ public abstract class AbstractRequest<T> {
 
     public boolean isCancelledOrInterrupted() {
         return cancel.get() || Thread.currentThread().isInterrupted();
-    }
-
-    public boolean isInterrupted() {
-        return Thread.currentThread().isInterrupted();
     }
 
     public void cancel() {

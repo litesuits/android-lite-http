@@ -30,11 +30,11 @@ public class HttpRetryHandler extends StandardHttpRequestRetryHandler {
     private HashSet<Class<?>> exceptionWhitelist = new HashSet<Class<?>>();
     private HashSet<Class<?>> exceptionBlacklist = new HashSet<Class<?>>();
 
-    private final int retrySleepTimeMS;
+    public final int retrySleepTimeMS;
 
     /**
-     * @param retrySleepTimeMS        遇到网络不稳地，暂停retrySleepTimeMS毫秒
-     * @param requestSentRetryEnabled 非幂等请求（如POST）是否重试
+     * @param retrySleepTimeMS        if the network is unstable, wait retrySleepTimeMS then start retry.
+     * @param requestSentRetryEnabled true if it's OK to retry requests that have been sent
      */
     public HttpRetryHandler(int retrySleepTimeMS, boolean requestSentRetryEnabled) {
         super(0, requestSentRetryEnabled);
@@ -80,7 +80,7 @@ public class HttpRetryHandler extends StandardHttpRequestRetryHandler {
                 } else if (Network.isConnectedOrConnecting(appContext)) {
                     if (HttpLog.isPrint) {
                         HttpLog.v(TAG, "Network is Connected Or Connecting, wait for retey : "
-                                + retrySleepTimeMS + " ms");
+                                       + retrySleepTimeMS + " ms");
                     }
                     Thread.sleep(retrySleepTimeMS);
                 } else {
