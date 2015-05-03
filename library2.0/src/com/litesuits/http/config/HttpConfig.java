@@ -7,6 +7,7 @@ import com.litesuits.http.concurrent.OverloadPolicy;
 import com.litesuits.http.concurrent.SchedulePolicy;
 import com.litesuits.http.data.Consts;
 import com.litesuits.http.data.NameValuePair;
+import com.litesuits.http.listener.GlobalHttpListener;
 import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.network.Network;
 import com.litesuits.http.request.param.CacheMode;
@@ -26,6 +27,7 @@ public class HttpConfig {
 
     private static final String VERSION = "2.0";
 
+    public static final int FLAG_NET_DISABLE_NONE = 0;
     public static final int FLAG_NET_DISABLE_ALL = Network.NetType.None.value;
     public static final int FLAG_NET_DISABLE_MOBILE = Network.NetType.Mobile.value;
     public static final int FLAG_NET_DISABLE_WIFI = Network.NetType.Wifi.value;
@@ -54,7 +56,7 @@ public class HttpConfig {
      * User-Agent
      */
     public String USER_AGENT = String.format("litehttp%s (android-%s; api-%s; %s; %s)", VERSION
-            , Build.VERSION.RELEASE, Build.VERSION.SDK, Build.BRAND, Build.MODEL);
+            , Build.VERSION.RELEASE, Build.VERSION.SDK_INT, Build.BRAND, Build.MODEL);
     /**
      * connect time
      */
@@ -149,14 +151,22 @@ public class HttpConfig {
      * set default model query builder to all reqest
      */
     public ModelQueryBuilder defaultModelQueryBuilder = new JsonQueryBuilder();
+    /**
+     * set global http listener to all reqest
+     */
+    public GlobalHttpListener globalHttpListener;
 
     public HttpConfig(Context context) {
         if (context != null) {
             this.context = context.getApplicationContext();
             cacheDirPath = context.getFilesDir() + "/lite/http-cache";
         }
-            HttpLog.i(TAG, "lite http cache file dir: " + cacheDirPath);
+        HttpLog.i(TAG, "lite http cache file dir: " + cacheDirPath);
     }
+
+
+
+
 
     public HttpConfig(Context context, boolean doStatistics, boolean detectNetwork) {
         this(context);
@@ -174,6 +184,36 @@ public class HttpConfig {
 
     public boolean isDisableNetwork(int networkType) {
         return (disableNetworkFlags & networkType) == networkType;
+    }
+
+    public HttpConfig restoreDefault() {
+        USER_AGENT = String.format("litehttp%s (android-%s; api-%s; %s; %s)", VERSION
+                , Build.VERSION.RELEASE, Build.VERSION.SDK_INT, Build.BRAND, Build.MODEL);
+        connectTimeout = DEFAULT_TIMEOUT;
+        socketTimeout = DEFAULT_TIMEOUT;
+        bufferSize = DEFAULT_BUFFER_SIZE;
+        disableNetworkFlags = FLAG_NET_DISABLE_NONE;
+        doStatistics = false;
+        detectNetwork = false;
+        forceRetry = false;
+        retrySleepMills = DEFAULT_TRY_WAIT_TIME;
+        concurrentSize = HttpUtil.getCoresNumbers();
+        waitingQueueSize = 20 * concurrentSize;
+        schedulePolicy = SchedulePolicy.FirstInFistRun;
+        overloadPolicy = OverloadPolicy.DiscardOld;
+        maxMemCacheBytesSize = 512 * 1024;
+        cacheDirPath = Environment.getExternalStorageDirectory() + "/lite/http-cache";
+
+        commonHeaders = null;
+        defaultCharSet = Consts.DEFAULT_CHARSET;
+        defaultHttpMethod = HttpMethods.Get;
+        defaultCacheMode = null;
+        defaultCacheExpireMillis = 0;
+        defaultMaxRetryTimes = DEFAULT_MAX_RETRY_TIMES;
+        defaultMaxRedirectTimes = DEFAULT_MAX_REDIRECT_TIMES;
+        defaultModelQueryBuilder = new JsonQueryBuilder();
+        globalHttpListener = null;
+        return this;
     }
 
     @Override

@@ -85,7 +85,7 @@ public class HttpRetryHandler extends StandardHttpRequestRetryHandler {
                     Thread.sleep(retrySleepTimeMS);
                 } else {
                     HttpLog.d(TAG, "Without any Network , immediately cancel retry");
-                    throw new HttpNetException(NetException.NetworkError);
+                    throw new HttpNetException(NetException.NetworkNotAvilable);
                 }
             } else {
                 if (HttpLog.isPrint) {

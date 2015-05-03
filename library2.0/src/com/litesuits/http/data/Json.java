@@ -11,7 +11,24 @@ package com.litesuits.http.data;
 public abstract class Json {
     private static Json json;
 
-    Json() {}
+    /**
+     * set new json instance
+     *
+     * @param json new instance
+     * @return new instance
+     */
+    public static Json set(Json json) {
+        Json.json = json;
+        return Json.json;
+    }
+
+    /**
+     * set default json handler: Google Gson
+     */
+    public static Json setDefault() {
+        Json.json = new GsonImpl();
+        return Json.json;
+    }
 
     /**
      * get default json handler

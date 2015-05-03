@@ -1,8 +1,8 @@
 package com.litesuits.http.parser;
 
-import android.os.Build;
 import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.request.AbstractRequest;
+import com.litesuits.http.utils.StringCodingUtils;
 import org.apache.http.util.CharArrayBuffer;
 
 import java.io.*;
@@ -30,9 +30,9 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
         return new File(dir, request.getCacheKey());
     }
 
-    protected abstract T parseDiskCache(InputStream is, long length) throws IOException;
+    protected abstract T parseDiskCache(InputStream stream, long length) throws IOException;
 
-    public T readDisk(File file) {
+    public T readFromDiskCache(File file) {
         FileInputStream fos = null;
         try {
             fos = new FileInputStream(file);
@@ -53,9 +53,9 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
         return data;
     }
 
-    protected final String streamToString(InputStream is, long len, String charSet) throws IOException {
+    protected final String streamToString(InputStream stream, long len, String charSet) throws IOException {
         if (len > 0) {
-            Reader reader = new InputStreamReader(is, charSet);
+            Reader reader = new InputStreamReader(stream, charSet);
             CharArrayBuffer buffer = new CharArrayBuffer((int) len);
             try {
                 char[] tmp = new char[buffSize];
@@ -76,7 +76,7 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
             try {
                 byte[] buff = new byte[buffSize];
                 int l = 0;
-                while (!request.isCancelledOrInterrupted() && (l = is.read(buff)) > 0) {
+                while (!request.isCancelledOrInterrupted() && (l = stream.read(buff)) > 0) {
                     swapStream.write(buff, 0, l);
                     readLength += l;
                     notifyReading(len, readLength);
@@ -128,21 +128,21 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
 
     protected final void keepToCache(String src, File file) {
         if (data != null) {
-            keepToCache(getBytes(src, Charset.forName(charSet)), file);
+            keepToCache(StringCodingUtils.getBytes(src, Charset.forName(charSet)), file);
         }
     }
 
-    protected byte[] getBytes(String src, Charset charSet) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD) {
-            try {
-                return src.getBytes(charSet.name());
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        } else {
-            return src.getBytes(charSet);
-        }
-    }
+//    protected byte[] getBytes(String src, Charset charSet) {
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD) {
+//            try {
+//                return src.getBytes(charSet.name());
+//            } catch (UnsupportedEncodingException e) {
+//                e.printStackTrace();
+//            }
+//            return null;
+//        } else {
+//            return src.getBytes(charSet);
+//        }
+//    }
 
 }

@@ -22,7 +22,7 @@ public class HttpNetException extends HttpException {
      */
     public HttpNetException(Throwable cause) {
         super(cause.toString(), cause);
-        exceptionType = NetException.UnReachable;
+        exceptionType = NetException.NetworkUnstable;
     }
 
     public NetException getExceptionType() {

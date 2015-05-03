@@ -2,8 +2,7 @@ package com.litesuits.http.request;
 
 import android.graphics.Bitmap;
 import com.litesuits.http.parser.impl.BitmapParser;
-import com.litesuits.http.parser.DataParser;
-import com.litesuits.http.request.param.RequestModel;
+import com.litesuits.http.request.param.HttpParamModel;
 
 import java.io.File;
 
@@ -13,22 +12,24 @@ import java.io.File;
  */
 public class BitmapRequest extends AbstractRequest<Bitmap> {
 
-    private File saveToFile;
+    protected File saveToFile;
 
-    public BitmapRequest() {
-        super();
-    }
+    protected BitmapParser bitmapParser;
 
-    public BitmapRequest(RequestModel model) {
+//    public BitmapRequest() {
+//        super();
+//    }
+
+    public BitmapRequest(HttpParamModel model) {
         super(model);
     }
 
-    public BitmapRequest(RequestModel model, File saveToFile) {
+    public BitmapRequest(HttpParamModel model, File saveToFile) {
         super(model);
         this.saveToFile = saveToFile;
     }
 
-    public BitmapRequest(RequestModel model, String saveToPath) {
+    public BitmapRequest(HttpParamModel model, String saveToPath) {
         super(model);
         setFileSavePath(saveToPath);
     }
@@ -48,14 +49,18 @@ public class BitmapRequest extends AbstractRequest<Bitmap> {
     }
 
 
-    public void setFileSavePath(String savaToPath) {
+    public BitmapRequest setFileSavePath(String savaToPath) {
         if (savaToPath != null) {
             saveToFile = new File(savaToPath);
         }
+        return this;
     }
 
     @Override
-    protected DataParser<Bitmap> createDataParser() {
-        return new BitmapParser(this, saveToFile);
+    public BitmapParser getDataParser() {
+        if (bitmapParser == null) {
+            bitmapParser = new BitmapParser(this, saveToFile);
+        }
+        return bitmapParser;
     }
 }

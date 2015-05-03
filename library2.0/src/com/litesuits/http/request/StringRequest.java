@@ -1,8 +1,7 @@
 package com.litesuits.http.request;
 
-import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.impl.StringParser;
-import com.litesuits.http.request.param.RequestModel;
+import com.litesuits.http.request.param.HttpParamModel;
 
 /**
  * @author MaTianyu
@@ -10,20 +9,25 @@ import com.litesuits.http.request.param.RequestModel;
  */
 public class StringRequest extends AbstractRequest<String> {
 
-    public StringRequest() {
-        super();
-    }
+    protected StringParser stringParser;
+
+//    public StringRequest() {
+//        super();
+//    }
 
     public StringRequest(String url) {
         super(url);
     }
 
-    public StringRequest(RequestModel model) {
+    public StringRequest(HttpParamModel model) {
         super(model);
     }
 
     @Override
-    protected DataParser<String> createDataParser() {
-        return new StringParser(this);
+    public StringParser getDataParser() {
+        if (stringParser == null) {
+            stringParser = new StringParser(this);
+        }
+        return stringParser;
     }
 }

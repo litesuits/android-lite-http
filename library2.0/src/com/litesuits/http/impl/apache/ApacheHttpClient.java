@@ -1,10 +1,7 @@
 package com.litesuits.http.impl.apache;
 
 import android.os.Build;
-import android.os.NetworkOnMainThreadException;
-import android.util.Log;
 import com.litesuits.http.LiteHttp;
-import com.litesuits.http.concurrent.SmartExecutor;
 import com.litesuits.http.config.HttpConfig;
 import com.litesuits.http.data.Charsets;
 import com.litesuits.http.data.Consts;
@@ -17,7 +14,6 @@ import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.request.AbstractRequest;
 import com.litesuits.http.response.InternalResponse;
 import org.apache.http.*;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.RedirectHandler;
 import org.apache.http.client.methods.*;
@@ -39,7 +35,6 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.SyncBasicHttpContext;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -276,7 +271,7 @@ public class ApacheHttpClient extends LiteHttp {
                         if (statistic != null) {
                             statistic.onPreRead(request);
                         }
-                        parser.readNetStream(entity.getContent(), len, charSet, config.cacheDirPath);
+                        parser.readFromNetStream(entity.getContent(), len, charSet, config.cacheDirPath);
                         if (statistic != null) {
                             statistic.onAfterRead(request);
                         }
@@ -311,7 +306,7 @@ public class ApacheHttpClient extends LiteHttp {
                         }
                         throw new HttpServerException(httpStatus);
                     } else {
-                        throw new HttpServerException(ServerException.RedirectTooMany);
+                        throw new HttpServerException(ServerException.RedirectTooMuch);
                     }
                 } else if (status.getStatusCode() <= 499) {
                     // 客户端被拒
@@ -335,8 +330,6 @@ public class ApacheHttpClient extends LiteHttp {
                 // for apache http client. if url is illegal, it usually raises an exception as "IllegalStateException:
                 // Scheme 'xxx' not registered."
                 throw new HttpClientException(e);
-            } catch (NetworkOnMainThreadException e) {
-                throw new HttpClientException(e, ClientException.NetworkOnMainThread);
             } catch (SecurityException e) {
                 throw new HttpClientException(e, ClientException.PermissionDenied);
             } catch (RuntimeException e) {

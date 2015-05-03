@@ -23,7 +23,7 @@ public interface Response<T> {
 
     public T getResult();
 
-    public AbstractRequest<T> getRequest();
+    public <R extends AbstractRequest<T>> R getRequest();
 
     public long getReadedLength();
 
@@ -45,5 +45,8 @@ public interface Response<T> {
 
     public boolean isCacheHit();
 
+    String resToString();
+
     void printInfo();
+
 }

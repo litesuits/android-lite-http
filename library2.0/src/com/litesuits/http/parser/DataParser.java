@@ -16,7 +16,6 @@ import java.io.InputStream;
  *         2014-2-21下午7:26:58
  */
 public abstract class DataParser<T> {
-    //protected byte[] rawData;
     protected static final String TAG = DataParser.class.getSimpleName();
     protected T data;
     protected long readLength;
@@ -31,7 +30,7 @@ public abstract class DataParser<T> {
         }
     }
 
-    public final T readNetStream(InputStream stream, long len, String charSet, String cacheDir) throws IOException {
+    public final T readFromNetStream(InputStream stream, long len, String charSet, String cacheDir) throws IOException {
         if (stream != null) {
             try {
                 data = parseNetStream(stream, len, charSet, cacheDir);
@@ -42,14 +41,14 @@ public abstract class DataParser<T> {
         return data;
     }
 
-    public final T readMemory(T data) {
+    public final T readFromMemoryCache(T data) {
         if (isMemCacheSupport()) {
             this.data = data;
         }
         return this.data;
     }
 
-    public abstract T readDisk(File file);
+    public abstract T readFromDiskCache(File file);
 
     /**
      * parse network stream
@@ -75,7 +74,7 @@ public abstract class DataParser<T> {
     protected final void notifyReading(long total, long len) {
         HttpListener<T> listener = request.getHttpListener();
         if (listener != null) {
-            listener.reading(request, total, len);
+            listener.loading(request, total, len);
         }
     }
 
@@ -101,6 +100,9 @@ public abstract class DataParser<T> {
      */
     public final void setRequest(AbstractRequest<T> request) {
         this.request = request;
+        if (request.getCharSet() != null) {
+            charSet = request.getCharSet();
+        }
     }
 
     @Override

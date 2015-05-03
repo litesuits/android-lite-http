@@ -13,12 +13,14 @@ import java.util.LinkedHashMap;
  * @author MaTianyu
  *         2014-1-19上午2:39:31
  */
-public interface RequestRichModel<T> extends RequestModel {
-    LinkedHashMap<String, String> createHeaders();
+public abstract class HttpRichParamModel<T> implements HttpParamModel {
+    private static final long serialVersionUID = -5793415337101322956L;
 
-    ModelQueryBuilder createQueryBuilder();
+    public LinkedHashMap<String, String> createHeaders() {return null;}
 
-    HttpListener<T> createHttpListener();
+    public ModelQueryBuilder createQueryBuilder() {return null;}
 
-    HttpBody createHttpBody();
+    public HttpListener<T> createHttpListener() {return null;}
+
+    public HttpBody createHttpBody() {return null;}
 }

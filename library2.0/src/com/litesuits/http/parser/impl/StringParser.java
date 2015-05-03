@@ -28,7 +28,7 @@ public class StringParser extends MemeoryDataParser<String> {
     }
 
     @Override
-    protected String parseDiskCache(InputStream is, long length) throws IOException {
-        return streamToString(is, length, charSet);
+    protected String parseDiskCache(InputStream stream, long length) throws IOException {
+        return streamToString(stream, length, charSet);
     }
 }

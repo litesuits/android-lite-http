@@ -5,14 +5,15 @@ import com.litesuits.http.annotation.*;
 import com.litesuits.http.data.NameValuePair;
 import com.litesuits.http.exception.ClientException;
 import com.litesuits.http.exception.HttpClientException;
+import com.litesuits.http.listener.GlobalHttpListener;
 import com.litesuits.http.listener.HttpListener;
 import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.request.content.HttpBody;
 import com.litesuits.http.request.param.CacheMode;
 import com.litesuits.http.request.param.HttpMethods;
-import com.litesuits.http.request.param.RequestModel;
-import com.litesuits.http.request.param.RequestRichModel;
+import com.litesuits.http.request.param.HttpParamModel;
+import com.litesuits.http.request.param.HttpRichParamModel;
 import com.litesuits.http.request.query.JsonQueryBuilder;
 import com.litesuits.http.request.query.ModelQueryBuilder;
 import com.litesuits.http.utils.HexUtil;
@@ -74,7 +75,7 @@ public abstract class AbstractRequest<T> {
      */
     private int maxRedirectTimes;
     /**
-     * callback of start, success, fialure, retry, redirect, reading, etc.
+     * callback of start, success, fialure, retry, redirect, loading, etc.
      */
     private HttpListener<T> httpListener;
     /**
@@ -104,7 +105,7 @@ public abstract class AbstractRequest<T> {
     /**
      * intelligently translate java object into mapping(k=v) parameters
      */
-    private RequestModel model;
+    private HttpParamModel paramModel;
     /**
      * when parameter's value is complex, u can chose one buider, default mode
      * is build value into json string.
@@ -126,7 +127,7 @@ public abstract class AbstractRequest<T> {
      * {@link com.litesuits.http.parser.impl.BitmapParser}
      * {@link com.litesuits.http.parser.impl.JsonParser}
      */
-    protected DataParser<T> dataParser;
+//    protected DataParser<T> dataParser;
     /**
      * add custom header to request.
      */
@@ -135,17 +136,25 @@ public abstract class AbstractRequest<T> {
      * key value parameters
      */
     private LinkedHashMap<String, String> paramMap;
+    /**
+     * global http listener for request
+     */
+    private GlobalHttpListener globalHttpListener;
 
     /*________________________ constructors  ________________________*/
-    public AbstractRequest() {
-    }
+//    public AbstractRequest() {}
 
     public AbstractRequest(String uri) {
         this.uri = uri;
     }
 
-    public AbstractRequest(RequestModel model) {
-        setModel(model);
+    public AbstractRequest(HttpParamModel paramModel) {
+        setParamModel(paramModel);
+    }
+
+    public AbstractRequest(String uri, HttpParamModel paramModel) {
+        setParamModel(paramModel);
+        this.uri = uri;
     }
 
     /*________________________ abstract_method ________________________*/
@@ -153,8 +162,12 @@ public abstract class AbstractRequest<T> {
     /**
      * create a dataparser
      */
-    protected abstract DataParser<T> createDataParser();
+//    protected abstract DataParser<T> createDataParser();
 
+    /**
+     * create or get the dataparser
+     */
+    public abstract <D extends DataParser<T>> D getDataParser();
 
     /*________________________ getter_setter ________________________*/
     public long getId() {
@@ -242,10 +255,10 @@ public abstract class AbstractRequest<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <S extends AbstractRequest<T>> S setCancel(boolean cancel) {
-        this.cancel.set(cancel);
-        return (S) this;
-    }
+//    public <S extends AbstractRequest<T>> S setCancel(boolean cancel) {
+//        this.cancel.set(cancel);
+//        return (S) this;
+//    }
 
     public CacheMode getCacheMode() {
         return cacheMode;
@@ -283,16 +296,16 @@ public abstract class AbstractRequest<T> {
         return (S) this;
     }
 
-    public RequestModel getModel() {
-        return model;
+    public HttpParamModel getParamModel() {
+        return paramModel;
     }
 
     @SuppressWarnings("unchecked")
-    public <S extends AbstractRequest<T>> S setModel(RequestModel model) {
-        if (model != null) {
-            this.model = model;
-            if (model instanceof RequestRichModel) {
-                RequestRichModel richModel = (RequestRichModel) model;
+    public <S extends AbstractRequest<T>> S setParamModel(HttpParamModel paramModel) {
+        if (paramModel != null) {
+            this.paramModel = paramModel;
+            if (paramModel instanceof HttpRichParamModel) {
+                HttpRichParamModel richModel = (HttpRichParamModel) paramModel;
                 addHeader(richModel.createHeaders());
                 if (httpBody == null) {
                     setHttpBody(richModel.createHttpBody());
@@ -304,7 +317,7 @@ public abstract class AbstractRequest<T> {
                     setQueryBuilder(richModel.createQueryBuilder());
                 }
             }
-            Annotation as[] = model.getClass().getAnnotations();
+            Annotation as[] = paramModel.getClass().getAnnotations();
             if (as != null && as.length > 0) {
                 for (Annotation a : as) {
                     if (a instanceof HttpID) {
@@ -375,20 +388,6 @@ public abstract class AbstractRequest<T> {
         return (S) this;
     }
 
-    public DataParser<T> getDataParser() {
-        if (dataParser == null) {
-            dataParser = createDataParser();
-            dataParser.setRequest(this);
-        }
-        return dataParser;
-    }
-
-    //@SuppressWarnings("unchecked")
-    //public <S extends AbstractRequest<T>> S setDataParser(DataParser<T> dataParser) {
-    //    this.dataParser = dataParser;
-    //    return (S) this;
-    //}
-
     public LinkedHashMap<String, String> getHeaders() {
         return headers;
     }
@@ -409,6 +408,16 @@ public abstract class AbstractRequest<T> {
         return (S) this;
     }
 
+    public GlobalHttpListener getGlobalHttpListener() {
+        return globalHttpListener;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <S extends AbstractRequest<T>> S setGlobalHttpListener(GlobalHttpListener globalHttpListener) {
+        this.globalHttpListener = globalHttpListener;
+        return (S) this;
+    }
+
     /*________________________ private_methods ________________________*/
 
     /**
@@ -421,7 +430,7 @@ public abstract class AbstractRequest<T> {
         if (paramMap != null) {
             map.putAll(paramMap);
         }
-        LinkedHashMap<String, String> modelMap = getQueryBuilder().buildPrimaryMap(model);
+        LinkedHashMap<String, String> modelMap = getQueryBuilder().buildPrimaryMap(paramModel);
         if (modelMap != null) {
             map.putAll(modelMap);
         }
@@ -429,11 +438,24 @@ public abstract class AbstractRequest<T> {
     }
 
     /*________________________ enhenced_methods ________________________*/
+    @SuppressWarnings("unchecked")
+    public <S extends AbstractRequest<T>> S setLinkedHttpListener(HttpListener<T> httpListener) {
+        if (this.httpListener != null) {
+            httpListener.setLinkedListener(this.httpListener);
+        }
+        this.httpListener = httpListener;
+        return (S) this;
+    }
 
     @SuppressWarnings("unchecked")
     public <S extends AbstractRequest<T>> S setCacheMode(CacheMode cacheMode, String key) {
         this.cacheMode = cacheMode;
         this.cacheKey = key;
+        return (S) this;
+    }
+    @SuppressWarnings("unchecked")
+    public <S extends AbstractRequest<T>> S setCacheExpire(long expire, TimeUnit unit) {
+        this.cacheExpireMillis = unit.toMillis(expire);
         return (S) this;
     }
 
@@ -445,7 +467,11 @@ public abstract class AbstractRequest<T> {
     }
 
     public boolean isCancelledOrInterrupted() {
-        return isCancelled() || Thread.currentThread().isInterrupted();
+        return cancel.get() || Thread.currentThread().isInterrupted();
+    }
+
+    public boolean isInterrupted() {
+        return Thread.currentThread().isInterrupted();
     }
 
     public void cancel() {
@@ -480,7 +506,7 @@ public abstract class AbstractRequest<T> {
             } else {
                 sb.append(uri);
             }
-            if (paramMap == null && model == null) {
+            if (paramMap == null && paramModel == null) {
                 return sb.toString();
             }
             if (hasQes) {
@@ -607,10 +633,10 @@ public abstract class AbstractRequest<T> {
           .append("\n cacheMode        : ").append(cacheMode)
           .append("\n cacheKey         : ").append(cacheKey)
           .append("\n cacheExpireMillis: ").append(cacheExpireMillis)
-          .append("\n model       : ").append(model)
+          .append("\n model       : ").append(paramModel)
           .append("\n queryBuilder     : ").append(queryBuilder)
           .append("\n httpBody         : ").append(httpBody)
-          .append("\n dataParser       : ").append(dataParser)
+          .append("\n dataParser       : ").append(getDataParser())
           .append("\n header           ");
         if (headers == null) {
             sb.append(": null");

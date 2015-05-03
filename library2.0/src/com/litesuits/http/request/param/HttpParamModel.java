@@ -9,4 +9,4 @@ import java.io.Serializable;
  * @author MaTianyu
  * 2014-1-19上午2:39:31
  */
-public interface RequestModel extends Serializable{}
+public interface HttpParamModel extends Serializable{}

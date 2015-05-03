@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 public class StringCodingUtils {
 
     public static byte[] getBytes(String src, Charset charSet) {
+        // Build.VERSION_CODES.GINGERBREAD = 9
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD) {
             try {
                 return src.getBytes(charSet.name());

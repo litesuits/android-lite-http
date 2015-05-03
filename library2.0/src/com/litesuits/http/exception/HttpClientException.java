@@ -19,7 +19,7 @@ public class HttpClientException extends HttpException {
 
     public HttpClientException(Throwable cause) {
         super(cause.toString(), cause);
-        exceptionType = ClientException.SomeException;
+        exceptionType = ClientException.SomeOtherException;
     }
 
     public HttpClientException(Throwable cause, ClientException type) {

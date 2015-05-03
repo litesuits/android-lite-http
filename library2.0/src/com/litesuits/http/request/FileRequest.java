@@ -1,8 +1,7 @@
 package com.litesuits.http.request;
 
-import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.impl.FileParser;
-import com.litesuits.http.request.param.RequestModel;
+import com.litesuits.http.request.param.HttpParamModel;
 
 import java.io.File;
 
@@ -14,20 +13,22 @@ public class FileRequest extends AbstractRequest<File> {
 
     private File saveToFile;
 
-    public FileRequest() {
-        super();
-    }
+    private FileParser fileParser;
+
+//    public FileRequest() {
+//        super();
+//    }
 
     public FileRequest(String url) {
         super(url);
     }
 
-    public FileRequest(RequestModel model, String savaToPath) {
+    public FileRequest(HttpParamModel model, String savaToPath) {
         super(model);
         setFileSavePath(savaToPath);
     }
 
-    public FileRequest(RequestModel model, File saveToFile) {
+    public FileRequest(HttpParamModel model, File saveToFile) {
         super(model);
         this.saveToFile = saveToFile;
     }
@@ -42,14 +43,18 @@ public class FileRequest extends AbstractRequest<File> {
         setFileSavePath(savaToPath);
     }
 
-    public void setFileSavePath(String savaToPath) {
+    public FileRequest setFileSavePath(String savaToPath) {
         if (savaToPath != null) {
             saveToFile = new File(savaToPath);
         }
+        return this;
     }
 
     @Override
-    protected DataParser<File> createDataParser() {
-        return new FileParser(this, saveToFile);
+    public FileParser getDataParser() {
+        if (fileParser == null) {
+            fileParser = new FileParser(this);
+        }
+        return fileParser;
     }
 }

@@ -22,9 +22,9 @@ public class HttpServerException extends HttpException {
         super(status.toString());
         this.status = status;
         if (status.getCode() >= 500) {
-            exceptionType = ServerException.ServerInner;
+            exceptionType = ServerException.ServerInnerError;
         } else {
-            exceptionType = ServerException.ServerReject;
+            exceptionType = ServerException.ServerRejectClient;
         }
     }
 

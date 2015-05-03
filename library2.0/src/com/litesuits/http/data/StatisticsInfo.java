@@ -22,4 +22,11 @@ public class StatisticsInfo {
         return dataLength.longValue();
     }
 
+    @Override
+    public String toString() {
+        return "StatisticsInfo{" +
+               "connectTime=" + connectTime +
+               ", dataLength=" + dataLength +
+               '}';
+    }
 }

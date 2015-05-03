@@ -182,6 +182,25 @@ public class SmartExecutor implements Executor {
         }
     }
 
+    public int getCoreSize() {
+        return coreSize;
+    }
+
+    public SmartExecutor setCoreSize(int coreSize) {
+        this.coreSize = coreSize;
+        return this;
+    }
+
+    public int getQueueSize() {
+        return queueSize;
+    }
+
+    public SmartExecutor setQueueSize(int queueSize) {
+        this.queueSize = queueSize;
+        return this;
+    }
+
+
     public OverloadPolicy getOverloadPolicy() {
         return overloadPolicy;
     }

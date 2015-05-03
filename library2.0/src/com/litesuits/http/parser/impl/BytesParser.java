@@ -30,8 +30,8 @@ public class BytesParser extends MemeoryDataParser<byte[]> {
     }
 
     @Override
-    protected byte[] parseDiskCache(InputStream is, long length) throws IOException {
-        return streamToByteArray(is, length);
+    protected byte[] parseDiskCache(InputStream stream, long length) throws IOException {
+        return streamToByteArray(stream, length);
     }
 
     protected byte[] streamToByteArray(InputStream is, long len) throws IOException {

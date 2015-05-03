@@ -28,6 +28,7 @@ public abstract class HttpListener<Data> {
     private boolean runOnUiThread = true;
     private boolean readingNotify = false;
     private boolean uploadingNotify = false;
+    private HttpListener<Data> linkedListener;
 
     /**
      * default run on UI thread
@@ -46,11 +47,19 @@ public abstract class HttpListener<Data> {
         this.uploadingNotify = uploadingNotify;
     }
 
-    public boolean isRunOnUiThread() {
+    public final HttpListener<Data> getLinkedListener() {
+        return linkedListener;
+    }
+
+    public final void setLinkedListener(HttpListener<Data> linkedListener) {
+        this.linkedListener = linkedListener;
+    }
+
+    public final boolean isRunOnUiThread() {
         return runOnUiThread;
     }
 
-    public HttpListener<Data> setRunOnUiThread(boolean runOnUiThread) {
+    public final HttpListener<Data> setRunOnUiThread(boolean runOnUiThread) {
         this.runOnUiThread = runOnUiThread;
         if (runOnUiThread) {
             handler = new HttpHandler(Looper.getMainLooper());
@@ -60,20 +69,20 @@ public abstract class HttpListener<Data> {
         return this;
     }
 
-    public boolean isReadingNotify() {
+    public final boolean isReadingNotify() {
         return readingNotify;
     }
 
-    public HttpListener<Data> setReadingNotify(boolean readingNotify) {
+    public final HttpListener<Data> setReadingNotify(boolean readingNotify) {
         this.readingNotify = readingNotify;
         return this;
     }
 
-    public boolean isUploadingNotify() {
+    public final boolean isUploadingNotify() {
         return uploadingNotify;
     }
 
-    public HttpListener<Data> setUploadingNotify(boolean uploadingNotify) {
+    public final HttpListener<Data> setUploadingNotify(boolean uploadingNotify) {
         this.uploadingNotify = uploadingNotify;
         return this;
     }
@@ -108,7 +117,7 @@ public abstract class HttpListener<Data> {
                     break;
                 case M_READING:
                     data = (Object[]) msg.obj;
-                    onReading((AbstractRequest<Data>) data[0], (Long) data[1], (Long) data[2]);
+                    onLoading((AbstractRequest<Data>) data[0], (Long) data[1], (Long) data[2]);
                     break;
                 case M_UPLOADING:
                     data = (Object[]) msg.obj;
@@ -135,6 +144,9 @@ public abstract class HttpListener<Data> {
         } else {
             onStart(req);
         }
+        if (linkedListener != null) {
+            linkedListener.start(req);
+        }
     }
 
     public final void success(Data data, Response<Data> response) {
@@ -145,6 +157,9 @@ public abstract class HttpListener<Data> {
         } else {
             onSuccess(data, response);
         }
+        if (linkedListener != null) {
+            linkedListener.success(data, response);
+        }
     }
 
     public final void failure(HttpException e, Response<Data> response) {
@@ -154,6 +169,9 @@ public abstract class HttpListener<Data> {
             handler.sendMessage(msg);
         } else {
             onFailure(e, response);
+        }
+        if (linkedListener != null) {
+            linkedListener.failure(e, response);
         }
     }
 
@@ -169,17 +187,23 @@ public abstract class HttpListener<Data> {
         } else {
             onCancel(data, response);
         }
+        if (linkedListener != null) {
+            linkedListener.cancel(data, response);
+        }
     }
 
-    public final void reading(AbstractRequest<Data> req, long total, long len) {
+    public final void loading(AbstractRequest<Data> req, long total, long len) {
         if (readingNotify) {
             if (runOnUiThread) {
                 Message msg = handler.obtainMessage(M_READING);
                 msg.obj = new Object[]{req, total, len};
                 handler.sendMessage(msg);
             } else {
-                onReading(req, total, len);
+                onLoading(req, total, len);
             }
+        }
+        if (linkedListener != null) {
+            linkedListener.loading(req, total, len);
         }
     }
 
@@ -193,6 +217,9 @@ public abstract class HttpListener<Data> {
                 onUploading(req, total, len);
             }
         }
+        if (linkedListener != null) {
+            linkedListener.uploading(req, total, len);
+        }
     }
 
     public final void retry(AbstractRequest<Data> req, int max, int times) {
@@ -202,6 +229,9 @@ public abstract class HttpListener<Data> {
             handler.sendMessage(msg);
         } else {
             onRetry(req, max, times);
+        }
+        if (linkedListener != null) {
+            linkedListener.retry(req, max, times);
         }
     }
 
@@ -213,18 +243,21 @@ public abstract class HttpListener<Data> {
         } else {
             onRedirect(req, max, times);
         }
+        if (linkedListener != null) {
+            linkedListener.redirect(req, max, times);
+        }
     }
 
     //____________ developer override method ____________
     public void onStart(AbstractRequest<Data> request) {}
 
-    public abstract void onSuccess(Data data, Response<Data> response);
+    public void onSuccess(Data data, Response<Data> response){}
 
-    public abstract void onFailure(HttpException e, Response<Data> response);
+    public void onFailure(HttpException e, Response<Data> response){}
 
     public void onCancel(Data data, Response<Data> response) {}
 
-    public void onReading(AbstractRequest<Data> request, long total, long len) {}
+    public void onLoading(AbstractRequest<Data> request, long total, long len) {}
 
     public void onUploading(AbstractRequest<Data> request, long total, long len) {}
 

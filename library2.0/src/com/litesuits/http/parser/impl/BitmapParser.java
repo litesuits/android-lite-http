@@ -38,7 +38,7 @@ public class BitmapParser extends FileDataParser<Bitmap> {
     }
 
     @Override
-    public Bitmap readDisk(File file) {
+    public Bitmap readFromDiskCache(File file) {
         return BitmapFactory.decodeFile(file.getAbsolutePath());
     }
 

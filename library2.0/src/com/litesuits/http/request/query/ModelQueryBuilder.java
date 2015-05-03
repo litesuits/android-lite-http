@@ -4,7 +4,7 @@ import com.litesuits.http.data.Charsets;
 import com.litesuits.http.data.Consts;
 import com.litesuits.http.request.param.HttpCustomParam;
 import com.litesuits.http.request.param.HttpCustomParam.CustomValueBuilder;
-import com.litesuits.http.request.param.RequestModel;
+import com.litesuits.http.request.param.HttpParamModel;
 import com.litesuits.http.request.param.NonHttpParam;
 
 import java.io.UnsupportedEncodingException;
@@ -27,7 +27,7 @@ public abstract class ModelQueryBuilder {
 
 	protected String charSet = Charsets.UTF_8;
 
-	public LinkedHashMap<String, String> buildPrimaryMap(RequestModel model) throws IllegalArgumentException,
+	public LinkedHashMap<String, String> buildPrimaryMap(HttpParamModel model) throws IllegalArgumentException,
 			IllegalAccessException, InvocationTargetException, UnsupportedEncodingException {
 		if (model == null) { return null; }
 		// find all field.

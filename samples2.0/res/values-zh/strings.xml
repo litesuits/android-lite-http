@@ -48,8 +48,8 @@
         <item>11. 禁用网络</item>
         <item>12. 流量、时长统计</item>
         <item>13. 重试和重定向</item>
-        <item>14. 异常处理最佳实践</item>
-        <item>15. 取消请求最佳实践</item>
+        <item>14. 最佳实践：异常处理</item>
+        <item>15. 最佳实践：取消请求</item>
 
         <item>16. POST多形态数据</item>
         <item>17. 并发与调度策略</item>
@@ -58,6 +58,7 @@
         <item>20. 双层缓存机制</item>
         <item>21. 回调机制详解</item>
         <item>22. 最佳实践：使用SmartExecutor</item>
+        <item>23. 最佳实践：全自动转换复杂对象</item>
     </string-array>
 
     <string-array name="http_test_post">

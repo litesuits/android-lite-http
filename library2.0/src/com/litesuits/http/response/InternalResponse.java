@@ -40,11 +40,12 @@ public class InternalResponse<T> implements Response<T> {
     }
 
     @Override
-    public AbstractRequest<T> getRequest() {
-        return request;
+    @SuppressWarnings("unchecked")
+    public <R extends AbstractRequest<T>> R getRequest() {
+        return (R) request;
     }
 
-    public void setRequest(AbstractRequest<T> request) {
+    public <R extends AbstractRequest<T>> void setRequest(R request) {
         this.request = request;
     }
 
@@ -164,6 +165,7 @@ public class InternalResponse<T> implements Response<T> {
         return resToString();
     }
 
+    @Override
     public String resToString() {
         StringBuilder sb = new StringBuilder();
         sb.append("_____________________ lite http response info start _____________________")

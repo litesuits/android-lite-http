@@ -28,6 +28,7 @@
         <item>20. Multi Cache Mechanism</item>
         <item>21. CallBack Mechanism</item>
         <item>22. Best Practices of SmartExecutor</item>
+        <item>23. Automatic Conversion of Complex Model</item>
     </string-array>
 
     <string-array name="http_test_post">

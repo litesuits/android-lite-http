@@ -35,7 +35,7 @@ public class FileParser extends FileDataParser<File> {
     }
 
     @Override
-    public File readDisk(File file) {
+    public File readFromDiskCache(File file) {
         return file;
     }
 }

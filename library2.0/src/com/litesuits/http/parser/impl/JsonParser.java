@@ -17,27 +17,38 @@ public class JsonParser<T> extends MemeoryDataParser<T> {
     private Class<T> claxx;
     private String json;
 
-    public JsonParser(Class<T> claxx) {
-        this(null, claxx);
-    }
-
     public JsonParser(AbstractRequest<T> request, Class<T> claxx) {
         super(request);
         this.claxx = claxx;
     }
 
     @Override
-    protected T parseNetStream(InputStream stream, long totalLength, String charSet, String cacheDir) throws IOException {
+    protected T parseNetStream(InputStream stream, long totalLength, String charSet,
+                               String cacheDir) throws IOException {
         json = streamToString(stream, totalLength, charSet);
-        if(request.needCache()){
-            keepToCache(json,getSpecifyFile(cacheDir));
+        if (request.needCache()) {
+            keepToCache(json, getSpecifyFile(cacheDir));
         }
         return Json.get().toObject(json, claxx);
     }
 
     @Override
-    protected T parseDiskCache(InputStream is, long length) throws IOException {
-        json = streamToString(is, length, charSet);
+    protected T parseDiskCache(InputStream stream, long length) throws IOException {
+        json = streamToString(stream, length, charSet);
+        return Json.get().toObject(json, claxx);
+    }
+
+    /**
+     * get the row string
+     */
+    public String getRawString() {
+        return json;
+    }
+
+    /**
+     * get the json model
+     */
+    public <C> C getJsonModel(Class<C> claxx) {
         return Json.get().toObject(json, claxx);
     }
 
