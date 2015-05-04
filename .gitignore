@@ -34,3 +34,5 @@ proguard/
 *.ipr
 *.iws
 .idea/
+
+.DS_Store
