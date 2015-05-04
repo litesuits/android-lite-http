@@ -1,5 +1,4 @@
 # root files
-sample-server/
 
 # built application files
 *.apk
@@ -14,10 +13,10 @@ sample-server/
 # generated files
 bin/
 gen/
+out/
 
 # Local configuration file (sdk path, etc)
 local.properties
-ic_launcher-web.png
 proguard-project.txt
 
 # Eclipse project files
@@ -33,6 +32,7 @@ proguard/
 *.iml
 *.ipr
 *.iws
+*.properties
 .idea/
 
 .DS_Store
