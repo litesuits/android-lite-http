@@ -8,9 +8,9 @@ package com.litesuits.http.log;
  */
 public final class HttpLog {
 
-    public static final boolean isPrint = true;
-    private static String defaultTag = "HttpLog";
-    private static final String NULL = "NULL";
+    public static boolean isPrint = false;
+    public static String defaultTag = "HttpLog";
+    public static final String NULL = "NULL";
 
     private HttpLog() {}
 

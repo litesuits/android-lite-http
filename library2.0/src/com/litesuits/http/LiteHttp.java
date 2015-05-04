@@ -10,6 +10,8 @@ import com.litesuits.http.concurrent.SmartExecutor;
 import com.litesuits.http.data.NameValuePair;
 import com.litesuits.http.data.StatisticsInfo;
 import com.litesuits.http.exception.*;
+import com.litesuits.http.exception.ClientException;
+import com.litesuits.http.exception.NetException;
 import com.litesuits.http.impl.apache.ApacheHttpClient;
 import com.litesuits.http.listener.GlobalHttpListener;
 import com.litesuits.http.listener.HttpListener;
@@ -120,10 +122,10 @@ public abstract class LiteHttp {
     protected AtomicLong memCachedSize = new AtomicLong();
     protected ConcurrentHashMap<String, HttpCache> memCache = new ConcurrentHashMap<String, HttpCache>();
 
-//    protected LiteHttp(HttpConfig config) {
-//        initConfig(config);
-//    }
-    protected LiteHttp(){}
+    //    protected LiteHttp(HttpConfig config) {
+    //        initConfig(config);
+    //    }
+    protected LiteHttp() {}
 
     public static LiteHttp newApacheHttpClient(HttpConfig config) {
         return new ApacheHttpClient(config);
@@ -165,10 +167,13 @@ public abstract class LiteHttp {
         }
     }
 
+    public final void setDebugged(boolean debug) {
+        HttpLog.isPrint = debug;
+    }
+
     public final HttpConfig getConfig() {
         return config;
     }
-
 
     public final Context getAppContext() {
         return config.context;
@@ -232,12 +237,13 @@ public abstract class LiteHttp {
         final InternalResponse<T> response = handleRequest(request);
         if (HttpLog.isPrint) {
             Thread t = Thread.currentThread();
-            HttpLog.i(TAG, "lite http request: " + request.getUri()
-                           + " , tag: " + request.getTag()
-                           + " , method: " + request.getMethod()
-                           + " , cache mode: " + request.getCacheMode()
-                           + " , thread ID: " + t.getId()
-                           + " , thread name: " + t.getName());
+            HttpLog.i(TAG,
+                      "lite http request: " + request.getUri()
+                      + " , tag: " + request.getTag()
+                      + " , method: " + request.getMethod()
+                      + " , cache mode: " + request.getCacheMode()
+                      + " , thread ID: " + t.getId()
+                      + " , thread name: " + t.getName());
         }
         HttpException httpException = null;
         final HttpListener<T> listener = request.getHttpListener();
@@ -432,8 +438,10 @@ public abstract class LiteHttp {
                 statistic.onStart(request);
             }
             if (!request.isCancelledOrInterrupted()) {
-                HttpLog.v(TAG, "lite http try to connect network...  url: " + request.getUri()
-                               + "  tag: " + request.getTag());
+                if (HttpLog.isPrint) {
+                    HttpLog.v(TAG, "lite http try to connect network...  url: " + request.getUri()
+                                   + "  tag: " + request.getTag());
+                }
                 tryToDetectNetwork();
                 connectWithRetries(request, response);
                 tryToKeepCacheInMemory(response);
@@ -470,12 +478,14 @@ public abstract class LiteHttp {
                 if (expire <= 0 || expire > getCurrentTimeMillis() - cache.time) {
                     request.getDataParser().readFromMemoryCache(cache.data);
                     response.setCacheHit(true);
-                    HttpLog.i(TAG, "lite-http mem cache hit!  "
-                                   + "  url:" + request.getUri()
-                                   + "  tag:" + request.getTag()
-                                   + "  key:" + key
-                                   + "  cache time:" + HttpUtil.formatDate(cache.time)
-                                   + "  expire: " + expire);
+                    if (HttpLog.isPrint) {
+                        HttpLog.i(TAG, "lite-http mem cache hit!  "
+                                       + "  url:" + request.getUri()
+                                       + "  tag:" + request.getTag()
+                                       + "  key:" + key
+                                       + "  cache time:" + HttpUtil.formatDate(cache.time)
+                                       + "  expire: " + expire);
+                    }
                     return true;
                 }
             }
@@ -488,12 +498,14 @@ public abstract class LiteHttp {
             if (expire <= 0 || expire > getCurrentTimeMillis() - file.lastModified()) {
                 request.getDataParser().readFromDiskCache(file);
                 response.setCacheHit(true);
-                HttpLog.i(TAG, "lite-http disk cache hit!  "
-                               + "  url:" + request.getUri()
-                               + "  tag:" + request.getTag()
-                               + "  key:" + key
-                               + "  cache time:" + HttpUtil.formatDate(file.lastModified())
-                               + "  expire: " + expire);
+                if (HttpLog.isPrint) {
+                    HttpLog.i(TAG, "lite-http disk cache hit!  "
+                                   + "  url:" + request.getUri()
+                                   + "  tag:" + request.getTag()
+                                   + "  key:" + key
+                                   + "  cache time:" + HttpUtil.formatDate(file.lastModified())
+                                   + "  expire: " + expire);
+                }
                 return true;
             }
         }
@@ -507,16 +519,19 @@ public abstract class LiteHttp {
         AbstractRequest<T> request = response.getRequest();
         if (request.needCache()) {
             DataParser<T> dataParser = request.getDataParser();
-            HttpLog.v(TAG, "lite http try to keep cache.. maximum cache len: " + config.maxMemCacheBytesSize
-                           + "   now cache len: " + memCachedSize.get()
-                           + "   wanna put len: " + dataParser.getReadedLength()
-                           + "   url: " + request.getUri()
-                           + "   tag: " + request.getTag()
-            );
+            if (HttpLog.isPrint) {
+                HttpLog.v(TAG, "lite http try to keep cache.. maximum cache len: " + config.maxMemCacheBytesSize
+                               + "   now cache len: " + memCachedSize.get()
+                               + "   wanna put len: " + dataParser.getReadedLength()
+                               + "   url: " + request.getUri()
+                               + "   tag: " + request.getTag());
+            }
             if (dataParser.isMemCacheSupport()) {
                 if (memCachedSize.get() + dataParser.getReadedLength() > config.maxMemCacheBytesSize) {
                     clearMemCache();
-                    HttpLog.i(TAG, "lite http cache full ______________ and clear all mem cache success");
+                    if (HttpLog.isPrint) {
+                        HttpLog.i(TAG, "lite http cache full ______________ and clear all mem cache success");
+                    }
                 }
                 if (dataParser.getReadedLength() < config.maxMemCacheBytesSize) {
                     HttpCache<T> cache = new HttpCache<T>();
@@ -528,11 +543,13 @@ public abstract class LiteHttp {
                     synchronized (lock) {
                         memCache.put(cache.key, cache);
                         memCachedSize.addAndGet(cache.length);
-                        HttpLog.v(TAG, "lite http keep mem cache success, "
-                                       + "   url: " + request.getUri()
-                                       + "   tag: " + request.getTag()
-                                       + "   key: " + cache.key
-                                       + "   len: " + cache.length);
+                        if (HttpLog.isPrint) {
+                            HttpLog.v(TAG, "lite http keep mem cache success, "
+                                           + "   url: " + request.getUri()
+                                           + "   tag: " + request.getTag()
+                                           + "   key: " + cache.key
+                                           + "   len: " + cache.length);
+                        }
                     }
                 }
                 return true;

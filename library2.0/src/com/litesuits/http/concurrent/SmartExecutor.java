@@ -28,42 +28,60 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SmartExecutor implements Executor {
     private static final String TAG = SmartExecutor.class.getSimpleName();
-
-    private static ThreadPoolExecutor threadPool = new ThreadPoolExecutor(
-            HttpUtil.getCoresNumbers(),
-            Integer.MAX_VALUE,
-            10, TimeUnit.SECONDS,
-            new SynchronousQueue<Runnable>(),
-            new ThreadFactory() {
-                static final String NAME = "lite-";
-                AtomicInteger IDS = new AtomicInteger(1);
-
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, NAME + IDS.getAndIncrement());
-                }
-            },
-            new ThreadPoolExecutor.DiscardPolicy());
-
+    private static ThreadPoolExecutor threadPool;
     private int coreSize = HttpUtil.getCoresNumbers();
     private int queueSize = coreSize * 32;
     private final Object lock = new Object();
-    private ArrayList<Runnable> runningList;
-    private ArrayDeque<Runnable> waitingQueue;
+    private ArrayList<Runnable> runningList = new ArrayList<Runnable>(coreSize);
+    private ArrayDeque<Runnable> waitingQueue = new ArrayDeque<Runnable>(queueSize);
     private SchedulePolicy schedulePolicy = SchedulePolicy.FirstInFistRun;
     private OverloadPolicy overloadPolicy = OverloadPolicy.DiscardOldTaskInQueue;
 
 
     public SmartExecutor() {
-        waitingQueue = new ArrayDeque<Runnable>(queueSize);
-        runningList = new ArrayList<Runnable>(coreSize);
+        initThreadPool();
     }
 
     public SmartExecutor(int coreSize, int queueSize) {
         this.coreSize = coreSize;
         this.queueSize = queueSize;
-        waitingQueue = new ArrayDeque<Runnable>(queueSize);
-        runningList = new ArrayList<Runnable>(coreSize);
+        initThreadPool();
+    }
+
+    protected synchronized void initThreadPool() {
+        if (HttpLog.isPrint) {
+            HttpLog.v(TAG, "SmartExecutor core-queue size: " + coreSize + " - " + queueSize
+                           + "  running-wait task: " + runningList.size() + " - " + waitingQueue.size());
+        }
+        if (threadPool == null) {
+            threadPool = createDefaultThreadPool();
+        }
+    }
+
+    public static ThreadPoolExecutor createDefaultThreadPool() {
+        return new ThreadPoolExecutor(
+                1,
+                Integer.MAX_VALUE,
+                3, TimeUnit.SECONDS,
+                new SynchronousQueue<Runnable>(),
+                new ThreadFactory() {
+                    static final String NAME = "lite-";
+                    AtomicInteger IDS = new AtomicInteger(1);
+
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        return new Thread(r, NAME + IDS.getAndIncrement());
+                    }
+                },
+                new ThreadPoolExecutor.DiscardPolicy());
+    }
+
+    public static void setThreadPool(ThreadPoolExecutor threadPool) {
+        SmartExecutor.threadPool = threadPool;
+    }
+
+    public static ThreadPoolExecutor getThreadPool() {
+        return threadPool;
     }
 
     /**
@@ -92,19 +110,21 @@ public class SmartExecutor implements Executor {
         };
         boolean callerRun = false;
         synchronized (lock) {
-            if (HttpLog.isPrint) {
-                HttpLog.v(TAG, "SmartExecutor core-queue size: " + coreSize + " - " + queueSize
-                               + "  running-wait task: " + runningList.size() + " - " + waitingQueue.size());
-            }
+            //            if (HttpLog.isPrint) {
+            //                HttpLog.v(TAG, "SmartExecutor core-queue size: " + coreSize + " - " + queueSize
+            //                               + "  running-wait task: " + runningList.size() + " - " + waitingQueue.size());
+            //            }
             if (runningList.size() < coreSize) {
                 runningList.add(scheduler);
                 threadPool.execute(scheduler);
-                HttpLog.v(TAG, "SmartExecutor task execute");
+                //                HttpLog.v(TAG, "SmartExecutor task execute");
             } else if (waitingQueue.size() < queueSize) {
                 waitingQueue.addLast(scheduler);
-                HttpLog.v(TAG, "SmartExecutor task waiting");
+                //                HttpLog.v(TAG, "SmartExecutor task waiting");
             } else {
-                HttpLog.w(TAG, "SmartExecutor overload , policy is: " + overloadPolicy);
+                if (HttpLog.isPrint) {
+                    HttpLog.w(TAG, "SmartExecutor overload , policy is: " + overloadPolicy);
+                }
                 switch (overloadPolicy) {
                     case DiscardNewTaskInQueue:
                         waitingQueue.pollLast();
@@ -128,7 +148,9 @@ public class SmartExecutor implements Executor {
             //printThreadPoolInfo();
         }
         if (callerRun) {
-            HttpLog.w(TAG, "SmartExecutor task running in caller thread");
+            if (HttpLog.isPrint) {
+                HttpLog.w(TAG, "SmartExecutor task running in caller thread");
+            }
             command.run();
         }
     }
@@ -136,10 +158,10 @@ public class SmartExecutor implements Executor {
     private void scheduleNext(Runnable scheduler) {
         synchronized (lock) {
             boolean suc = runningList.remove(scheduler);
-            if (HttpLog.isPrint) {
-                HttpLog.v(TAG, "Thread " + Thread.currentThread().getName()
-                               + " is completed. remove prior: " + suc + ", try schedule next..");
-            }
+//            if (HttpLog.isPrint) {
+//                HttpLog.v(TAG, "Thread " + Thread.currentThread().getName()
+//                               + " is completed. remove prior: " + suc + ", try schedule next..");
+//            }
             if (!suc) {
                 runningList.clear();
                 HttpLog.e(TAG,
@@ -161,18 +183,19 @@ public class SmartExecutor implements Executor {
                 if (waitingRun != null) {
                     runningList.add(waitingRun);
                     threadPool.execute(waitingRun);
-                    HttpLog.v(TAG, "Thread " + Thread.currentThread().getName() + " execute next task..");
+//                    HttpLog.v(TAG, "Thread " + Thread.currentThread().getName() + " execute next task..");
                 } else {
                     HttpLog.e(TAG,
                               "SmartExecutor get a NULL task from waiting queue: " + Thread.currentThread().getName());
                 }
-            } else {
-                if (HttpLog.isPrint) {
-                    HttpLog.v(TAG, "SmartExecutor: all tasks is completed. current thread: " +
-                                   Thread.currentThread().getName());
-                    //printThreadPoolInfo();
-                }
             }
+//            else {
+//                if (HttpLog.isPrint) {
+//                    HttpLog.v(TAG, "SmartExecutor: all tasks is completed. current thread: " +
+//                                   Thread.currentThread().getName());
+//                    //printThreadPoolInfo();
+//                }
+//            }
         }
     }
 
@@ -205,6 +228,10 @@ public class SmartExecutor implements Executor {
             throw new NullPointerException("coreSize can not <= 0 !");
         }
         this.coreSize = coreSize;
+        if (HttpLog.isPrint) {
+            HttpLog.v(TAG, "SmartExecutor core-queue size: " + coreSize + " - " + queueSize
+                           + "  running-wait task: " + runningList.size() + " - " + waitingQueue.size());
+        }
         return this;
     }
 
@@ -223,7 +250,12 @@ public class SmartExecutor implements Executor {
         if (queueSize < 0) {
             throw new NullPointerException("queueSize can not < 0 !");
         }
+
         this.queueSize = queueSize;
+        if (HttpLog.isPrint) {
+            HttpLog.v(TAG, "SmartExecutor core-queue size: " + coreSize + " - " + queueSize
+                           + "  running-wait task: " + runningList.size() + " - " + waitingQueue.size());
+        }
         return this;
     }
 
@@ -248,10 +280,6 @@ public class SmartExecutor implements Executor {
             throw new NullPointerException("SchedulePolicy can not be null !");
         }
         this.schedulePolicy = schedulePolicy;
-    }
-
-    public static ThreadPoolExecutor getThreadPool() {
-        return threadPool;
     }
 
 }

@@ -51,7 +51,9 @@ public abstract class FileDataParser<T> extends DataParser<T> {
             File pFile = file.getParentFile();
             if (!pFile.exists()) {
                 boolean mk = pFile.mkdirs();
-                HttpLog.i(TAG, "keep cache mkdirs result: " + mk + "  path:" + pFile.getAbsolutePath());
+                if (HttpLog.isPrint) {
+                    HttpLog.i(TAG, "keep cache mkdirs result: " + mk + "  path:" + pFile.getAbsolutePath());
+                }
             }
             //if (!file.exists()) {
             //    boolean cf = file.createNewFile();

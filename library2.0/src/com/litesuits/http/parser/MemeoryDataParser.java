@@ -99,7 +99,9 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
                 File pFile = file.getParentFile();
                 if (!pFile.exists()) {
                     boolean mk = pFile.mkdirs();
-                    HttpLog.i(TAG, "keep cache mkdirs result: " + mk + "  path:" + pFile.getAbsolutePath());
+                    if (HttpLog.isPrint) {
+                        HttpLog.i(TAG, "keep cache mkdirs result: " + mk + "  path:" + pFile.getAbsolutePath());
+                    }
                 }
                 //if (!file.exists()) {
                 //    boolean cf = file.createNewFile();
@@ -107,12 +109,14 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
                 //}
                 fos = new FileOutputStream(file);
                 fos.write(data);
-                HttpLog.v(TAG,
-                          "lite http keep disk cache success, "
-                          + "   tag: " + request.getTag()
-                          + "   url: " + request.getUri()
-                          + "   key: " + request.getCacheKey()
-                          + "   path: " + file.getAbsolutePath());
+                if (HttpLog.isPrint) {
+                    HttpLog.v(TAG,
+                              "lite http keep disk cache success, "
+                              + "   tag: " + request.getTag()
+                              + "   url: " + request.getUri()
+                              + "   key: " + request.getCacheKey()
+                              + "   path: " + file.getAbsolutePath());
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 if (fos != null) {
@@ -132,17 +136,17 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
         }
     }
 
-//    protected byte[] getBytes(String src, Charset charSet) {
-//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD) {
-//            try {
-//                return src.getBytes(charSet.name());
-//            } catch (UnsupportedEncodingException e) {
-//                e.printStackTrace();
-//            }
-//            return null;
-//        } else {
-//            return src.getBytes(charSet);
-//        }
-//    }
+    //    protected byte[] getBytes(String src, Charset charSet) {
+    //        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD) {
+    //            try {
+    //                return src.getBytes(charSet.name());
+    //            } catch (UnsupportedEncodingException e) {
+    //                e.printStackTrace();
+    //            }
+    //            return null;
+    //        } else {
+    //            return src.getBytes(charSet);
+    //        }
+    //    }
 
 }
