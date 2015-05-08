@@ -136,20 +136,15 @@ public class MainActivity extends Activity {
             case 0:
                 // 0. Quickly Configuration
 
-                HttpConfig config = liteHttp.getConfig();
+                HttpConfig config = new HttpConfig(activity);
                 // set app context
                 config.setContext(activity);
                 // custom User-Agent
-                config.setUserAgent("Mozilla/5.0 (Linux; U; Android 4.1.2; en-us; Nexus One Build/FRF91)");
-                // connect timeout: 10s,  socket timeout: 10s,  socket buffer size: 4096
-                config.setForHttpParams(1000, 1500, 4096);
-                // set the number of concurrent tasks at the same time
-                config.setConcurrentSize(HttpUtil.getProcessorsCount());
-                // set the maximum number of waiting tasks. if request number greater than #concurrentSize then wait.
-                config.setWaitingQueueSize(64);
-                // set max retry times
-                config.setDefaultMaxRetryTimes(2);
-                // other configuration...
+                config.setUserAgent("Mozilla/5.0 (...)");
+                // connect timeout: 10s,  socket timeout: 10s
+                config.setTimeOut(1000, 1000);
+                // init config
+                liteHttp.initConfig(config);
 
                 HttpUtil.showTips(activity, "LiteHttp2.0", "配置参数成功");
                 break;
@@ -171,8 +166,6 @@ public class MainActivity extends Activity {
                             }
                         }
                 );
-
-                liteHttp.executeAsync(request);
 
                 // 1.1 perform async
                 FutureTask<String> task = liteHttp.performAsync(request);
@@ -785,10 +778,12 @@ public class MainActivity extends Activity {
                 newConfig.setDisableNetworkFlags(HttpConfig.FLAG_NET_DISABLE_NONE);
                 // whether open the traffic & time statistics
                 newConfig.setDoStatistics(true);
-                // set connect timeout: 10s,  socket timeout: 10s,  socket buffer size: 4096
-                newConfig.setForHttpParams(10000, 5000, 4096);
+                // set connect timeout: 10s,  socket timeout: 10s
+                newConfig.setTimeOut(10000, 10000);
+                // socket buffer size: 4096
+                newConfig.setSocketBufferSize(4096);
                 // if the network is unstable, wait 3000 milliseconds then start retry.
-                newConfig.setForRetryHandler(3000, false);
+                newConfig.setForRetry(3000, false);
                 // set global http listener to all request
                 newConfig.setGlobalHttpListener(null);
                 // set maximum size of memory cache space

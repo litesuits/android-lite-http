@@ -41,7 +41,7 @@ public abstract class HttpListener<Data> {
         setRunOnUiThread(runOnUiThread);
     }
 
-    protected HttpListener(boolean runOnUiThread, boolean readingNotify, boolean uploadingNotify) {
+    public HttpListener(boolean runOnUiThread, boolean readingNotify, boolean uploadingNotify) {
         this(runOnUiThread);
         this.readingNotify = readingNotify;
         this.uploadingNotify = uploadingNotify;

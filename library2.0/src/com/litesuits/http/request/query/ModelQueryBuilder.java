@@ -87,17 +87,17 @@ public abstract class ModelQueryBuilder {
 	//		return (f.getAnnotation(NonHttpParam.class) != null) || f.isSynthetic();
 	//	}
 
-	protected boolean isInvalidField(Field f) {
+	protected static boolean isInvalidField(Field f) {
 		return (Modifier.isStatic(f.getModifiers()) && Modifier.isFinal(f.getModifiers()))
 				|| (f.getAnnotation(NonHttpParam.class) != null) || f.isSynthetic();
 	}
 
-	protected boolean isPrimitive(Object value) {
+	protected static boolean isPrimitive(Object value) {
 		return value instanceof CharSequence || value instanceof Number || value instanceof Boolean
 				|| value instanceof Character;
 	}
 
-	protected ArrayList<Field> getAllDeclaredFields(Class<?> claxx) {
+	protected static ArrayList<Field> getAllDeclaredFields(Class<?> claxx) {
 		// find all field.
 		ArrayList<Field> fieldList = new ArrayList<Field>();
 		while (claxx != null && claxx != Object.class) {

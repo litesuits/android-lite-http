@@ -33,8 +33,12 @@ public class BitmapParser extends FileDataParser<Bitmap> {
 
     @Override
     public Bitmap parseNetStream(InputStream stream, long len, String charSet, String cacheDir) throws IOException {
-        File file = streamToFile(stream, len, cacheDir);
-        return BitmapFactory.decodeFile(file.getAbsolutePath());
+        if (request.needCache() || this.file != null) {
+            File file = streamToFile(stream, len, cacheDir);
+            return BitmapFactory.decodeFile(file.getAbsolutePath());
+        } else {
+            return BitmapFactory.decodeStream(stream);
+        }
     }
 
     @Override

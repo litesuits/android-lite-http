@@ -10,8 +10,6 @@ import com.litesuits.http.concurrent.SmartExecutor;
 import com.litesuits.http.data.NameValuePair;
 import com.litesuits.http.data.StatisticsInfo;
 import com.litesuits.http.exception.*;
-import com.litesuits.http.exception.ClientException;
-import com.litesuits.http.exception.NetException;
 import com.litesuits.http.impl.apache.ApacheHttpClient;
 import com.litesuits.http.listener.GlobalHttpListener;
 import com.litesuits.http.listener.HttpListener;
@@ -20,14 +18,17 @@ import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.network.Network;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.request.AbstractRequest;
+import com.litesuits.http.request.JsonRequest;
 import com.litesuits.http.request.StringRequest;
 import com.litesuits.http.request.param.CacheMode;
 import com.litesuits.http.request.param.HttpMethods;
+import com.litesuits.http.request.param.HttpRichParamModel;
 import com.litesuits.http.response.InternalResponse;
 import com.litesuits.http.response.Response;
 import com.litesuits.http.utils.HttpUtil;
 
 import java.io.File;
+import java.lang.reflect.ParameterizedType;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.FutureTask;
@@ -167,8 +168,12 @@ public abstract class LiteHttp {
         }
     }
 
-    public final void setDebugged(boolean debug) {
-        HttpLog.isPrint = debug;
+    /**
+     * when debugged is true, the {@link Log} is opened.
+     * @param debugged true if debugged
+     */
+    public void setDebugged(boolean debugged){
+        HttpLog.isPrint = debugged;
     }
 
     public final HttpConfig getConfig() {
@@ -211,26 +216,6 @@ public abstract class LiteHttp {
             }
         }
         return len;
-    }
-
-    public void executeAsync(final AbstractRequest request) {
-        smartExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                execute(request);
-            }
-        });
-    }
-
-    public <T> FutureTask<T> performAsync(final AbstractRequest<T> request) {
-        FutureTask<T> futureTask = new FutureTask<T>(new Callable<T>() {
-            @Override
-            public T call() throws Exception {
-                return execute(request).getResult();
-            }
-        });
-        smartExecutor.execute(futureTask);
-        return futureTask;
     }
 
     public <T> Response<T> execute(AbstractRequest<T> request) {
@@ -313,6 +298,45 @@ public abstract class LiteHttp {
     protected abstract <T> void connectWithRetries(AbstractRequest<T> request, InternalResponse response)
             throws HttpClientException, HttpNetException, HttpServerException;
 
+    public void executeAsync(final AbstractRequest request) {
+        smartExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                execute(request);
+            }
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> Response<T> execute(HttpRichParamModel<T> model) {
+        Class claxx = (Class) ((ParameterizedType) model.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        JsonRequest<T> request = new JsonRequest<T>(model, claxx);
+        return execute(request);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> JsonRequest<T> executeAsync(HttpRichParamModel<T> model) {
+        Class claxx = (Class) ((ParameterizedType) model.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        JsonRequest<T> request = new JsonRequest<T>(model, claxx);
+        executeAsync(request);
+        return request;
+    }
+
+    public <T> T perform(AbstractRequest<T> request) {
+        return execute(request).getResult();
+    }
+
+    public <T> FutureTask<T> performAsync(final AbstractRequest<T> request) {
+        FutureTask<T> futureTask = new FutureTask<T>(new Callable<T>() {
+            @Override
+            public T call() throws Exception {
+                return execute(request).getResult();
+            }
+        });
+        smartExecutor.execute(futureTask);
+        return futureTask;
+    }
+
     public <T> Response<T> executeOrThrow(AbstractRequest<T> request) throws HttpException {
         final Response<T> response = execute(request);
         HttpException e = response.getException();
@@ -324,10 +348,6 @@ public abstract class LiteHttp {
 
     public <T> T performOrThrow(AbstractRequest<T> request) throws HttpException {
         return executeOrThrow(request).getResult();
-    }
-
-    public <T> T perform(AbstractRequest<T> request) {
-        return execute(request).getResult();
     }
 
     public String get(String uri) {

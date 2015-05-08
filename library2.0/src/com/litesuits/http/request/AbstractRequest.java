@@ -152,6 +152,11 @@ public abstract class AbstractRequest<T> {
         setParamModel(paramModel);
     }
 
+    public AbstractRequest(HttpParamModel paramModel, HttpListener<T> listener) {
+        setParamModel(paramModel);
+        setHttpListener(listener);
+    }
+
     public AbstractRequest(String uri, HttpParamModel paramModel) {
         setParamModel(paramModel);
         this.uri = uri;

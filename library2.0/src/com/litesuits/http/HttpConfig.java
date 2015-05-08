@@ -447,9 +447,16 @@ public class HttpConfig {
         return this;
     }
 
-    public HttpConfig setForHttpParams(int connectTimeout, int socketTimeout, int socketBufferSize) {
+    public HttpConfig setTimeOut(int connectTimeout, int socketTimeout) {
         this.connectTimeout = connectTimeout;
         this.socketTimeout = socketTimeout;
+        if (liteHttp != null) {
+            liteHttp.setConfigForHttpParams(connectTimeout, socketTimeout, socketBufferSize);
+        }
+        return this;
+    }
+
+    public HttpConfig setSocketBufferSize(int socketBufferSize) {
         this.socketBufferSize = socketBufferSize;
         if (liteHttp != null) {
             liteHttp.setConfigForHttpParams(connectTimeout, socketTimeout, socketBufferSize);
@@ -457,7 +464,7 @@ public class HttpConfig {
         return this;
     }
 
-    public HttpConfig setForRetryHandler(int retrySleepMillis, boolean requestSentRetryEnabled) {
+    public HttpConfig setForRetry(int retrySleepMillis, boolean requestSentRetryEnabled) {
         this.retrySleepMillis = retrySleepMillis;
         this.requestSentRetryEnabled = requestSentRetryEnabled;
         if (liteHttp != null) {
