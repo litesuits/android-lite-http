@@ -51,8 +51,9 @@ public abstract class HttpListener<Data> {
         return linkedListener;
     }
 
-    public final void setLinkedListener(HttpListener<Data> linkedListener) {
+    public final HttpListener<Data> setLinkedListener(HttpListener<Data> linkedListener) {
         this.linkedListener = linkedListener;
+        return this;
     }
 
     public final boolean isRunOnUiThread() {
@@ -251,9 +252,9 @@ public abstract class HttpListener<Data> {
     //____________ developer override method ____________
     public void onStart(AbstractRequest<Data> request) {}
 
-    public void onSuccess(Data data, Response<Data> response){}
+    public void onSuccess(Data data, Response<Data> response) {}
 
-    public void onFailure(HttpException e, Response<Data> response){}
+    public void onFailure(HttpException e, Response<Data> response) {}
 
     public void onCancel(Data data, Response<Data> response) {}
 

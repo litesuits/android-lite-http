@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class AbstractRequest<T> {
     private static final String TAG = AbstractRequest.class.getSimpleName();
-    private static final String ENCODE_PATTERN_URL = "^.+\\?(%[0-9a-fA-F]+|[=&A-Za-z0-9_#\\-\\.\\*])+$";
+    private static final String ENCODE_PATTERN_URL = "^.+\\?(%[0-9a-fA-F]+|[=&A-Za-z0-9_#\\-\\.\\*])*$";
     /**
      * you can give an id to a request
      */
@@ -311,15 +311,15 @@ public abstract class AbstractRequest<T> {
             this.paramModel = paramModel;
             if (paramModel instanceof HttpRichParamModel) {
                 HttpRichParamModel richModel = (HttpRichParamModel) paramModel;
-                addHeader(richModel.createHeaders());
+                addHeader(richModel.getHeaders());
                 if (httpBody == null) {
-                    setHttpBody(richModel.createHttpBody());
+                    setHttpBody(richModel.getHttpBody());
                 }
                 if (httpListener == null) {
-                    setHttpListener(richModel.createHttpListener());
+                    setHttpListener(richModel.getHttpListener());
                 }
                 if (queryBuilder == null) {
-                    setQueryBuilder(richModel.createQueryBuilder());
+                    setQueryBuilder(richModel.getModelQueryBuilder());
                 }
             }
             Annotation as[] = paramModel.getClass().getAnnotations();
@@ -347,7 +347,13 @@ public abstract class AbstractRequest<T> {
                         }
                     } else if (a instanceof HttpCacheExpire) {
                         if (cacheExpireMillis == 0) {
-                            cacheExpireMillis = ((HttpCacheExpire) a).value();
+                            TimeUnit unit = ((HttpCacheExpire) a).unit();
+                            long time = ((HttpCacheExpire) a).value();
+                            if (unit != null) {
+                                cacheExpireMillis = unit.toMillis(time);
+                            } else {
+                                cacheExpireMillis = time;
+                            }
                         }
                     } else if (a instanceof HttpCacheKey) {
                         if (cacheKey == null) {
@@ -646,7 +652,7 @@ public abstract class AbstractRequest<T> {
           .append("\n cacheMode        : ").append(cacheMode)
           .append("\n cacheKey         : ").append(cacheKey)
           .append("\n cacheExpireMillis: ").append(cacheExpireMillis)
-          .append("\n model       : ").append(paramModel)
+          .append("\n model            : ").append(paramModel)
           .append("\n queryBuilder     : ").append(queryBuilder)
           .append("\n httpBody         : ").append(httpBody)
           .append("\n dataParser       : ").append(getDataParser())
@@ -659,10 +665,10 @@ public abstract class AbstractRequest<T> {
             }
         }
         sb.append("\n paramMap         ");
-        if (headers == null) {
+        if (paramMap == null) {
             sb.append(": null");
         } else {
-            for (Entry<String, String> en : headers.entrySet()) {
+            for (Entry<String, String> en : paramMap.entrySet()) {
                 sb.append("\n|    ").append(String.format("%-20s", en.getKey())).append(" = ").append(en.getValue());
             }
         }

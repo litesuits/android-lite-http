@@ -3,6 +3,7 @@ package com.litesuits.http.parser;
 import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.request.AbstractRequest;
 import com.litesuits.http.utils.StringCodingUtils;
+import org.apache.http.util.ByteArrayBuffer;
 import org.apache.http.util.CharArrayBuffer;
 
 import java.io.*;
@@ -32,6 +33,12 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
 
     protected abstract T parseDiskCache(InputStream stream, long length) throws IOException;
 
+    /**
+     * read local file and parse to T
+     *
+     * @param file local cache file
+     * @return T
+     */
     public T readFromDiskCache(File file) {
         FileInputStream fos = null;
         try {
@@ -53,6 +60,62 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
         return data;
     }
 
+    /**
+     * parse input stream to byte array.
+     *
+     * @param is  input stream
+     * @param len total len
+     * @return byte data
+     */
+    protected final byte[] streamToByteArray(InputStream is, long len) throws IOException {
+        if (len > 0) {
+            final ByteArrayBuffer buffer = new ByteArrayBuffer((int) len);
+            final byte[] tmp = new byte[buffSize];
+            int l;
+            while (!request.isCancelledOrInterrupted() && (l = is.read(tmp)) != -1) {
+                buffer.append(tmp, 0, l);
+                readLength += l;
+            }
+            return translateBytes(buffer.toByteArray());
+        } else {
+            ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+            try {
+                byte[] buff = new byte[buffSize];
+                int l = 0;
+                while (!request.isCancelledOrInterrupted() && (l = is.read(buff)) > 0) {
+                    swapStream.write(buff, 0, l);
+                    readLength += l;
+                }
+                return translateBytes(swapStream.toByteArray());
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                swapStream.close();
+            }
+            return null;
+        }
+    }
+
+    /**
+     * translate original string to custom string.
+     * if your data is encrypted, you can override this method to decrypt it.
+     *
+     * @param string data form server
+     * @return decrypt data
+     */
+    protected String translateString(String string) {
+        return string;
+    }
+
+    /**
+     * parse input stream to string.
+     *
+     * @param stream input stream
+     * @param len total len
+     * @param charSet char set
+     * @return string data
+     * @throws IOException
+     */
     protected final String streamToString(InputStream stream, long len, String charSet) throws IOException {
         if (len > 0) {
             Reader reader = new InputStreamReader(stream, charSet);
@@ -70,7 +133,7 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
             } finally {
                 reader.close();
             }
-            return buffer.toString();
+            return translateString(buffer.toString());
         } else {
             ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
             try {
@@ -81,7 +144,7 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
                     readLength += l;
                     notifyReading(len, readLength);
                 }
-                return swapStream.toString(charSet);
+                return translateString(swapStream.toString(charSet));
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {

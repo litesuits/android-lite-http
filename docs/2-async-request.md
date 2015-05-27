@@ -7,17 +7,33 @@
 &nbsp;&nbsp;&nbsp;&nbsp;本系列文章面向各级别尤其中高级android开发者，将展示开源网络通信框架LiteHttp的核心用法，讲解其关键功能的运作原理。
 &nbsp;&nbsp;&nbsp;&nbsp;希望可以让开发者既能熟练使用、修改开源HTTP框架高效完成日常开发任务，又能深入理解litehttp类库本身以及android网络通信相关知识。同时传达了一些框架作者在日常开发中的一些最佳实践，仅作抛砖引玉。
 
-##第一节：初步使用
+##第二节：异步与同步请求
 
-###初始化及单例
+###异步请求
+异步请求有两种
 
-初始化LiteHttp需要传入一个HttpConfig的实例来配置各项参数，不传入即表示使用全部使用默认设置。
-
-需要注意的是，一个App仅需要构建一个LiteHttp的实例即可，即单例模式，这样才能最节省系统资源，多个实例并不提升效率。
-
-使用默认配置：
 ```java
-LiteHttp liteHttp = LiteHttp.newApacheHttpClient(null);
+    // 1.0 init request
+    final StringRequest request = new StringRequest(url).setHttpListener(
+            new HttpListener<String>() {
+                @Override
+                public void onSuccess(String s, Response<String> response) {
+                    HttpUtil.showTips(activity, "LiteHttp2.0", s);
+                    response.printInfo();
+                }
+    
+                @Override
+                public void onFailure(HttpException e, Response<String> response) {
+                    HttpUtil.showTips(activity, "LiteHttp2.0", e.toString());
+                }
+            }
+    );
+    
+    // 1.1 execute async
+    liteHttp.executeAsync(request);
+    
+    // 1.2 perform async
+    FutureTask<String> task = liteHttp.performAsync(request);
 ```
 
 简单自定义配置：
@@ -30,7 +46,7 @@ config.setContext(activity);
 // custom User-Agent
 config.setUserAgent("Mozilla/5.0 (...)");
 
-// connect timeout: 10s,  socket timeout: 10s
+// connect timeout: 10s, socket timeout: 10s
 config.setTimeOut(10000, 10000);
 
 // new with config
@@ -40,7 +56,7 @@ LiteHttp liteHttp = LiteHttp.newApacheHttpClient(config);
 这个案例示范了context（用于网络状态判断，获取网络类型），User-Agent,连接、读取超时参数配置。
 更多的配置项有达23+项之多，非常的灵活，后边会有专门章节详细说明。
 
-###发起请求
+###初步使用
 
 我们定义一个合法的http地址，如
 ```java

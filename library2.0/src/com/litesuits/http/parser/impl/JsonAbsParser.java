@@ -1,11 +1,13 @@
 package com.litesuits.http.parser.impl;
 
+import com.google.gson.reflect.TypeToken;
 import com.litesuits.http.data.Json;
 import com.litesuits.http.parser.MemeoryDataParser;
 import com.litesuits.http.request.AbstractRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 
 /**
  * parse inputstream to string.
@@ -13,11 +15,18 @@ import java.io.InputStream;
  * @author MaTianyu
  *         2014-4-19
  */
-public class JsonParser<T> extends MemeoryDataParser<T> {
-    private Class<T> claxx;
-    private String json;
+public abstract class JsonAbsParser<T> extends MemeoryDataParser<T> {
+    protected Type claxx;
+    protected String json;
 
-    public JsonParser(AbstractRequest<T> request, Class<T> claxx) {
+    @SuppressWarnings("unchecked")
+    public JsonAbsParser(AbstractRequest<T> request) {
+        super(request);
+        claxx = new TypeToken<T>() {}.getType();
+        //claxx = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    }
+
+    public JsonAbsParser(AbstractRequest<T> request, Type claxx) {
         super(request);
         this.claxx = claxx;
     }
@@ -41,6 +50,7 @@ public class JsonParser<T> extends MemeoryDataParser<T> {
     /**
      * get the row string
      */
+    @Override
     public String getRawString() {
         return json;
     }

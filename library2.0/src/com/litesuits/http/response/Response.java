@@ -45,6 +45,12 @@ public interface Response<T> {
 
     public boolean isCacheHit();
 
+    public String getRawString();
+
+    public Response<T> setTag(Object tag);
+
+    public Object getTag();
+
     String resToString();
 
     void printInfo();

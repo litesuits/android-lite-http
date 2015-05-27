@@ -30,6 +30,7 @@ public class InternalResponse<T> implements Response<T> {
     protected StatisticsListener statistics;
     protected HttpException exception;
     protected boolean isCacheHit;
+    protected Object tag;
 
     public InternalResponse(AbstractRequest<T> request) {
         this.request = request;
@@ -53,6 +54,22 @@ public class InternalResponse<T> implements Response<T> {
     @Override
     public boolean isCacheHit() {
         return isCacheHit;
+    }
+
+    @Override
+    public String getRawString() {
+        return request.getDataParser().getRawString();
+    }
+
+    @Override
+    public Response<T> setTag(Object tag) {
+        this.tag = tag;
+        return this;
+    }
+
+    @Override
+    public Object getTag() {
+        return tag;
     }
 
     public void setCacheHit(boolean isCacheHit) {
@@ -178,6 +195,7 @@ public class InternalResponse<T> implements Response<T> {
           .append("\n readedLength  : ").append(readedLength)
           .append("\n contentLength : ").append(contentLength)
           .append("\n statistics    : ").append(statistics)
+          .append("\n tag           : ").append(tag)
           .append("\n header        ");
         if (headers == null) {
             sb.append(": null");
@@ -186,12 +204,15 @@ public class InternalResponse<T> implements Response<T> {
                 sb.append("\n|    ").append(nv);
             }
         }
+        if (getRawString() != null) {
+            sb.append("\n_").append("x\n raw string    : ").append(getRawString());
+        }
         sb.append("\n ").append(request)
-          .append("\n^_^")
+          .append("\n_")
           .append("\n _____________________ data-start _____________________")
           .append("\n ").append(getResult())
           .append("\n _____________________ data-over _____________________")
-          .append("\n^_^")
+          .append("\n_")
           .append("\n exception      : ").append(exception)
           .append("\n____________________________ lite http response info end ____________________________");
         return sb.toString();

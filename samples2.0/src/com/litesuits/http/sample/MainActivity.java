@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -111,11 +112,12 @@ public class MainActivity extends Activity {
      * <item>16. POST Multi-Form Data</item>
      * <item>17. Concurrent and Scheduling</item>
      * <item>18. Detail of Config</item>
-     * <item>19. The Use of Annotation</item>
+     * <item>19. Usage of Annotation</item>
      * <item>20. Multi Cache Mechanism</item>
      * <item>21. CallBack Mechanism</item>
-     * <item>22. Best Practices of SmartExecutor</item>
-     * <item>23. Automatic Conversion of Complex Model</item>
+     * <item>22. Best Practice: SmartExecutor</item>
+     * <item>23. Best Practice: Auto-Conversion of Complex Model</item>
+     * <item>24. Best Practice: HTTP Rich Param Model</item>
      */
     private void clickTestItem(final int which) {
 
@@ -152,12 +154,13 @@ public class MainActivity extends Activity {
             case 1:
                 // 1. Asynchronous Request
 
-                // 1.0 execute async
+                // 1.0 init request
                 final StringRequest request = new StringRequest(url).setHttpListener(
                         new HttpListener<String>() {
                             @Override
                             public void onSuccess(String s, Response<String> response) {
                                 HttpUtil.showTips(activity, "LiteHttp2.0", s);
+                                response.printInfo();
                             }
 
                             @Override
@@ -167,7 +170,10 @@ public class MainActivity extends Activity {
                         }
                 );
 
-                // 1.1 perform async
+                // 1.1 execute async
+                liteHttp.executeAsync(request);
+
+                // 1.2 perform async
                 FutureTask<String> task = liteHttp.performAsync(request);
                 break;
 
@@ -350,6 +356,11 @@ public class MainActivity extends Activity {
                     public <T> T toObject(String json, Class<T> claxx) {
                         Log.i(TAG, "FastJson parse json string to Object");
                         return JSON.parseObject(json, claxx);
+                    }
+
+                    @Override
+                    public <T> T toObject(String s, Type type) {
+                        return JSON.parseObject(s, type);
                     }
 
                     @Override
@@ -1040,6 +1051,9 @@ public class MainActivity extends Activity {
 
             case 23:
                 // 23. Automatic Conversion of Complex Model
+                break;
+            case 24:
+                // 24. Best Practice: HTTP Rich Param Model
                 break;
         }
     }

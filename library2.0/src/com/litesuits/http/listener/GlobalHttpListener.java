@@ -126,12 +126,12 @@ public abstract class GlobalHttpListener {
     }
 
     //____________ developer override method ____________
-    public abstract void onStart(AbstractRequest<?> request);
+    public void onStart(AbstractRequest<?> request){}
 
     public abstract void onSuccess(Object data, Response<?> response);
 
     public abstract void onFailure(HttpException e, Response<?> response);
 
-    public abstract void onCancel(Object data, Response<?> response);
+    public void onCancel(Object data, Response<?> response){}
 
 }

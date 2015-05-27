@@ -29,6 +29,7 @@ import com.litesuits.http.utils.HttpUtil;
 
 import java.io.File;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.FutureTask;
@@ -170,9 +171,10 @@ public abstract class LiteHttp {
 
     /**
      * when debugged is true, the {@link Log} is opened.
+     *
      * @param debugged true if debugged
      */
-    public void setDebugged(boolean debugged){
+    public void setDebugged(boolean debugged) {
         HttpLog.isPrint = debugged;
     }
 
@@ -307,19 +309,16 @@ public abstract class LiteHttp {
         });
     }
 
-    @SuppressWarnings("unchecked")
     public <T> Response<T> execute(HttpRichParamModel<T> model) {
-        Class claxx = (Class) ((ParameterizedType) model.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        JsonRequest<T> request = new JsonRequest<T>(model, claxx);
+        Type type = ((ParameterizedType) model.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        JsonRequest<T> request = new JsonRequest<T>(model, type);
         return execute(request);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> JsonRequest<T> executeAsync(HttpRichParamModel<T> model) {
-        Class claxx = (Class) ((ParameterizedType) model.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        JsonRequest<T> request = new JsonRequest<T>(model, claxx);
+    public <T> void executeAsync(HttpRichParamModel<T> model) {
+        Type type = ((ParameterizedType) model.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        JsonRequest<T> request = new JsonRequest<T>(model, type);
         executeAsync(request);
-        return request;
     }
 
     public <T> T perform(AbstractRequest<T> request) {

@@ -1,7 +1,10 @@
 package com.litesuits.http.request;
 
+import com.litesuits.http.data.TypeToken;
 import com.litesuits.http.parser.impl.JsonParser;
 import com.litesuits.http.request.param.HttpParamModel;
+
+import java.lang.reflect.Type;
 
 /**
  * @author MaTianyu
@@ -9,22 +12,27 @@ import com.litesuits.http.request.param.HttpParamModel;
  */
 public class JsonRequest<T> extends AbstractRequest<T> {
 
-    private Class<T> resultType;
+    private Type resultType;
 
     protected JsonParser<T> jsonParser;
 
-//    public JsonRequest(Class<T> resultType) {
-//        super();
-//    }
-
-    public JsonRequest(String url, Class<T> resultType) {
+    public JsonRequest(String url, Type resultType) {
         super(url);
         this.resultType = resultType;
     }
 
-    public JsonRequest(HttpParamModel model, Class<T> resultType) {
+    public JsonRequest(HttpParamModel model, Type resultType) {
         super(model);
         this.resultType = resultType;
+    }
+    public JsonRequest(String url, TypeToken<T> resultType) {
+        super(url);
+        this.resultType = resultType.getType();
+    }
+
+    public JsonRequest(HttpParamModel model, TypeToken<T> resultType) {
+        super(model);
+        this.resultType = resultType.getType();
     }
 
     @Override

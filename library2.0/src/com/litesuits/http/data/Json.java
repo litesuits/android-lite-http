@@ -1,5 +1,7 @@
 package com.litesuits.http.data;
 
+import java.lang.reflect.Type;
+
 /**
  * with this, we can change json handler easily.
  * alibaba fastjson can not handle private attribute that without getter method.
@@ -46,6 +48,8 @@ public abstract class Json {
     public abstract String toJson(Object src);
 
     public abstract <T> T toObject(String json, Class<T> claxx);
+
+    public abstract <T> T toObject(String json, Type claxx);
 
     public abstract <T> T toObject(byte[] bytes, Class<T> claxx);
 }

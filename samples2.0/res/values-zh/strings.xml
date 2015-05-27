@@ -59,6 +59,7 @@
         <item>21. 回调机制详解</item>
         <item>22. 最佳实践：使用SmartExecutor</item>
         <item>23. 最佳实践：全自动转换复杂对象</item>
+        <item>24. 最佳实践：使用富 HTTP 参数</item>
     </string-array>
 
     <string-array name="http_test_post">

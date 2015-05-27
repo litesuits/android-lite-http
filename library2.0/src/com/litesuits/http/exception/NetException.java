@@ -1,9 +1,9 @@
 package com.litesuits.http.exception;
 
 public enum NetException {
-    NetworkNotAvilable("Network Is Not Avilable", "网络断开"),
-    NetworkUnstable("Service UnreachNetwork Is Unstable", "无法访问或网络不稳定"),
-    NetworkDisabled("Current Network Is Disabled By Your Setting", "你已设置禁用该网络类型");
+    NetworkNotAvilable("Network Is Not Avilable", "未连接网络"),
+    NetworkUnstable("Service UnreachNetwork Is Unstable", "无法访问网络"),
+    NetworkDisabled("Current Network Is Disabled By Your Setting", "已禁用该网络类型");
 
     private static final String TAG = NetException.class.getName();
     public String reason;

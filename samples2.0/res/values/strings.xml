@@ -18,17 +18,18 @@
         <item>11. Disable Some Network</item>
         <item>12. Traffic/Time Statistics</item>
         <item>13. Retry/Redirect</item>
-        <item>14. Best Practices of Exception Handling</item>
-        <item>15. Best Practices of Cancel Request</item>
+        <item>14. Best Practice: Exception Handling</item>
+        <item>15. Best Practice: Cancel Request</item>
 
         <item>16. POST Multi-Form Data</item>
         <item>17. Concurrent and Scheduling</item>
         <item>18. Detail of Config</item>
-        <item>19. The Use of Annotation</item>
+        <item>19. Usage of Annotation</item>
         <item>20. Multi Cache Mechanism</item>
         <item>21. CallBack Mechanism</item>
-        <item>22. Best Practices of SmartExecutor</item>
-        <item>23. Automatic Conversion of Complex Model</item>
+        <item>22. Best Practice: SmartExecutor</item>
+        <item>23. Best Practice: Auto-Conversion of Complex Model</item>
+        <item>24. Best Practice: HTTP Rich Param Model</item>
     </string-array>
 
     <string-array name="http_test_post">

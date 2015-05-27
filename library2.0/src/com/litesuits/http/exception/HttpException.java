@@ -10,6 +10,16 @@ package com.litesuits.http.exception;
 public abstract class HttpException extends Exception {
     private static final long serialVersionUID = -8585446012573642784L;
     public static boolean printStackTrace = true;
+    protected boolean handled = true;
+
+    public boolean isHandled() {
+        return handled;
+    }
+
+    public <T extends HttpException> T setHandled(boolean handled) {
+        this.handled = handled;
+        return (T) this;
+    }
 
     public HttpException() {}
 
@@ -23,5 +33,12 @@ public abstract class HttpException extends Exception {
 
     public HttpException(Throwable cause) {
         super(cause);
+    }
+
+    @Override
+    public String toString() {
+        return "HttpException{" +
+               "handled=" + handled +
+               "} " + super.toString();
     }
 }

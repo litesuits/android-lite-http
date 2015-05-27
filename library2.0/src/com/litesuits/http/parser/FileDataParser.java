@@ -60,9 +60,10 @@ public abstract class FileDataParser<T> extends DataParser<T> {
             //    HttpLog.v(TAG, "keep cache create file result: " + cf + "  path:" + file.getAbsolutePath());
             //}
             fos = new FileOutputStream(file);
-            final byte[] tmp = new byte[buffSize];
+            byte[] tmp = new byte[buffSize];
             int l;
             while (!request.isCancelledOrInterrupted() && (l = is.read(tmp)) != -1) {
+                tmp = translateBytes(tmp);
                 fos.write(tmp, 0, l);
                 readLength += l;
                 notifyReading(len, readLength);

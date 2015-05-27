@@ -57,6 +57,27 @@ public abstract class DataParser<T> {
             throws IOException;
 
     /**
+     * translate original bytes to custom bytes.
+     * if your data is encrypted, you can override this method to decrypt it.
+     *
+     * @param bytes data form server
+     * @return decrypt data
+     */
+    protected byte[] translateBytes(byte[] bytes) {
+        return bytes;
+    }
+
+    /**
+     * notify readed length to listener
+     */
+    protected final void notifyReading(long total, long len) {
+        HttpListener<T> listener = request.getHttpListener();
+        if (listener != null) {
+            listener.loading(request, total, len);
+        }
+    }
+
+    /**
      * is memory cache supported
      */
     public abstract boolean isMemCacheSupport();
@@ -68,15 +89,6 @@ public abstract class DataParser<T> {
      */
     public abstract File getSpecifyFile(String dir);
 
-    /**
-     * notify readed length to listener
-     */
-    protected final void notifyReading(long total, long len) {
-        HttpListener<T> listener = request.getHttpListener();
-        if (listener != null) {
-            listener.loading(request, total, len);
-        }
-    }
 
     /**
      * get the data
@@ -103,6 +115,10 @@ public abstract class DataParser<T> {
         if (request.getCharSet() != null) {
             charSet = request.getCharSet();
         }
+    }
+
+    public String getRawString() {
+        return null;
     }
 
     @Override

@@ -1,20 +1,14 @@
 package com.litesuits.http.request;
 
-import com.litesuits.http.parser.impl.JsonParser;
+import com.litesuits.http.parser.impl.JsonAbsParser;
 import com.litesuits.http.request.param.HttpParamModel;
-
-import java.lang.reflect.ParameterizedType;
 
 /**
  * @author MaTianyu
  * @date 2015-04-18
  */
 public abstract class JsonAbsRequest<T> extends AbstractRequest<T> {
-    protected JsonParser<T> jsonParser;
-
-//    public JsonAbsRequest() {
-//        super();
-//    }
+    protected JsonAbsParser<T> jsonParser;
 
     public JsonAbsRequest(String url) {
         super(url);
@@ -30,11 +24,9 @@ public abstract class JsonAbsRequest<T> extends AbstractRequest<T> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public JsonParser<T> getDataParser() {
-        if(jsonParser == null){
-            Class<T> claxx = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-            jsonParser = new JsonParser<T>(this, claxx);
-
+    public JsonAbsParser<T> getDataParser() {
+        if (jsonParser == null) {
+            jsonParser = new JsonAbsParser<T>(this) {};
         }
         return jsonParser;
     }

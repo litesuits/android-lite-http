@@ -1,12 +1,7 @@
 package com.litesuits.http.exception.handler;
 
 import com.litesuits.http.data.HttpStatus;
-import com.litesuits.http.exception.HttpClientException;
-import com.litesuits.http.exception.HttpNetException;
-import com.litesuits.http.exception.HttpServerException;
-import com.litesuits.http.exception.ClientException;
-import com.litesuits.http.exception.NetException;
-import com.litesuits.http.exception.ServerException;
+import com.litesuits.http.exception.*;
 
 /**
  * Handle Response on UI Thread
@@ -16,7 +11,7 @@ import com.litesuits.http.exception.ServerException;
  */
 public abstract class HttpExceptionHandler {
 
-    public HttpExceptionHandler handleException(Exception e) {
+    public HttpExceptionHandler handleException(HttpException e) {
         if (e != null) {
             if (e instanceof HttpClientException) {
                 HttpClientException ce = ((HttpClientException) e);
@@ -31,6 +26,7 @@ public abstract class HttpExceptionHandler {
                 HttpClientException ce = new HttpClientException(e);
                 onClientException(ce, ce.getExceptionType());
             }
+            e.setHandled(true);
         }
         return this;
     }
