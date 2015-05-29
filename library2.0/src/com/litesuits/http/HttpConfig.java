@@ -157,6 +157,10 @@ public class HttpConfig {
      * set global http listener to all reqest
      */
     protected GlobalHttpListener globalHttpListener;
+    /**
+     * set global http scheme and host for uri.
+     */
+    protected String globalSchemeHost;
 
     public HttpConfig(Context context) {
         if (context != null) {
@@ -400,6 +404,15 @@ public class HttpConfig {
         return this;
     }
 
+    public String getGlobalSchemeHost() {
+        return globalSchemeHost;
+    }
+
+    public HttpConfig setGlobalSchemeHost(String globalSchemeHost) {
+        this.globalSchemeHost = globalSchemeHost;
+        return this;
+    }
+
     /* ____________________________ enhanced methods ____________________________*/
 
     public boolean isDisableAllNetwork() {
@@ -441,6 +454,7 @@ public class HttpConfig {
         defaultMaxRedirectTimes = DEFAULT_MAX_REDIRECT_TIMES;
         defaultModelQueryBuilder = new JsonQueryBuilder();
         globalHttpListener = null;
+        globalSchemeHost = null;
         if (liteHttp != null) {
             liteHttp.initConfig(this);
         }
@@ -501,6 +515,7 @@ public class HttpConfig {
                ", defaultMaxRedirectTimes=" + defaultMaxRedirectTimes +
                ", defaultModelQueryBuilder=" + defaultModelQueryBuilder +
                ", globalHttpListener=" + globalHttpListener +
+               ", globalSchemeHost=" + globalSchemeHost +
                '}';
     }
 }

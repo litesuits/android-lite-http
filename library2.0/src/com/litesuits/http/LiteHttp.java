@@ -222,20 +222,20 @@ public abstract class LiteHttp {
 
     public <T> Response<T> execute(AbstractRequest<T> request) {
         final InternalResponse<T> response = handleRequest(request);
-        if (HttpLog.isPrint) {
-            Thread t = Thread.currentThread();
-            HttpLog.i(TAG,
-                      "lite http request: " + request.getUri()
-                      + " , tag: " + request.getTag()
-                      + " , method: " + request.getMethod()
-                      + " , cache mode: " + request.getCacheMode()
-                      + " , thread ID: " + t.getId()
-                      + " , thread name: " + t.getName());
-        }
         HttpException httpException = null;
         final HttpListener<T> listener = request.getHttpListener();
         final GlobalHttpListener globalListener = request.getGlobalHttpListener();
         try {
+            if (HttpLog.isPrint) {
+                Thread t = Thread.currentThread();
+                HttpLog.i(TAG,
+                          "lite http request: " + request.getFullUri()
+                          + " , tag: " + request.getTag()
+                          + " , method: " + request.getMethod()
+                          + " , cache mode: " + request.getCacheMode()
+                          + " , thread ID: " + t.getId()
+                          + " , thread name: " + t.getName());
+            }
             if (globalListener != null) {
                 globalListener.start(request);
             }
@@ -403,6 +403,9 @@ public abstract class LiteHttp {
         }
         if (config.globalHttpListener != null) {
             request.setGlobalHttpListener(config.globalHttpListener);
+        }
+        if (request.getSchemeHost() == null) {
+            request.setSchemeHost(config.globalSchemeHost);
         }
         return new InternalResponse<T>(request);
     }

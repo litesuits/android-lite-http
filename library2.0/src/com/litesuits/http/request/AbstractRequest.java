@@ -2,6 +2,7 @@ package com.litesuits.http.request;
 
 import android.net.Uri;
 import com.litesuits.http.annotation.*;
+import com.litesuits.http.data.Consts;
 import com.litesuits.http.data.NameValuePair;
 import com.litesuits.http.exception.ClientException;
 import com.litesuits.http.exception.HttpClientException;
@@ -45,7 +46,21 @@ public abstract class AbstractRequest<T> {
      */
     private long id;
     /**
-     * uri of http request
+     * scheme and host for uri.
+     *
+     * if you has set this field, your {@link #uri} can be just set a path: "/path/api...".
+     *
+     * note: if {@link #uri} has be set completely and correctly(scheme + host + path), this will be ignored.
+     */
+    private String schemeHost;
+    /**
+     * uri of http request.
+     *
+     * if {@link #schemeHost} is null, you must set a correct uri for a request.
+     *
+     * if you has set {@link #schemeHost}, this can be just set a path string for uri.
+     * we will concat a full uri as: scheme + host + uri(path)
+     *
      */
     private String uri;
     /**
@@ -182,6 +197,16 @@ public abstract class AbstractRequest<T> {
     @SuppressWarnings("unchecked")
     public <S extends AbstractRequest<T>> S setId(long id) {
         this.id = id;
+        return (S) this;
+    }
+
+    public String getSchemeHost() {
+        return schemeHost;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <S extends AbstractRequest<T>> S setSchemeHost(String schemeHost) {
+        this.schemeHost = schemeHost;
         return (S) this;
     }
 
@@ -333,7 +358,11 @@ public abstract class AbstractRequest<T> {
                         if (tag == null) {
                             setTag(((HttpTag) a).value());
                         }
-                    } else if (a instanceof HttpUri) {
+                    } else if (a instanceof HttpSchemeHost) {
+                        if (schemeHost == null) {
+                            schemeHost = ((HttpUri) a).value();
+                        }
+                    }  else if (a instanceof HttpUri) {
                         if (uri == null) {
                             uri = ((HttpUri) a).value();
                         }
@@ -501,6 +530,12 @@ public abstract class AbstractRequest<T> {
     public String getFullUri() throws HttpClientException {
         if (uri == null) {
             throw new HttpClientException(ClientException.UrlIsNull);
+        } else if (schemeHost != null) {
+            if (!schemeHost.startsWith(Consts.SCHEME_HTTP)) {
+                throw new HttpClientException(ClientException.IllegalScheme);
+            } else if (!uri.startsWith(Consts.SCHEME_HTTP)) {
+                uri = schemeHost + uri;
+            }
         }
         try {
             StringBuilder sb = new StringBuilder();
