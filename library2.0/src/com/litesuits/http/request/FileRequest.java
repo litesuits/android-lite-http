@@ -53,7 +53,7 @@ public class FileRequest extends AbstractRequest<File> {
     @Override
     public FileParser getDataParser() {
         if (fileParser == null) {
-            fileParser = new FileParser(this);
+            fileParser = new FileParser(this, saveToFile);
         }
         return fileParser;
     }

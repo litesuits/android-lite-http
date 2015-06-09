@@ -42,7 +42,7 @@ public abstract class AbstractRequest<T> {
     private static final String TAG = AbstractRequest.class.getSimpleName();
     private static final String ENCODE_PATTERN_URL = "^.+\\?(%[0-9a-fA-F]+|[=&A-Za-z0-9_#\\-\\.\\*])*$";
     /**
-     * you can give an id to a request
+     * you can give an id to a requestr
      */
     private long id;
     /**
@@ -60,7 +60,6 @@ public abstract class AbstractRequest<T> {
      *
      * if you has set {@link #schemeHost}, this can be just set a path string for uri.
      * we will concat a full uri as: scheme + host + uri(path)
-     *
      */
     private String uri;
     /**
@@ -362,7 +361,7 @@ public abstract class AbstractRequest<T> {
                         if (schemeHost == null) {
                             schemeHost = ((HttpUri) a).value();
                         }
-                    }  else if (a instanceof HttpUri) {
+                    } else if (a instanceof HttpUri) {
                         if (uri == null) {
                             uri = ((HttpUri) a).value();
                         }
@@ -472,9 +471,14 @@ public abstract class AbstractRequest<T> {
         if (paramMap != null) {
             map.putAll(paramMap);
         }
-        LinkedHashMap<String, String> modelMap = getQueryBuilder().buildPrimaryMap(paramModel);
-        if (modelMap != null) {
-            map.putAll(modelMap);
+        if (paramModel != null) {
+            if (paramModel instanceof HttpRichParamModel
+                && ((HttpRichParamModel) paramModel).isAttachToUrl()) {
+                LinkedHashMap<String, String> modelMap = getQueryBuilder().buildPrimaryMap(paramModel);
+                if (modelMap != null) {
+                    map.putAll(modelMap);
+                }
+            }
         }
         return map;
     }

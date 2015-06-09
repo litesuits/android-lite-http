@@ -22,6 +22,18 @@ public abstract class HttpRichParamModel<T> implements HttpParamModel {
     protected ModelQueryBuilder modelQueryBuilder;
     @NonHttpParam
     protected HttpBody httpBody;
+    @NonHttpParam
+    protected boolean attachToUrl = true;
+
+    public boolean isAttachToUrl(){
+        return attachToUrl;
+    }
+
+    @SuppressWarnings("unchecked")
+    public  <H extends HttpRichParamModel<T>> H setAttachToUrl(boolean attachToUrl) {
+        this.attachToUrl = attachToUrl;
+        return (H) this;
+    }
 
     public final HttpListener<T> getHttpListener() {
         if(httpListener == null){

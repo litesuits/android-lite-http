@@ -138,6 +138,9 @@ public abstract class HttpListener<Data> {
 
     //____________lite called method ____________
     public final void start(AbstractRequest<Data> req) {
+        if(disableListener()){
+            return;
+        }
         if (runOnUiThread) {
             Message msg = handler.obtainMessage(M_START);
             msg.obj = req;
@@ -151,6 +154,9 @@ public abstract class HttpListener<Data> {
     }
 
     public final void success(Data data, Response<Data> response) {
+        if(disableListener()){
+            return;
+        }
         if (runOnUiThread) {
             Message msg = handler.obtainMessage(M_SUCCESS);
             msg.obj = new Object[]{data, response};
@@ -164,6 +170,9 @@ public abstract class HttpListener<Data> {
     }
 
     public final void failure(HttpException e, Response<Data> response) {
+        if(disableListener()){
+            return;
+        }
         if (runOnUiThread) {
             Message msg = handler.obtainMessage(M_FAILURE);
             msg.obj = new Object[]{e, response};
@@ -181,6 +190,9 @@ public abstract class HttpListener<Data> {
             HttpLog.w(TAG, "Request be Cancelled!  isCancelled: " + response.getRequest().isCancelled()
                            + "  Thread isInterrupted: " + Thread.currentThread().isInterrupted());
         }
+        if(disableListener()){
+            return;
+        }
         if (runOnUiThread) {
             Message msg = handler.obtainMessage(M_CANCEL);
             msg.obj = new Object[]{data, response};
@@ -194,6 +206,9 @@ public abstract class HttpListener<Data> {
     }
 
     public final void loading(AbstractRequest<Data> req, long total, long len) {
+        if(disableListener()){
+            return;
+        }
         if (readingNotify) {
             if (runOnUiThread) {
                 Message msg = handler.obtainMessage(M_READING);
@@ -209,6 +224,9 @@ public abstract class HttpListener<Data> {
     }
 
     public final void uploading(AbstractRequest<Data> req, long total, long len) {
+        if(disableListener()){
+            return;
+        }
         if (uploadingNotify) {
             if (runOnUiThread) {
                 Message msg = handler.obtainMessage(M_UPLOADING);
@@ -224,6 +242,9 @@ public abstract class HttpListener<Data> {
     }
 
     public final void retry(AbstractRequest<Data> req, int max, int times) {
+        if(disableListener()){
+            return;
+        }
         if (runOnUiThread) {
             Message msg = handler.obtainMessage(M_RETRY);
             msg.obj = new Object[]{req, max, times};
@@ -237,6 +258,9 @@ public abstract class HttpListener<Data> {
     }
 
     public final void redirect(AbstractRequest<Data> req, int max, int times) {
+        if(disableListener()){
+            return;
+        }
         if (runOnUiThread) {
             Message msg = handler.obtainMessage(M_REDIRECT);
             msg.obj = new Object[]{req, max, times};
@@ -250,6 +274,10 @@ public abstract class HttpListener<Data> {
     }
 
     //____________ developer override method ____________
+    public boolean disableListener() {
+        return false;
+    }
+
     public void onStart(AbstractRequest<Data> request) {}
 
     public void onSuccess(Data data, Response<Data> response) {}

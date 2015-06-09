@@ -4,7 +4,7 @@ import android.util.Log;
 import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.utils.HttpUtil;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -14,12 +14,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <ul>
  * <li>keep {@link #coreSize} tasks concurrent, and put them in {@link #runningList},
  * maximum number of running-tasks at the same time is {@link #coreSize}.</li>
- * <li>when {@link #runningList} is full, put new task in {@link #waitingQueue} waiting for execution,
+ * <li>when {@link #runningList} is full, put new task in {@link #waitingList} waiting for execution,
  * maximum of waiting-tasks number is {@link #queueSize}.</li>
- * <li>when {@link #waitingQueue} is full, new task is performed by {@link OverloadPolicy}.</li>
+ * <li>when {@link #waitingList} is full, new task is performed by {@link OverloadPolicy}.</li>
  * <li>when running task is completed, take it out from {@link #runningList}.</li>
- * <li>schedule next by {@link SchedulePolicy}, take next task out from {@link #waitingQueue} to execute,
- * and so on until {@link #waitingQueue} is empty.</li>
+ * <li>schedule next by {@link SchedulePolicy}, take next task out from {@link #waitingList} to execute,
+ * and so on until {@link #waitingList} is empty.</li>
  *
  * </ul>
  *
@@ -32,8 +32,8 @@ public class SmartExecutor implements Executor {
     private int coreSize = HttpUtil.getCoresNumbers();
     private int queueSize = coreSize * 32;
     private final Object lock = new Object();
-    private ArrayList<Runnable> runningList = new ArrayList<Runnable>(coreSize);
-    private ArrayDeque<Runnable> waitingQueue = new ArrayDeque<Runnable>(queueSize);
+    private LinkedList<WrappedRunnable> runningList = new LinkedList<WrappedRunnable>();
+    private LinkedList<WrappedRunnable> waitingList = new LinkedList<WrappedRunnable>();
     private SchedulePolicy schedulePolicy = SchedulePolicy.FirstInFistRun;
     private OverloadPolicy overloadPolicy = OverloadPolicy.DiscardOldTaskInQueue;
 
@@ -51,7 +51,7 @@ public class SmartExecutor implements Executor {
     protected synchronized void initThreadPool() {
         if (HttpLog.isPrint) {
             HttpLog.v(TAG, "SmartExecutor core-queue size: " + coreSize + " - " + queueSize
-                           + "  running-wait task: " + runningList.size() + " - " + waitingQueue.size());
+                           + "  running-wait task: " + runningList.size() + " - " + waitingList.size());
         }
         if (threadPool == null) {
             threadPool = createDefaultThreadPool();
@@ -84,13 +84,33 @@ public class SmartExecutor implements Executor {
         return threadPool;
     }
 
+    public boolean cancelWaitingTask(Runnable command) {
+        boolean removed = false;
+        synchronized (lock) {
+            int size = waitingList.size();
+            if (size > 0) {
+                for (int i = size - 1; i >= 0; i--) {
+                    if (waitingList.get(i).getRealRunnable() == command) {
+                        waitingList.remove(i);
+                        removed = true;
+                    }
+                }
+            }
+        }
+        return removed;
+    }
+
+    interface WrappedRunnable extends Runnable {
+        Runnable getRealRunnable();
+    }
+
     /**
      * When {@link #execute(Runnable)} is called, {@link SmartExecutor} perform actions:
      * <ol>
      * <li>if fewer than {@link #coreSize} tasks are running, post new task in {@link #runningList} and execute it immediately.</li>
-     * <li>if more than {@link #coreSize} tasks are running, and fewer than {@link #queueSize} tasks are waiting, put task in {@link #waitingQueue}.</li>
+     * <li>if more than {@link #coreSize} tasks are running, and fewer than {@link #queueSize} tasks are waiting, put task in {@link #waitingList}.</li>
      * <li>if more than {@link #queueSize} tasks are waiting ,schedule new task by {@link OverloadPolicy}</li>
-     * <li>if running task is completed, schedule next task by {@link SchedulePolicy} until {@link #waitingQueue} is empty.</li>
+     * <li>if running task is completed, schedule next task by {@link SchedulePolicy} until {@link #waitingList} is empty.</li>
      * </ol>
      */
     @Override
@@ -98,7 +118,14 @@ public class SmartExecutor implements Executor {
         if (command == null) {
             return;
         }
-        Runnable scheduler = new Runnable() {
+        WrappedRunnable scheduler = new WrappedRunnable() {
+            @Override
+            public Runnable getRealRunnable() {
+                return command;
+            }
+
+            public Runnable realRunnable;
+
             @Override
             public void run() {
                 try {
@@ -112,14 +139,14 @@ public class SmartExecutor implements Executor {
         synchronized (lock) {
             //            if (HttpLog.isPrint) {
             //                HttpLog.v(TAG, "SmartExecutor core-queue size: " + coreSize + " - " + queueSize
-            //                               + "  running-wait task: " + runningList.size() + " - " + waitingQueue.size());
+            //                               + "  running-wait task: " + runningList.size() + " - " + waitingList.size());
             //            }
             if (runningList.size() < coreSize) {
                 runningList.add(scheduler);
                 threadPool.execute(scheduler);
                 //                HttpLog.v(TAG, "SmartExecutor task execute");
-            } else if (waitingQueue.size() < queueSize) {
-                waitingQueue.addLast(scheduler);
+            } else if (waitingList.size() < queueSize) {
+                waitingList.addLast(scheduler);
                 //                HttpLog.v(TAG, "SmartExecutor task waiting");
             } else {
                 if (HttpLog.isPrint) {
@@ -127,12 +154,12 @@ public class SmartExecutor implements Executor {
                 }
                 switch (overloadPolicy) {
                     case DiscardNewTaskInQueue:
-                        waitingQueue.pollLast();
-                        waitingQueue.addLast(scheduler);
+                        waitingList.pollLast();
+                        waitingList.addLast(scheduler);
                         break;
                     case DiscardOldTaskInQueue:
-                        waitingQueue.pollFirst();
-                        waitingQueue.addLast(scheduler);
+                        waitingList.pollFirst();
+                        waitingList.addLast(scheduler);
                         break;
                     case CallerRuns:
                         callerRun = true;
@@ -155,47 +182,47 @@ public class SmartExecutor implements Executor {
         }
     }
 
-    private void scheduleNext(Runnable scheduler) {
+    private void scheduleNext(WrappedRunnable scheduler) {
         synchronized (lock) {
             boolean suc = runningList.remove(scheduler);
-//            if (HttpLog.isPrint) {
-//                HttpLog.v(TAG, "Thread " + Thread.currentThread().getName()
-//                               + " is completed. remove prior: " + suc + ", try schedule next..");
-//            }
+            //            if (HttpLog.isPrint) {
+            //                HttpLog.v(TAG, "Thread " + Thread.currentThread().getName()
+            //                               + " is completed. remove prior: " + suc + ", try schedule next..");
+            //            }
             if (!suc) {
                 runningList.clear();
                 HttpLog.e(TAG,
                           "SmartExecutor scheduler remove failed, so clear all(running list) to avoid unpreditable error : " + scheduler);
             }
-            if (waitingQueue.size() > 0) {
-                Runnable waitingRun;
+            if (waitingList.size() > 0) {
+                WrappedRunnable waitingRun;
                 switch (schedulePolicy) {
                     case LastInFirstRun:
-                        waitingRun = waitingQueue.pollLast();
+                        waitingRun = waitingList.pollLast();
                         break;
                     case FirstInFistRun:
-                        waitingRun = waitingQueue.pollFirst();
+                        waitingRun = waitingList.pollFirst();
                         break;
                     default:
-                        waitingRun = waitingQueue.pollLast();
+                        waitingRun = waitingList.pollLast();
                         break;
                 }
                 if (waitingRun != null) {
                     runningList.add(waitingRun);
                     threadPool.execute(waitingRun);
-//                    HttpLog.v(TAG, "Thread " + Thread.currentThread().getName() + " execute next task..");
+                    //                    HttpLog.v(TAG, "Thread " + Thread.currentThread().getName() + " execute next task..");
                 } else {
                     HttpLog.e(TAG,
                               "SmartExecutor get a NULL task from waiting queue: " + Thread.currentThread().getName());
                 }
             }
-//            else {
-//                if (HttpLog.isPrint) {
-//                    HttpLog.v(TAG, "SmartExecutor: all tasks is completed. current thread: " +
-//                                   Thread.currentThread().getName());
-//                    //printThreadPoolInfo();
-//                }
-//            }
+            //            else {
+            //                if (HttpLog.isPrint) {
+            //                    HttpLog.v(TAG, "SmartExecutor: all tasks is completed. current thread: " +
+            //                                   Thread.currentThread().getName());
+            //                    //printThreadPoolInfo();
+            //                }
+            //            }
         }
     }
 
@@ -208,12 +235,20 @@ public class SmartExecutor implements Executor {
                        + " - " + threadPool.getMaximumPoolSize());
             Log.i(TAG, "task (actice - complete - total): " + threadPool.getActiveCount()
                        + " - " + threadPool.getCompletedTaskCount() + " - " + threadPool.getTaskCount());
-            Log.i(TAG, "waitingQueue size : " + threadPool.getQueue().size() + " , " + threadPool.getQueue());
+            Log.i(TAG, "waitingList size : " + threadPool.getQueue().size() + " , " + threadPool.getQueue());
         }
     }
 
     public int getCoreSize() {
         return coreSize;
+    }
+
+    public int getRunningSize() {
+        return runningList.size();
+    }
+
+    public int getWaitingSize() {
+        return waitingList.size();
     }
 
     /**
@@ -230,7 +265,7 @@ public class SmartExecutor implements Executor {
         this.coreSize = coreSize;
         if (HttpLog.isPrint) {
             HttpLog.v(TAG, "SmartExecutor core-queue size: " + coreSize + " - " + queueSize
-                           + "  running-wait task: " + runningList.size() + " - " + waitingQueue.size());
+                           + "  running-wait task: " + runningList.size() + " - " + waitingList.size());
         }
         return this;
     }
@@ -254,7 +289,7 @@ public class SmartExecutor implements Executor {
         this.queueSize = queueSize;
         if (HttpLog.isPrint) {
             HttpLog.v(TAG, "SmartExecutor core-queue size: " + coreSize + " - " + queueSize
-                           + "  running-wait task: " + runningList.size() + " - " + waitingQueue.size());
+                           + "  running-wait task: " + runningList.size() + " - " + waitingList.size());
         }
         return this;
     }
