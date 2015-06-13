@@ -230,8 +230,8 @@ public class ApacheHttpClient extends LiteHttp {
         SchemeRegistry schemeRegistry = new SchemeRegistry();
         SSLSocketFactory socketFactory = MySSLSocketFactory.getFixedSocketFactory();
         schemeRegistry.register(new Scheme(Consts.SCHEME_HTTP,
-                                           PlainSocketFactory.getSocketFactory(),
-                                           HttpConfig.DEFAULT_HTTP_PORT));
+                PlainSocketFactory.getSocketFactory(),
+                HttpConfig.DEFAULT_HTTP_PORT));
         schemeRegistry.register(new Scheme(Consts.SCHEME_HTTPS, socketFactory, HttpConfig.DEFAULT_HTTPS_PORT));
         return new ThreadSafeClientConnManager(httpParams, schemeRegistry);
     }
@@ -344,7 +344,7 @@ public class ApacheHttpClient extends LiteHttp {
                                     HttpLog.i(TAG, "Redirect to : " + location);
                                 }
                                 if (listener != null) {
-                                    listener.redirect(request, maxRedirectTimes, response.getRedirectTimes());
+                                    listener.notifyCallRedirect(request, maxRedirectTimes, response.getRedirectTimes());
                                 }
                                 connectWithRetries(request, response);
                                 return;
@@ -398,7 +398,7 @@ public class ApacheHttpClient extends LiteHttp {
                         HttpLog.i(TAG, "LiteHttp retry request: " + request.getUri());
                     }
                     if (listener != null) {
-                        listener.retry(request, maxRetryTimes, times);
+                        listener.notifyCallRetry(request, maxRetryTimes, times);
                     }
                 }
             }

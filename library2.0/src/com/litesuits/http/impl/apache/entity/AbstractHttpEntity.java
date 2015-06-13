@@ -196,7 +196,7 @@ public abstract class AbstractHttpEntity implements HttpEntity {
     protected void updateProgress(long count) {
         bytesWritten += count;
         if (httpListener != null) {
-            httpListener.uploading(request, totalSize, bytesWritten);
+            httpListener.notifyCallUploading(request, totalSize, bytesWritten);
         }
     }
 

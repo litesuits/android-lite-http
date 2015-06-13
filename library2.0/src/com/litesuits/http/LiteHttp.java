@@ -229,18 +229,18 @@ public abstract class LiteHttp {
             if (HttpLog.isPrint) {
                 Thread t = Thread.currentThread();
                 HttpLog.i(TAG,
-                          "lite http request: " + request.getFullUri()
-                          + " , tag: " + request.getTag()
-                          + " , method: " + request.getMethod()
-                          + " , cache mode: " + request.getCacheMode()
-                          + " , thread ID: " + t.getId()
-                          + " , thread name: " + t.getName());
+                        "lite http request: " + request.getFullUri()
+                        + " , tag: " + request.getTag()
+                        + " , method: " + request.getMethod()
+                        + " , cache mode: " + request.getCacheMode()
+                        + " , thread ID: " + t.getId()
+                        + " , thread name: " + t.getName());
             }
             if (globalListener != null) {
                 globalListener.start(request);
             }
             if (listener != null) {
-                listener.start(request);
+                listener.notifyCallStart(request);
             }
             CacheMode mode = request.getCacheMode();
             if (mode == CacheMode.CacheFirst && tryHitCache(response)) {
@@ -265,33 +265,38 @@ public abstract class LiteHttp {
             httpException = new HttpClientException(e);
             response.setException(httpException);
         } finally {
-            if (HttpLog.isPrint) {
-                Thread t = Thread.currentThread();
-                HttpLog.i(TAG, "lite http response: " + response.getResult()
-                               + " , uri: " + request.getUri()
-                               + " , tag: " + request.getTag()
-                               + " , method: " + request.getMethod()
-                               + " , cache mode: " + request.getCacheMode()
-                               + " , thread ID: " + t.getId()
-                               + " , thread name: " + t.getName());
-            }
-            if (listener != null) {
-                if (request.isCancelledOrInterrupted()) {
-                    listener.cancel(response.getResult(), response);
-                } else if (httpException != null) {
-                    listener.failure(httpException, response);
-                } else {
-                    listener.success(response.getResult(), response);
+            try {
+                if (HttpLog.isPrint) {
+                    Thread t = Thread.currentThread();
+                    HttpLog.i(TAG, "lite http response: " + response.getResult()
+                                   + " , uri: " + request.getUri()
+                                   + " , tag: " + request.getTag()
+                                   + " , method: " + request.getMethod()
+                                   + " , cache mode: " + request.getCacheMode()
+                                   + " , thread ID: " + t.getId()
+                                   + " , thread name: " + t.getName());
                 }
-            }
-            if (globalListener != null) {
-                if (request.isCancelledOrInterrupted()) {
-                    globalListener.cancel(response.getResult(), response);
-                } else if (httpException != null) {
-                    globalListener.failure(httpException, response);
-                } else {
-                    globalListener.success(response.getResult(), response);
+                if (listener != null) {
+                    if (request.isCancelledOrInterrupted()) {
+                        listener.notifyCallCancel(response.getResult(), response);
+                    } else if (httpException != null) {
+                        listener.notifyCallFailure(httpException, response);
+                    } else {
+                        listener.notifyCallSuccess(response.getResult(), response);
+                    }
+                    listener.notifyCallEnd(response);
                 }
+                if (globalListener != null) {
+                    if (request.isCancelledOrInterrupted()) {
+                        globalListener.cancel(response.getResult(), response);
+                    } else if (httpException != null) {
+                        globalListener.failure(httpException, response);
+                    } else {
+                        globalListener.success(response.getResult(), response);
+                    }
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
             }
         }
         return response;

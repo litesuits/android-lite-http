@@ -23,6 +23,7 @@ public abstract class HttpListener<Data> {
     private static final int M_UPLOADING = 6;
     private static final int M_RETRY = 7;
     private static final int M_REDIRECT = 8;
+    private static final int M_END = 9;
 
     private HttpHandler handler;
     private boolean runOnUiThread = true;
@@ -132,13 +133,16 @@ public abstract class HttpListener<Data> {
                     data = (Object[]) msg.obj;
                     onRedirect((AbstractRequest<Data>) data[0], (Integer) data[1], (Integer) data[2]);
                     break;
+                case M_END:
+                    onEnd((Response<Data>) msg.obj);
+                    break;
             }
         }
     }
 
     //____________lite called method ____________
-    public final void start(AbstractRequest<Data> req) {
-        if(disableListener()){
+    public final void notifyCallStart(AbstractRequest<Data> req) {
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -149,12 +153,12 @@ public abstract class HttpListener<Data> {
             onStart(req);
         }
         if (linkedListener != null) {
-            linkedListener.start(req);
+            linkedListener.notifyCallStart(req);
         }
     }
 
-    public final void success(Data data, Response<Data> response) {
-        if(disableListener()){
+    public final void notifyCallSuccess(Data data, Response<Data> response) {
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -165,12 +169,12 @@ public abstract class HttpListener<Data> {
             onSuccess(data, response);
         }
         if (linkedListener != null) {
-            linkedListener.success(data, response);
+            linkedListener.notifyCallSuccess(data, response);
         }
     }
 
-    public final void failure(HttpException e, Response<Data> response) {
-        if(disableListener()){
+    public final void notifyCallFailure(HttpException e, Response<Data> response) {
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -181,16 +185,16 @@ public abstract class HttpListener<Data> {
             onFailure(e, response);
         }
         if (linkedListener != null) {
-            linkedListener.failure(e, response);
+            linkedListener.notifyCallFailure(e, response);
         }
     }
 
-    public final void cancel(Data data, Response<Data> response) {
+    public final void notifyCallCancel(Data data, Response<Data> response) {
         if (HttpLog.isPrint) {
             HttpLog.w(TAG, "Request be Cancelled!  isCancelled: " + response.getRequest().isCancelled()
                            + "  Thread isInterrupted: " + Thread.currentThread().isInterrupted());
         }
-        if(disableListener()){
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -201,12 +205,12 @@ public abstract class HttpListener<Data> {
             onCancel(data, response);
         }
         if (linkedListener != null) {
-            linkedListener.cancel(data, response);
+            linkedListener.notifyCallCancel(data, response);
         }
     }
 
-    public final void loading(AbstractRequest<Data> req, long total, long len) {
-        if(disableListener()){
+    public final void notifyCallLoading(AbstractRequest<Data> req, long total, long len) {
+        if (disableListener()) {
             return;
         }
         if (readingNotify) {
@@ -219,12 +223,12 @@ public abstract class HttpListener<Data> {
             }
         }
         if (linkedListener != null) {
-            linkedListener.loading(req, total, len);
+            linkedListener.notifyCallLoading(req, total, len);
         }
     }
 
-    public final void uploading(AbstractRequest<Data> req, long total, long len) {
-        if(disableListener()){
+    public final void notifyCallUploading(AbstractRequest<Data> req, long total, long len) {
+        if (disableListener()) {
             return;
         }
         if (uploadingNotify) {
@@ -237,12 +241,12 @@ public abstract class HttpListener<Data> {
             }
         }
         if (linkedListener != null) {
-            linkedListener.uploading(req, total, len);
+            linkedListener.notifyCallUploading(req, total, len);
         }
     }
 
-    public final void retry(AbstractRequest<Data> req, int max, int times) {
-        if(disableListener()){
+    public final void notifyCallRetry(AbstractRequest<Data> req, int max, int times) {
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -253,12 +257,12 @@ public abstract class HttpListener<Data> {
             onRetry(req, max, times);
         }
         if (linkedListener != null) {
-            linkedListener.retry(req, max, times);
+            linkedListener.notifyCallRetry(req, max, times);
         }
     }
 
-    public final void redirect(AbstractRequest<Data> req, int max, int times) {
-        if(disableListener()){
+    public final void notifyCallRedirect(AbstractRequest<Data> req, int max, int times) {
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -269,10 +273,25 @@ public abstract class HttpListener<Data> {
             onRedirect(req, max, times);
         }
         if (linkedListener != null) {
-            linkedListener.redirect(req, max, times);
+            linkedListener.notifyCallRedirect(req, max, times);
         }
     }
 
+    public final void notifyCallEnd(Response<Data> response) {
+        if (disableListener()) {
+            return;
+        }
+        if (runOnUiThread) {
+            Message msg = handler.obtainMessage(M_END);
+            msg.obj = response;
+            handler.sendMessage(msg);
+        } else {
+            onEnd(response);
+        }
+        if (linkedListener != null) {
+            linkedListener.notifyCallEnd(response);
+        }
+    }
     //____________ developer override method ____________
     public boolean disableListener() {
         return false;
@@ -293,4 +312,6 @@ public abstract class HttpListener<Data> {
     public void onRetry(AbstractRequest<Data> request, int max, int times) {}
 
     public void onRedirect(AbstractRequest<Data> request, int max, int times) {}
+
+    public void onEnd(Response<Data> response) {}
 }

@@ -73,7 +73,7 @@ public abstract class DataParser<T> {
     protected final void notifyReading(long total, long len) {
         HttpListener<T> listener = request.getHttpListener();
         if (listener != null) {
-            listener.loading(request, total, len);
+            listener.notifyCallLoading(request, total, len);
         }
     }
 
