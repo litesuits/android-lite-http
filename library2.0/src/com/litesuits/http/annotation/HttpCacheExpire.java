@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HttpCacheExpire {
-    public long value();
+    long value();
 
-    public TimeUnit unit();
+    TimeUnit unit();
 }

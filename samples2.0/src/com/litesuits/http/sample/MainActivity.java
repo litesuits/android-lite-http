@@ -821,7 +821,7 @@ public class MainActivity extends Activity {
                 @HttpTag("custom tag")
                 @HttpID(7)
                 @HttpCacheMode(CacheMode.CacheFirst)
-                @HttpCacheExpire(10 * 60 * 1000)
+                @HttpCacheExpire(value = 10,unit = TimeUnit.MINUTES)
                 @HttpCacheKey("cache-name-by-myself")
                 @HttpCharSet("UTF-8")
                 @HttpMaxRetry(3)
