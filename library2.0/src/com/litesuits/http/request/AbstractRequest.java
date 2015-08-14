@@ -661,12 +661,23 @@ public abstract class AbstractRequest<T> {
         return (S) this;
     }
 
-    public boolean needCache() {
+    /**
+     * is cache mode
+     * @return true if in cache mode, else fasle.
+     */
+    public boolean isCached() {
         return cacheMode != null && cacheMode != CacheMode.NetOnly;
     }
 
-    public boolean doNotCache() {
-        return cacheMode == null || cacheMode == CacheMode.NetOnly;
+    /**
+     * @deprecated
+     */
+    public boolean needCached() {
+        return isCached();
+    }
+
+    public boolean cleanCache() {
+        return isCached();
     }
 
     /*________________________ string_methods ________________________*/

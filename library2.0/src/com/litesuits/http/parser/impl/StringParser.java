@@ -21,7 +21,7 @@ public class StringParser extends MemeoryDataParser<String> {
     @Override
     public String parseNetStream(InputStream stream, long len, String charSet, String cacheDir) throws IOException {
         String data = streamToString(stream, len, charSet);
-        if (request.needCache()) {
+        if (request.isCached()) {
             keepToCache(data, getSpecifyFile(cacheDir));
         }
         return data;

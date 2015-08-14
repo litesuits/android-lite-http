@@ -2,9 +2,7 @@ package com.litesuits.http.parser.impl;
 
 import com.litesuits.http.parser.MemeoryDataParser;
 import com.litesuits.http.request.AbstractRequest;
-import org.apache.http.util.ByteArrayBuffer;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -23,7 +21,7 @@ public class BytesParser extends MemeoryDataParser<byte[]> {
     @Override
     public byte[] parseNetStream(InputStream stream, long len, String charSet, String cacheDir) throws IOException {
         byte[] data = streamToByteArray(stream, len);
-        if(request.needCache()){
+        if(request.isCached()){
             keepToCache(data,getSpecifyFile(cacheDir));
         }
         return data;

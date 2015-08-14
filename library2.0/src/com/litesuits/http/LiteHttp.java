@@ -190,36 +190,6 @@ public abstract class LiteHttp {
         return statisticsInfo;
     }
 
-    public final long clearMemCache() {
-        long len;
-        synchronized (lock) {
-            len = memCachedSize.get();
-            memCache.clear();
-            memCachedSize.set(0);
-        }
-        return len;
-    }
-
-    public final boolean deleteCachedFile(String cacehKey) {
-        File file = new File(config.cacheDirPath, cacehKey);
-        return file.delete();
-    }
-
-    public final long deleteCachedFiles() {
-        File file = new File(config.cacheDirPath);
-        long len = 0;
-        if (file.isDirectory()) {
-            File[] fs = file.listFiles();
-            if (fs != null) {
-                for (File f : fs) {
-                    len += f.length();
-                    f.delete();
-                }
-            }
-        }
-        return len;
-    }
-
     public <T> Response<T> execute(AbstractRequest<T> request) {
         final InternalResponse<T> response = handleRequest(request);
         HttpException httpException = null;
@@ -544,7 +514,7 @@ public abstract class LiteHttp {
      */
     protected <T> boolean tryToKeepCacheInMemory(InternalResponse<T> response) {
         AbstractRequest<T> request = response.getRequest();
-        if (request.needCache()) {
+        if (request.isCached()) {
             DataParser<T> dataParser = request.getDataParser();
             if (HttpLog.isPrint) {
                 HttpLog.v(TAG, "lite http try to keep cache.. maximum cache len: " + config.maxMemCacheBytesSize
@@ -583,6 +553,53 @@ public abstract class LiteHttp {
             }
         }
         return false;
+    }
+
+    public final long cleanCacheForRequest(AbstractRequest request) {
+        long len = 0;
+        synchronized (lock) {
+            if (memCache.get(request.getCacheKey()) != null) {
+                HttpCache cache = memCache.remove(request.getCacheKey());
+                len = cache.length;
+                memCachedSize.addAndGet(-len);
+            }
+        }
+        File file = request.getDataParser().getSpecifyFile(config.cacheDirPath);
+        if (file != null) {
+            len = file.length();
+            file.delete();
+        }
+        return len;
+    }
+
+    public final long clearMemCache() {
+        long len;
+        synchronized (lock) {
+            len = memCachedSize.get();
+            memCache.clear();
+            memCachedSize.set(0);
+        }
+        return len;
+    }
+
+    public final boolean deleteCachedFile(String cacehKey) {
+        File file = new File(config.cacheDirPath, cacehKey);
+        return file.delete();
+    }
+
+    public final long deleteCachedFiles() {
+        File file = new File(config.cacheDirPath);
+        long len = 0;
+        if (file.isDirectory()) {
+            File[] fs = file.listFiles();
+            if (fs != null) {
+                for (File f : fs) {
+                    len += f.length();
+                    f.delete();
+                }
+            }
+        }
+        return len;
     }
 
     protected long getCurrentTimeMillis() {

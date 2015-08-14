@@ -35,7 +35,7 @@ public abstract class JsonAbsParser<T> extends MemeoryDataParser<T> {
     protected T parseNetStream(InputStream stream, long totalLength, String charSet,
                                String cacheDir) throws IOException {
         json = streamToString(stream, totalLength, charSet);
-        if (request.needCache()) {
+        if (request.isCached()) {
             keepToCache(json, getSpecifyFile(cacheDir));
         }
         return Json.get().toObject(json, claxx);
