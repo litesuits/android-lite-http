@@ -3,6 +3,7 @@ package com.litesuits.http;
 import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
+import android.util.Log;
 import com.litesuits.http.concurrent.OverloadPolicy;
 import com.litesuits.http.concurrent.SchedulePolicy;
 import com.litesuits.http.data.Consts;
@@ -161,6 +162,10 @@ public class HttpConfig {
      * set global http scheme and host for uri.
      */
     protected String globalSchemeHost;
+    /**
+     * set debugged status
+     */
+    protected boolean debugged;
 
     public HttpConfig(Context context) {
         if (context != null) {
@@ -413,8 +418,22 @@ public class HttpConfig {
         return this;
     }
 
-    /* ____________________________ enhanced methods ____________________________*/
+    public boolean isDebugged() {
+        return debugged;
+    }
 
+    /**
+     * when debugged is true, the {@link Log} is opened.
+     *
+     * @param debugged true if debugged
+     */
+    public HttpConfig setDebugged(boolean debugged) {
+        this.debugged = debugged;
+        HttpLog.isPrint = debugged;
+        return this;
+    }
+
+    /* ____________________________ enhanced methods ____________________________*/
     public boolean isDisableAllNetwork() {
         return (disableNetworkFlags & HttpConfig.FLAG_NET_DISABLE_ALL) == FLAG_NET_DISABLE_ALL;
     }
@@ -490,7 +509,8 @@ public class HttpConfig {
     @Override
     public String toString() {
         return "HttpConfig{" +
-               "context=" + context +
+               "liteHttp=" + liteHttp +
+               ", context=" + context +
                ", userAgent='" + userAgent + '\'' +
                ", connectTimeout=" + connectTimeout +
                ", socketTimeout=" + socketTimeout +
@@ -515,7 +535,8 @@ public class HttpConfig {
                ", defaultMaxRedirectTimes=" + defaultMaxRedirectTimes +
                ", defaultModelQueryBuilder=" + defaultModelQueryBuilder +
                ", globalHttpListener=" + globalHttpListener +
-               ", globalSchemeHost=" + globalSchemeHost +
+               ", globalSchemeHost='" + globalSchemeHost + '\'' +
+               ", debugged=" + debugged +
                '}';
     }
 }

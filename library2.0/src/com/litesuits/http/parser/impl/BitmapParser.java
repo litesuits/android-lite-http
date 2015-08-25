@@ -33,7 +33,8 @@ public class BitmapParser extends FileDataParser<Bitmap> {
 
     @Override
     public Bitmap parseNetStream(InputStream stream, long len, String charSet, String cacheDir) throws IOException {
-        if (request.isCached() || this.file != null) {
+        if (request.isCached() || this.file != null
+            || (request.getHttpListener() != null && request.getHttpListener().isReadingNotify())) {
             File file = streamToFile(stream, len, cacheDir);
             return BitmapFactory.decodeFile(file.getAbsolutePath());
         } else {
@@ -45,5 +46,4 @@ public class BitmapParser extends FileDataParser<Bitmap> {
     public Bitmap readFromDiskCache(File file) {
         return BitmapFactory.decodeFile(file.getAbsolutePath());
     }
-
 }

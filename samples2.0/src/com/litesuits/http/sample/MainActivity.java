@@ -75,13 +75,13 @@ public class MainActivity extends Activity {
         initViews();
         activity = this;
         // keep an singleton instance of litehttp
-        liteHttp = LiteHttp.newApacheHttpClient(null);
+        liteHttp = LiteHttp.newApacheHttpClient(new HttpConfig(this).setDebugged(true));
     }
 
     private void initViews() {
         mListview = (ListView) findViewById(R.id.listview);
         mAdapter = new ArrayAdapter<String>(this, R.layout.list_item, R.id.tv_item,
-                                            getResources().getStringArray(R.array.http_test_list));
+                getResources().getStringArray(R.array.http_test_list));
         mListview.setAdapter(mAdapter);
         mListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -125,7 +125,7 @@ public class MainActivity extends Activity {
         final String uploadUrl = "http://192.168.8.105:8080/upload";
         final String httpsUrl = "https://www.baidu.com";
         final String userGet = "http://litesuits.com/mockdata/user_get";
-        final String picUrl = "http://www.88xm.com/uploads/allimg/150311/1-150311160U0.jpg";
+        final String picUrl = "http://pic.33.la/20140403sj/1638.jpg";
         final String redirectUrl = "http://www.baidu.com/link?url=Lqc3GptP8u05JCRDsk0jqsAvIZh9WdtO_RkXYMYRQEm";
 
         // restore http config
@@ -331,7 +331,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void onSuccess(JSONObject jsonObject, Response<JSONObject> response) {
                         HttpUtil.showTips(activity, "LiteHttp2.0",
-                                          "Custom JSONObject Parser:\n" + jsonObject.toString());
+                                "Custom JSONObject Parser:\n" + jsonObject.toString());
                     }
 
                     @Override
@@ -382,14 +382,14 @@ public class MainActivity extends Activity {
                     public void onSuccess(String s, Response<String> response) {
                         User u = Json.get().toObject(s, User.class);
                         HttpUtil.showTips(activity, "LiteHttp2.0",
-                                          "FastJson handle this: \n" + u.toString());
+                                "FastJson handle this: \n" + u.toString());
                         Json.setDefault();
                     }
 
                     @Override
                     public void onFailure(HttpException e, Response<String> response) {
                         HttpUtil.showTips(activity, "LiteHttp2.0",
-                                          "FastJson handle this: \n" + e.toString());
+                                "FastJson handle this: \n" + e.toString());
                         Json.setDefault();
                     }
                 }));
@@ -434,11 +434,12 @@ public class MainActivity extends Activity {
                 downProgress.show();
                 // load and show bitmap
                 liteHttp.executeAsync(
-                        new BitmapRequest(picUrl).setHttpListener(new HttpListener<Bitmap>(true, true, false) {
+                        new BitmapRequest(picUrl).setHttpListener(new HttpListener<Bitmap>(true, true, true) {
                             @Override
                             public void onLoading(AbstractRequest<Bitmap> request, long total, long len) {
                                 downProgress.setMax((int) total);
                                 downProgress.setProgress((int) len);
+                                HttpLog.i(TAG, total + "  total   " + len + " len");
                             }
 
                             @Override
@@ -459,7 +460,7 @@ public class MainActivity extends Activity {
                         }));
 
                 // download a file to sdcard.
-                liteHttp.executeAsync(new FileRequest(picUrl).setFileSavePath("sdcard/aaa.jpg"));
+                liteHttp.executeAsync(new FileRequest(picUrl, "sdcard/aaa.jpg"));
                 break;
             case 11:
                 // 11. Disable Some Network
@@ -569,7 +570,7 @@ public class MainActivity extends Activity {
                                                 break;
                                         }
                                         HttpUtil.showTips(activity, "LiteHttp2.0",
-                                                          "Client Exception:\n" + e.toString());
+                                                "Client Exception:\n" + e.toString());
                                     }
 
                                     @Override
@@ -586,7 +587,7 @@ public class MainActivity extends Activity {
                                                 break;
                                         }
                                         HttpUtil.showTips(activity, "LiteHttp2.0",
-                                                          "Network Exception:\n" + e.toString());
+                                                "Network Exception:\n" + e.toString());
                                     }
 
                                     @Override
@@ -605,7 +606,7 @@ public class MainActivity extends Activity {
                                                 break;
                                         }
                                         HttpUtil.showTips(activity, "LiteHttp2.0",
-                                                          "Server Exception:\n" + e.toString());
+                                                "Server Exception:\n" + e.toString());
                                     }
                                 }.handleException(exception);
                             }
@@ -619,8 +620,8 @@ public class MainActivity extends Activity {
                             @Override
                             public void onCancel(String s, Response<String> response) {
                                 HttpUtil.showTips(activity, "LiteHttp2.0",
-                                                  "Request Canceld: " + response.getRequest().isCancelled()
-                                                  + "\nTask Interrupted: " + isInterrupted);
+                                        "Request Canceld: " + response.getRequest().isCancelled()
+                                        + "\nTask Interrupted: " + isInterrupted);
                             }
                         });
                 FutureTask futureTask = liteHttp.performAsync(stringRequest);
@@ -821,19 +822,18 @@ public class MainActivity extends Activity {
                 @HttpTag("custom tag")
                 @HttpID(7)
                 @HttpCacheMode(CacheMode.CacheFirst)
-                @HttpCacheExpire(value = 10,unit = TimeUnit.MINUTES)
+                @HttpCacheExpire(value = 10, unit = TimeUnit.MINUTES)
                 @HttpCacheKey("cache-name-by-myself")
                 @HttpCharSet("UTF-8")
                 @HttpMaxRetry(3)
                 @HttpMaxRedirect(5)
-                class UserAnnoParam implements HttpParamModel {
+                class UserAnnoParam extends HttpRichParamModel<User> {
                     private static final long serialVersionUID = 2931033825895021716L;
                     public long id = 110;
                     private String key = "aes";
                 }
 
-                UserAnnoParam p = new UserAnnoParam();
-                liteHttp.executeAsync(new UserRequest(p).setHttpListener(new HttpListener<User>() {
+                liteHttp.executeAsync(new UserAnnoParam().setHttpListener(new HttpListener<User>() {
                     @Override
                     public void onSuccess(User user, Response<User> response) {
                         HttpUtil.showTips(activity, "UserAnnoParam", user.toString());
@@ -857,7 +857,7 @@ public class MainActivity extends Activity {
                     }
 
                 }
-                liteHttp.executeAsync(new UserRequest(new UserRichParam()));
+                liteHttp.executeAsync(new UserRichParam());
                 break;
 
             case 20:

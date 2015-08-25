@@ -169,15 +169,6 @@ public abstract class LiteHttp {
         }
     }
 
-    /**
-     * when debugged is true, the {@link Log} is opened.
-     *
-     * @param debugged true if debugged
-     */
-    public void setDebugged(boolean debugged) {
-        HttpLog.isPrint = debugged;
-    }
-
     public final HttpConfig getConfig() {
         return config;
     }
@@ -189,6 +180,9 @@ public abstract class LiteHttp {
     public final StatisticsInfo getStatisticsInfo() {
         return statisticsInfo;
     }
+
+    protected abstract <T> void connectWithRetries(AbstractRequest<T> request, InternalResponse response)
+            throws HttpClientException, HttpNetException, HttpServerException;
 
     public <T> Response<T> execute(AbstractRequest<T> request) {
         final InternalResponse<T> response = handleRequest(request);
@@ -272,10 +266,7 @@ public abstract class LiteHttp {
         return response;
     }
 
-    protected abstract <T> void connectWithRetries(AbstractRequest<T> request, InternalResponse response)
-            throws HttpClientException, HttpNetException, HttpServerException;
-
-    public void executeAsync(final AbstractRequest request) {
+    public <T> void executeAsync(final AbstractRequest<T> request) {
         smartExecutor.execute(new Runnable() {
             @Override
             public void run() {
