@@ -191,7 +191,7 @@ public class MainActivity extends Activity {
                         User user = liteHttp.perform(new JsonAbsRequest<User>(userGet) {});
                         Log.i(TAG, "User: " + user);
 
-                        // 2.1 handle result on UI thread
+                        // 2.1 handle result on UI thread(主线程处理，注意HttpListener默认是在主线程回调)
                         liteHttp.execute(new BytesRequest(url).setHttpListener(
                                 new HttpListener<byte[]>() {
                                     @Override
