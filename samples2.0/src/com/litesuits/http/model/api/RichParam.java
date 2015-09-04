@@ -17,7 +17,7 @@ import com.litesuits.http.sample.MainActivity;
 import java.util.concurrent.TimeUnit;
 
 /**
- * POST request， HTTPbody：UrlEncodedForm: [id=000&key=xxx]
+ * POST request， HTTP body：UrlEncodedForm: [id=000&key=xxx]
  * use cache
  */
 @HttpUri(MainActivity.userGet)

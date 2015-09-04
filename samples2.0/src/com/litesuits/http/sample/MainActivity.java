@@ -29,6 +29,7 @@ import com.litesuits.http.listener.GlobalHttpListener;
 import com.litesuits.http.listener.HttpListener;
 import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.model.User;
+import com.litesuits.http.model.api.RichParam;
 import com.litesuits.http.model.api.UserParam;
 import com.litesuits.http.request.*;
 import com.litesuits.http.request.content.*;
@@ -184,12 +185,13 @@ public class MainActivity extends Activity {
                     public void run() {
 
                         // 2.0 return fully response
-                        Response response = liteHttp.execute(new BytesRequest(url));
-                        response.printInfo();
+                        Response<User> response = liteHttp.execute(new RichParam(1, "a"));
+                        User user = response.getResult();
+                        Log.i(TAG, "User: " + user);
 
                         // 2.1 return java model directly
-                        User user = liteHttp.perform(new JsonAbsRequest<User>(userGet) {});
-                        Log.i(TAG, "User: " + user);
+                        User user2 = liteHttp.perform(new JsonAbsRequest<User>(userGet) {});
+                        Log.i(TAG, "User: " + user2);
 
                         // 2.1 handle result on UI thread(主线程处理，注意HttpListener默认是在主线程回调)
                         liteHttp.execute(new BytesRequest(url).setHttpListener(
