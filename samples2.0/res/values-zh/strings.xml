@@ -38,7 +38,7 @@
         <item>1. 发起异步请求</item>
         <item>2. 发起同步请求</item>
         <item>3. 同步请求简化</item>
-        <item>4. 非安全请求</item>
+        <item>4. 可抛出异常的请求</item>
         <item>5. HTTPS请求</item>
         <item>6. 全自动模型转换</item>
         <item>7. 自定义数据解析</item>

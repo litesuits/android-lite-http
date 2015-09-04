@@ -1,7 +1,6 @@
 package com.litesuits.http.parser;
 
 import com.litesuits.http.log.HttpLog;
-import com.litesuits.http.request.AbstractRequest;
 import com.litesuits.http.utils.StringCodingUtils;
 import org.apache.http.util.ByteArrayBuffer;
 import org.apache.http.util.CharArrayBuffer;
@@ -15,11 +14,7 @@ import java.nio.charset.Charset;
  * @author MaTianyu
  *         2014-2-21下午8:56:59
  */
-public abstract class MemeoryDataParser<T> extends DataParser<T> {
-
-    public MemeoryDataParser(AbstractRequest<T> request) {
-        super(request);
-    }
+public abstract class MemCacheableParser<T> extends DataParser<T> {
 
     @Override
     public boolean isMemCacheSupport() {
@@ -155,6 +150,13 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
 
     }
 
+
+    protected final void keepToCache(String src, File file) {
+        if (src != null) {
+            keepToCache(StringCodingUtils.getBytes(src, Charset.forName(charSet)), file);
+        }
+    }
+
     protected final void keepToCache(byte[] data, File file) {
         if (data != null) {
             FileOutputStream fos = null;
@@ -190,12 +192,6 @@ public abstract class MemeoryDataParser<T> extends DataParser<T> {
                     }
                 }
             }
-        }
-    }
-
-    protected final void keepToCache(String src, File file) {
-        if (data != null) {
-            keepToCache(StringCodingUtils.getBytes(src, Charset.forName(charSet)), file);
         }
     }
 

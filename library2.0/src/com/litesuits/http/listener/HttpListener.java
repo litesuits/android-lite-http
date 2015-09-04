@@ -52,8 +52,16 @@ public abstract class HttpListener<Data> {
         return linkedListener;
     }
 
-    public final HttpListener<Data> setLinkedListener(HttpListener<Data> linkedListener) {
-        this.linkedListener = linkedListener;
+    public final HttpListener<Data> setLinkedListener(HttpListener<Data> httpListener) {
+        if (this.linkedListener != null) {
+            HttpListener<Data> temp = this.linkedListener;
+            do {
+                if (httpListener == temp) {
+                    throw new RuntimeException("Circular refrence:  " + httpListener);
+                }
+            } while ((temp = temp.getLinkedListener()) != null);
+        }
+        this.linkedListener = httpListener;
         return this;
     }
 
@@ -292,6 +300,7 @@ public abstract class HttpListener<Data> {
             linkedListener.notifyCallEnd(response);
         }
     }
+
     //____________ developer override method ____________
     public boolean disableListener() {
         return false;

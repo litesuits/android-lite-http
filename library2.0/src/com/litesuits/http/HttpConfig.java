@@ -170,9 +170,8 @@ public class HttpConfig {
     public HttpConfig(Context context) {
         if (context != null) {
             this.context = context.getApplicationContext();
-            cacheDirPath = context.getFilesDir() + "/lite/http-cache";
+            setCacheDirPath(context.getFilesDir() + "/lite/http-cache");
         }
-        HttpLog.i(TAG, "lite http cache file dir: " + cacheDirPath);
     }
 
     public HttpConfig(Context context, boolean doStatistics, boolean detectNetwork) {
@@ -324,6 +323,7 @@ public class HttpConfig {
             boolean mkdirs = file.mkdirs();
             HttpLog.i(TAG, file.getAbsolutePath() + "  mkdirs: " + mkdirs);
         }
+        HttpLog.i(TAG, "lite http cache file dir: " + cacheDirPath);
         return this;
     }
 
@@ -435,7 +435,7 @@ public class HttpConfig {
 
     /* ____________________________ enhanced methods ____________________________*/
     public boolean isDisableAllNetwork() {
-        return (disableNetworkFlags & HttpConfig.FLAG_NET_DISABLE_ALL) == FLAG_NET_DISABLE_ALL;
+        return (disableNetworkFlags & FLAG_NET_DISABLE_ALL) == FLAG_NET_DISABLE_ALL;
     }
 
     public boolean detectNetworkNeeded() {

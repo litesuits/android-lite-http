@@ -192,7 +192,7 @@ public class SmartExecutor implements Executor {
             if (!suc) {
                 runningList.clear();
                 HttpLog.e(TAG,
-                          "SmartExecutor scheduler remove failed, so clear all(running list) to avoid unpreditable error : " + scheduler);
+                        "SmartExecutor scheduler remove failed, so clear all(running list) to avoid unpreditable error : " + scheduler);
             }
             if (waitingList.size() > 0) {
                 WrappedRunnable waitingRun;
@@ -213,7 +213,7 @@ public class SmartExecutor implements Executor {
                     //                    HttpLog.v(TAG, "Thread " + Thread.currentThread().getName() + " execute next task..");
                 } else {
                     HttpLog.e(TAG,
-                              "SmartExecutor get a NULL task from waiting queue: " + Thread.currentThread().getName());
+                            "SmartExecutor get a NULL task from waiting queue: " + Thread.currentThread().getName());
                 }
             }
             //            else {
@@ -275,7 +275,7 @@ public class SmartExecutor implements Executor {
     }
 
     /**
-     * Adjust maximum number of waiting queue size based phone performance.
+     * Adjust maximum number of waiting queue size by yourself or based on phone performance.
      * For example: CPU count * 32;
      *
      * @param queueSize waiting queue size

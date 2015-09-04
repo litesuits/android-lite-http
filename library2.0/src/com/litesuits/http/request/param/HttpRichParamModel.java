@@ -2,8 +2,9 @@ package com.litesuits.http.request.param;
 
 import com.litesuits.http.listener.HttpListener;
 import com.litesuits.http.request.content.HttpBody;
+import com.litesuits.http.request.content.multi.MultipartBody;
 import com.litesuits.http.request.query.ModelQueryBuilder;
-
+import com.litesuits.http.request.content.*;
 import java.util.LinkedHashMap;
 
 /**
@@ -84,11 +85,24 @@ public abstract class HttpRichParamModel<T> implements HttpParamModel {
         return this;
     }
 
+    /**
+     * craete headers for request.
+     */
     protected LinkedHashMap<String, String> createHeaders() {return null;}
 
+    /**
+     * create parameter builder.
+     */
     protected ModelQueryBuilder createQueryBuilder() {return null;}
 
+    /**
+     * create http listener for request.
+     */
     protected HttpListener<T> createHttpListener() {return null;}
 
+    /**
+     * create http body for POST/PUT... request.
+     * @return such as {@link StringBody}, {@link UrlEncodedFormBody}, {@link MultipartBody}...
+     */
     protected HttpBody createHttpBody() {return null;}
 }

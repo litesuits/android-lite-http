@@ -2,6 +2,7 @@ package com.litesuits.http.request.query;
 
 import com.litesuits.http.data.Charsets;
 import com.litesuits.http.data.Consts;
+import com.litesuits.http.data.NameValuePair;
 import com.litesuits.http.request.param.HttpCustomParam;
 import com.litesuits.http.request.param.HttpCustomParam.CustomValueBuilder;
 import com.litesuits.http.request.param.HttpParamModel;
@@ -14,8 +15,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.*;
 
 /**
  * abstract class for build parameter of request url.
@@ -26,6 +26,25 @@ import java.util.LinkedHashMap;
 public abstract class ModelQueryBuilder {
 
     protected String charSet = Charsets.UTF_8;
+
+    public LinkedList<NameValuePair> buildPrimaryPairSafely(HttpParamModel model) {
+        try {
+            return buildPrimaryPair(model);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public LinkedList<NameValuePair> buildPrimaryPair(HttpParamModel model) throws IllegalArgumentException,
+            IllegalAccessException, InvocationTargetException, UnsupportedEncodingException {
+        LinkedHashMap<String, String> map = buildPrimaryMap(model);
+        LinkedList<NameValuePair> list = new LinkedList<NameValuePair>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            list.add(new NameValuePair(entry.getKey(), entry.getValue()));
+        }
+        return list;
+    }
 
     public LinkedHashMap<String, String> buildPrimaryMap(HttpParamModel model) throws IllegalArgumentException,
             IllegalAccessException, InvocationTargetException, UnsupportedEncodingException {

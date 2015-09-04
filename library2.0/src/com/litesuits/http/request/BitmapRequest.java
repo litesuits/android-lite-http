@@ -1,6 +1,7 @@
 package com.litesuits.http.request;
 
 import android.graphics.Bitmap;
+import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.impl.BitmapParser;
 import com.litesuits.http.request.param.HttpParamModel;
 
@@ -13,12 +14,6 @@ import java.io.File;
 public class BitmapRequest extends AbstractRequest<Bitmap> {
 
     protected File saveToFile;
-
-    protected BitmapParser bitmapParser;
-
-//    public BitmapRequest() {
-//        super();
-//    }
 
     public BitmapRequest(HttpParamModel model) {
         super(model);
@@ -57,10 +52,7 @@ public class BitmapRequest extends AbstractRequest<Bitmap> {
     }
 
     @Override
-    public BitmapParser getDataParser() {
-        if (bitmapParser == null) {
-            bitmapParser = new BitmapParser(this, saveToFile);
-        }
-        return bitmapParser;
+    public DataParser<Bitmap> createDataParser() {
+        return new BitmapParser(saveToFile);
     }
 }

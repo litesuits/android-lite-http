@@ -8,7 +8,7 @@
         <item>1. Asynchronous Request</item>
         <item>2. Synchronous Request</item>
         <item>3. Simple Synchronous Request</item>
-        <item>4. Unsafely Request</item>
+        <item>4. Exception Thrown Request</item>
         <item>5. HTTPS Reqeust</item>
         <item>6. Automatic Model Conversion</item>
         <item>7. Custom Data Parser</item>

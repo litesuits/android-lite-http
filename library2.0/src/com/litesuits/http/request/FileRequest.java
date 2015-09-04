@@ -1,5 +1,6 @@
 package com.litesuits.http.request;
 
+import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.impl.FileParser;
 import com.litesuits.http.request.param.HttpParamModel;
 
@@ -12,12 +13,6 @@ import java.io.File;
 public class FileRequest extends AbstractRequest<File> {
 
     private File saveToFile;
-
-    private FileParser fileParser;
-
-//    public FileRequest() {
-//        super();
-//    }
 
     public FileRequest(String url) {
         super(url);
@@ -51,10 +46,7 @@ public class FileRequest extends AbstractRequest<File> {
     }
 
     @Override
-    public FileParser getDataParser() {
-        if (fileParser == null) {
-            fileParser = new FileParser(this, saveToFile);
-        }
-        return fileParser;
+    public DataParser<File> createDataParser() {
+        return new FileParser(saveToFile);
     }
 }

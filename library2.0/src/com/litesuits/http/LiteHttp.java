@@ -201,24 +201,15 @@ public abstract class LiteHttp {
                         + " , thread name: " + t.getName());
             }
             if (globalListener != null) {
-                globalListener.start(request);
+                globalListener.notifyCallStart(request);
             }
             if (listener != null) {
                 listener.notifyCallStart(request);
             }
-            CacheMode mode = request.getCacheMode();
-            if (mode == CacheMode.CacheFirst && tryHitCache(response)) {
+            if (request.getCacheMode() == CacheMode.CacheFirst && tryHitCache(response)) {
                 return response;
             } else {
-                try {
-                    tryToConnectNetwork(request, response);
-                } finally {
-                    if (mode == CacheMode.NetFirst
-                        && !response.isResultOk()
-                        && !request.isCancelledOrInterrupted()) {
-                        tryHitCache(response);
-                    }
-                }
+                tryToConnectNetwork(request, response);
             }
         } catch (HttpException e) {
             e.printStackTrace();
@@ -232,8 +223,7 @@ public abstract class LiteHttp {
             try {
                 if (HttpLog.isPrint) {
                     Thread t = Thread.currentThread();
-                    HttpLog.i(TAG, "lite http response: " + response.getResult()
-                                   + " , uri: " + request.getUri()
+                    HttpLog.i(TAG, "lite http response: " + request.getUri()
                                    + " , tag: " + request.getTag()
                                    + " , method: " + request.getMethod()
                                    + " , cache mode: " + request.getCacheMode()
@@ -252,11 +242,11 @@ public abstract class LiteHttp {
                 }
                 if (globalListener != null) {
                     if (request.isCancelledOrInterrupted()) {
-                        globalListener.cancel(response.getResult(), response);
+                        globalListener.notifyCallCancel(response.getResult(), response);
                     } else if (httpException != null) {
-                        globalListener.failure(httpException, response);
+                        globalListener.notifyCallFailure(httpException, response);
                     } else {
-                        globalListener.success(response.getResult(), response);
+                        globalListener.notifyCallSuccess(response.getResult(), response);
                     }
                 }
             } catch (Throwable e) {
@@ -439,6 +429,11 @@ public abstract class LiteHttp {
             if (statistic != null) {
                 statistic.onEnd(response);
             }
+            if (request.getCacheMode() == CacheMode.NetFirst
+                && !response.isResultOk()
+                && !request.isCancelledOrInterrupted()) {
+                tryHitCache(response);
+            }
         }
         return false;
     }
@@ -505,7 +500,7 @@ public abstract class LiteHttp {
      */
     protected <T> boolean tryToKeepCacheInMemory(InternalResponse<T> response) {
         AbstractRequest<T> request = response.getRequest();
-        if (request.isCached()) {
+        if (request.isCachedModel()) {
             DataParser<T> dataParser = request.getDataParser();
             if (HttpLog.isPrint) {
                 HttpLog.v(TAG, "lite http try to keep cache.. maximum cache len: " + config.maxMemCacheBytesSize

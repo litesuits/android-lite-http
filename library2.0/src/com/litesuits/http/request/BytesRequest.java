@@ -1,5 +1,6 @@
 package com.litesuits.http.request;
 
+import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.impl.BytesParser;
 import com.litesuits.http.request.param.HttpParamModel;
 
@@ -8,12 +9,6 @@ import com.litesuits.http.request.param.HttpParamModel;
  * @date 2015-04-18
  */
 public class BytesRequest extends AbstractRequest<byte[]> {
-
-    protected BytesParser bytesParser;
-
-//    public BytesRequest() {
-//        super();
-//    }
 
     public BytesRequest(String url) {
         super(url);
@@ -24,10 +19,8 @@ public class BytesRequest extends AbstractRequest<byte[]> {
     }
 
     @Override
-    public BytesParser getDataParser() {
-        if (bytesParser == null) {
-            bytesParser = new BytesParser(this);
-        }
-        return bytesParser;
+    public DataParser<byte[]> createDataParser() {
+        return new BytesParser();
     }
+
 }

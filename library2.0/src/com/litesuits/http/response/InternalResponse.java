@@ -185,7 +185,8 @@ public class InternalResponse<T> implements Response<T> {
     @Override
     public String resToString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("_____________________ lite http response info start _____________________")
+        sb.append("^_^\n")
+          .append("____________________________ lite http response info start ____________________________")
           .append("\n url           : ").append(request.getUri())
           .append("\n status        : ").append(httpStatus)
           .append("\n charSet       : ").append(charSet)
@@ -204,16 +205,14 @@ public class InternalResponse<T> implements Response<T> {
                 sb.append("\n|    ").append(nv);
             }
         }
-        if (getRawString() != null) {
-            sb.append("\n_").append("x\n raw string    : ").append(getRawString());
-        }
         sb.append("\n ").append(request)
-          .append("\n_")
-          .append("\n _____________________ data-start _____________________")
-          .append("\n ").append(getResult())
-          .append("\n _____________________ data-over _____________________")
-          .append("\n_")
           .append("\n exception      : ").append(exception)
+          .append("\n.")
+          .append("\n _________________ data-start _________________")
+          .append("\n ").append(getResult())
+          .append("\n _________________ data-over _________________")
+          .append("\n.")
+          .append("\n model raw string     : ").append(getRawString())
           .append("\n____________________________ lite http response info end ____________________________");
         return sb.toString();
     }

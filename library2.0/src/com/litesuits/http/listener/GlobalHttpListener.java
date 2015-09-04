@@ -81,7 +81,7 @@ public abstract class GlobalHttpListener {
     }
 
     //____________lite called method ____________
-    public final void start(AbstractRequest<?> req) {
+    public final void notifyCallStart(AbstractRequest<?> req) {
         if (runOnUiThread) {
             Message msg = handler.obtainMessage(M_START);
             msg.obj = req;
@@ -91,7 +91,7 @@ public abstract class GlobalHttpListener {
         }
     }
 
-    public final void success(Object data, Response<?> response) {
+    public final void notifyCallSuccess(Object data, Response<?> response) {
         if (runOnUiThread) {
             Message msg = handler.obtainMessage(M_SUCCESS);
             msg.obj = new Object[]{data, response};
@@ -101,7 +101,7 @@ public abstract class GlobalHttpListener {
         }
     }
 
-    public final void failure(HttpException e, Response<?> response) {
+    public final void notifyCallFailure(HttpException e, Response<?> response) {
         if (runOnUiThread) {
             Message msg = handler.obtainMessage(M_FAILURE);
             msg.obj = new Object[]{e, response};
@@ -111,7 +111,7 @@ public abstract class GlobalHttpListener {
         }
     }
 
-    public final void cancel(Object data, Response<?> response) {
+    public final void notifyCallCancel(Object data, Response<?> response) {
         if (HttpLog.isPrint) {
             HttpLog.w(TAG, "Request be Cancelled!  isCancelled: " + response.getRequest().isCancelled()
                            + "  Thread isInterrupted: " + Thread.currentThread().isInterrupted());

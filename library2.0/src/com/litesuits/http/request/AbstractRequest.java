@@ -21,6 +21,7 @@ import com.litesuits.http.utils.HexUtil;
 import com.litesuits.http.utils.MD5Util;
 import com.litesuits.http.utils.UriUtil;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -151,6 +152,10 @@ public abstract class AbstractRequest<T> {
      */
     private LinkedHashMap<String, String> paramMap;
     /**
+     * data parser
+     */
+    protected DataParser<T> dataParser;
+    /**
      * global http listener for request
      */
     private GlobalHttpListener globalHttpListener;
@@ -179,16 +184,34 @@ public abstract class AbstractRequest<T> {
     /*________________________ abstract_method ________________________*/
 
     /**
-     * create a dataparser
+     * create the dataparser
      */
-    //    protected abstract DataParser<T> createDataParser();
-
-    /**
-     * create or get the dataparser
-     */
-    public abstract <D extends DataParser<T>> D getDataParser();
+    @SuppressWarnings("unchecked")
+    public abstract DataParser<T> createDataParser();
 
     /*________________________ getter_setter ________________________*/
+
+    /**
+     * set a data parser
+     */
+    @SuppressWarnings("unchecked")
+    public <S extends AbstractRequest<T>> S setDataParser(DataParser<T> dataParser) {
+        this.dataParser = dataParser;
+        this.dataParser.setRequest(this);
+        return (S) this;
+    }
+
+    /**
+     * get dataparser
+     */
+    @SuppressWarnings("unchecked")
+    public <D extends DataParser<T>> D getDataParser() {
+        if(dataParser == null) {
+            setDataParser(createDataParser());
+        }
+        return (D) dataParser;
+    }
+
     public long getId() {
         return id;
     }
@@ -484,23 +507,6 @@ public abstract class AbstractRequest<T> {
     }
 
     /*________________________ enhenced_methods ________________________*/
-    @SuppressWarnings("unchecked")
-    public <S extends AbstractRequest<T>> S setLinkedHttpListener(HttpListener<T> httpListener) {
-        if (this.httpListener != null) {
-            HttpListener<T> temp = this.httpListener;
-            if (httpListener == temp) {
-                throw new RuntimeException("Circular refrence:  " + httpListener);
-            }
-            while ((temp = temp.getLinkedListener()) != null) {
-                if (httpListener == temp) {
-                    throw new RuntimeException("Circular refrence:  " + httpListener);
-                }
-            }
-            httpListener.setLinkedListener(this.httpListener);
-        }
-        this.httpListener = httpListener;
-        return (S) this;
-    }
 
     @SuppressWarnings("unchecked")
     public <S extends AbstractRequest<T>> S setCacheMode(CacheMode cacheMode, String key) {
@@ -663,9 +669,10 @@ public abstract class AbstractRequest<T> {
 
     /**
      * is cache mode
+     *
      * @return true if in cache mode, else fasle.
      */
-    public boolean isCached() {
+    public boolean isCachedModel() {
         return cacheMode != null && cacheMode != CacheMode.NetOnly;
     }
 
@@ -673,11 +680,23 @@ public abstract class AbstractRequest<T> {
      * @deprecated
      */
     public boolean needCached() {
-        return isCached();
+        return isCachedModel();
     }
 
-    public boolean cleanCache() {
-        return isCached();
+    /**
+     * delete cached file
+     *
+     * @param cacheDirPath dir path
+     * @return length of file
+     */
+    public long deleteCacheFile(String cacheDirPath) {
+        long len = 0;
+        File file = getDataParser().getSpecifyFile(cacheDirPath);
+        if (file != null) {
+            len = file.length();
+            file.delete();
+        }
+        return len;
     }
 
     /*________________________ string_methods ________________________*/
@@ -688,7 +707,7 @@ public abstract class AbstractRequest<T> {
 
     public String reqToString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n_____________________ lite http request start _____________________")
+        sb.append("\n________________ request-start ________________")
           .append("\n class            : ").append(getClass().getSimpleName())
           .append("\n id               : ").append(id)
           .append("\n uri              : ").append(uri)
@@ -722,7 +741,7 @@ public abstract class AbstractRequest<T> {
                 sb.append("\n|    ").append(String.format("%-20s", en.getKey())).append(" = ").append(en.getValue());
             }
         }
-        sb.append("\n_____________________ lite http request end ______________________");
+        sb.append("\n________________ request-end ________________");
         return sb.toString();
 
     }

@@ -1,7 +1,6 @@
 package com.litesuits.http.parser;
 
 import com.litesuits.http.log.HttpLog;
-import com.litesuits.http.request.AbstractRequest;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,21 +11,19 @@ import java.io.InputStream;
  * @author MaTianyu
  * @date 2015-04-26
  */
-public abstract class FileDataParser<T> extends DataParser<T> {
+public abstract class FileCacheableParser<T> extends DataParser<T> {
     protected File file;
 
     /**
      * save to default file
      */
-    public FileDataParser(AbstractRequest<T> request) {
-        super(request);
+    public FileCacheableParser() {
     }
 
     /**
      * save to this file
      */
-    public FileDataParser(AbstractRequest<T> request, File saveToFile) {
-        super(request);
+    public FileCacheableParser(File saveToFile) {
         this.file = saveToFile;
     }
 
