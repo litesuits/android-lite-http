@@ -228,7 +228,7 @@ public class MainActivity extends Activity {
 
                     @Override
                     protected void onProgressUpdate(String... values) {
-                        Toast.makeText(activity, values[0], Toast.LENGTH_LONG).show();
+                        Toast.makeText(activity, "content length:"+values[0].length(), Toast.LENGTH_LONG).show();
                     }
 
                     @Override
@@ -328,15 +328,27 @@ public class MainActivity extends Activity {
                 Json.set(json);
 
                 // json model convert used #FastJson
-                liteHttp.executeAsync(new JsonAbsRequest<User>(userGet) {});
+                liteHttp.executeAsync(new JsonAbsRequest<User>(userGet) {}.setHttpListener(new HttpListener<User>() {
+                    @Override
+                    public void onSuccess(User user, Response<User> response) {
+                        super.onSuccess(user, response);
+                        response.printInfo();
+                        HttpUtil.showTips(activity, "LiteHttp2.0", "FastJson handle this: \n" + user.toString());
+                    }
+                }));
 
                 // json model convert used #FastJson
                 liteHttp.performAsync(new StringRequest(userGet).setHttpListener(new HttpListener<String>() {
                     @Override
                     public void onSuccess(String s, Response<String> response) {
                         User u = Json.get().toObject(s, User.class);
-                        HttpUtil.showTips(activity, "LiteHttp2.0",
-                                "FastJson handle this: \n" + u.toString());
+                        Toast.makeText(activity, u.toString(), Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onEnd(Response<String> response) {
+                        super.onEnd(response);
+                        needRestore = true;
                     }
                 }));
                 break;

@@ -1,14 +1,12 @@
 package com.litesuits.http.impl.apache;
 
 import android.os.Build;
-import com.litesuits.http.LiteHttp;
 import com.litesuits.http.HttpConfig;
+import com.litesuits.http.LiteHttp;
 import com.litesuits.http.data.Charsets;
 import com.litesuits.http.data.Consts;
 import com.litesuits.http.data.HttpStatus;
 import com.litesuits.http.exception.*;
-import com.litesuits.http.exception.ClientException;
-import com.litesuits.http.exception.ServerException;
 import com.litesuits.http.listener.HttpListener;
 import com.litesuits.http.listener.StatisticsListener;
 import com.litesuits.http.log.HttpLog;
