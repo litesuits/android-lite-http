@@ -34,22 +34,14 @@ public abstract class MemCacheableParser<T> extends DataParser<T> {
      * @param file local cache file
      * @return T
      */
-    public T readFromDiskCache(File file) {
+    public T readFromDiskCache(File file) throws IOException {
         FileInputStream fos = null;
         try {
             fos = new FileInputStream(file);
             data = parseDiskCache(fos, file.length());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } finally {
             if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                fos.close();
             }
         }
         return data;
@@ -82,12 +74,9 @@ public abstract class MemCacheableParser<T> extends DataParser<T> {
                     readLength += l;
                 }
                 return translateBytes(swapStream.toByteArray());
-            } catch (IOException e) {
-                e.printStackTrace();
             } finally {
                 swapStream.close();
             }
-            return null;
         }
     }
 
@@ -105,11 +94,10 @@ public abstract class MemCacheableParser<T> extends DataParser<T> {
     /**
      * parse input stream to string.
      *
-     * @param stream input stream
-     * @param len total len
+     * @param stream  input stream
+     * @param len     total len
      * @param charSet char set
      * @return string data
-     * @throws IOException
      */
     protected final String streamToString(InputStream stream, long len, String charSet) throws IOException {
         if (len > 0) {
@@ -140,24 +128,21 @@ public abstract class MemCacheableParser<T> extends DataParser<T> {
                     notifyReading(len, readLength);
                 }
                 return translateString(swapStream.toString(charSet));
-            } catch (IOException e) {
-                e.printStackTrace();
             } finally {
                 swapStream.close();
             }
-            return null;
         }
 
     }
 
 
-    protected final void keepToCache(String src, File file) {
+    protected final void keepToCache(String src, File file) throws IOException {
         if (src != null) {
             keepToCache(StringCodingUtils.getBytes(src, Charset.forName(charSet)), file);
         }
     }
 
-    protected final void keepToCache(byte[] data, File file) {
+    protected final void keepToCache(byte[] data, File file) throws IOException {
         if (data != null) {
             FileOutputStream fos = null;
             try {
@@ -168,28 +153,20 @@ public abstract class MemCacheableParser<T> extends DataParser<T> {
                         HttpLog.i(TAG, "keep cache mkdirs result: " + mk + "  path:" + pFile.getAbsolutePath());
                     }
                 }
-                //if (!file.exists()) {
-                //    boolean cf = file.createNewFile();
-                //    HttpLog.v(TAG, "keep cache create file result: " + cf + "  path:" + file.getAbsolutePath());
-                //}
                 fos = new FileOutputStream(file);
                 fos.write(data);
+                fos.flush();
                 if (HttpLog.isPrint) {
                     HttpLog.v(TAG,
-                              "lite http keep disk cache success, "
-                              + "   tag: " + request.getTag()
-                              + "   url: " + request.getUri()
-                              + "   key: " + request.getCacheKey()
-                              + "   path: " + file.getAbsolutePath());
+                            "lite http keep disk cache success, "
+                            + "   tag: " + request.getTag()
+                            + "   url: " + request.getUri()
+                            + "   key: " + request.getCacheKey()
+                            + "   path: " + file.getAbsolutePath());
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            } finally {
                 if (fos != null) {
-                    try {
-                        fos.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+                    fos.close();
                 }
             }
         }

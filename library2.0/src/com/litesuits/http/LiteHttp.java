@@ -28,6 +28,7 @@ import com.litesuits.http.response.Response;
 import com.litesuits.http.utils.HttpUtil;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.concurrent.Callable;
@@ -405,7 +406,7 @@ public abstract class LiteHttp {
      * connect to network
      */
     protected <T> boolean tryToConnectNetwork(AbstractRequest<T> request, InternalResponse<T> response)
-            throws HttpNetException, HttpClientException, HttpServerException {
+            throws HttpNetException, HttpClientException, HttpServerException, IOException {
         StatisticsListener statistic = null;
         if (config.doStatistics) {
             statistic = new StatisticsListener(response, statisticsInfo);
@@ -447,7 +448,7 @@ public abstract class LiteHttp {
      * </ul>
      */
     @SuppressWarnings("unchecked")
-    protected <T> boolean tryHitCache(InternalResponse<T> response) {
+    protected <T> boolean tryHitCache(InternalResponse<T> response) throws IOException {
         AbstractRequest<T> request = response.getRequest();
         String key = request.getCacheKey();
         long expire = request.getCacheExpireMillis();

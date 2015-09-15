@@ -3,6 +3,7 @@ package com.litesuits.http.listener;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import com.litesuits.http.exception.HttpException;
 import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.request.AbstractRequest;
@@ -30,12 +31,17 @@ public abstract class HttpListener<Data> {
     private boolean readingNotify = false;
     private boolean uploadingNotify = false;
     private HttpListener<Data> linkedListener;
+    private long delayMillis;
 
     /**
      * default run on UI thread
      */
     public HttpListener() {
         this(true);
+    }
+
+    public HttpListener(long delayMillis) {
+        this.delayMillis = delayMillis;
     }
 
     public HttpListener(boolean runOnUiThread) {
@@ -97,6 +103,15 @@ public abstract class HttpListener<Data> {
         return this;
     }
 
+    public long getDelayMillis() {
+        return delayMillis;
+    }
+
+    public HttpListener setDelayMillis(long delayMillis) {
+        this.delayMillis = delayMillis;
+        return this;
+    }
+
     /**
      * note: hold an implicit reference to outter class
      */
@@ -150,7 +165,7 @@ public abstract class HttpListener<Data> {
 
     //____________lite called method ____________
     public final void notifyCallStart(AbstractRequest<Data> req) {
-        if (disableListener()) {
+        if (delayOrDisable()) {
             return;
         }
         if (runOnUiThread) {
@@ -166,7 +181,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallSuccess(Data data, Response<Data> response) {
-        if (disableListener()) {
+        if (delayOrDisable()) {
             return;
         }
         if (runOnUiThread) {
@@ -182,7 +197,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallFailure(HttpException e, Response<Data> response) {
-        if (disableListener()) {
+        if (delayOrDisable()) {
             return;
         }
         if (runOnUiThread) {
@@ -202,7 +217,7 @@ public abstract class HttpListener<Data> {
             HttpLog.w(TAG, "Request be Cancelled!  isCancelled: " + response.getRequest().isCancelled()
                            + "  Thread isInterrupted: " + Thread.currentThread().isInterrupted());
         }
-        if (disableListener()) {
+        if (delayOrDisable()) {
             return;
         }
         if (runOnUiThread) {
@@ -218,7 +233,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallLoading(AbstractRequest<Data> req, long total, long len) {
-        if (disableListener()) {
+        if (delayOrDisable()) {
             return;
         }
         if (readingNotify) {
@@ -236,7 +251,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallUploading(AbstractRequest<Data> req, long total, long len) {
-        if (disableListener()) {
+        if (delayOrDisable()) {
             return;
         }
         if (uploadingNotify) {
@@ -254,7 +269,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallRetry(AbstractRequest<Data> req, int max, int times) {
-        if (disableListener()) {
+        if (delayOrDisable()) {
             return;
         }
         if (runOnUiThread) {
@@ -270,7 +285,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallRedirect(AbstractRequest<Data> req, int max, int times) {
-        if (disableListener()) {
+        if (delayOrDisable()) {
             return;
         }
         if (runOnUiThread) {
@@ -286,7 +301,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallEnd(Response<Data> response) {
-        if (disableListener()) {
+        if (delayOrDisable()) {
             return;
         }
         if (runOnUiThread) {
@@ -299,6 +314,13 @@ public abstract class HttpListener<Data> {
         if (linkedListener != null) {
             linkedListener.notifyCallEnd(response);
         }
+    }
+
+    private boolean delayOrDisable() {
+        if (delayMillis > 0) {
+            SystemClock.sleep(delayMillis);
+        }
+        return disableListener();
     }
 
     //____________ developer override method ____________

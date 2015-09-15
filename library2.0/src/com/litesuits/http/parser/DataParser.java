@@ -47,7 +47,7 @@ public abstract class DataParser<T> {
         return this.data;
     }
 
-    public abstract T readFromDiskCache(File file);
+    public abstract T readFromDiskCache(File file) throws IOException;
 
     /**
      * is memory cache supported

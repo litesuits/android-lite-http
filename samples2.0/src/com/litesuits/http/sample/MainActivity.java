@@ -136,7 +136,6 @@ public class MainActivity extends Activity {
         switch (which) {
             case 0:
                 // 0. Quickly Configuration
-
                 HttpConfig config = new HttpConfig(activity);
                 // set app context
                 config.setContext(activity);
