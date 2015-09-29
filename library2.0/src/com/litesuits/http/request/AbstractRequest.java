@@ -206,7 +206,7 @@ public abstract class AbstractRequest<T> {
      */
     @SuppressWarnings("unchecked")
     public <D extends DataParser<T>> D getDataParser() {
-        if(dataParser == null) {
+        if (dataParser == null) {
             setDataParser(createDataParser());
         }
         return (D) dataParser;
@@ -573,16 +573,22 @@ public abstract class AbstractRequest<T> {
             if (paramMap == null && paramModel == null) {
                 return sb.toString();
             }
-            if (hasQes) {
-                sb.append("&");
-            } else {
-                sb.append("?");
-            }
             LinkedHashMap<String, String> map = getBasicParams();
-            int i = 0, size = map.size();
-            for (Entry<String, String> v : map.entrySet()) {
-                sb.append(URLEncoder.encode(v.getKey(), charSet)).append("=")
-                  .append(URLEncoder.encode(v.getValue(), charSet)).append(++i == size ? "" : "&");
+            int size = map.size();
+            if (size > 0) {
+                if (hasQes) {
+                    sb.append("&");
+                } else {
+                    sb.append("?");
+                }
+                int i = 0;
+                for (Entry<String, String> v : map.entrySet()) {
+                    sb.append(URLEncoder.encode(v.getKey(), charSet)).append("=")
+                      .append(URLEncoder.encode(v.getValue(), charSet));
+                    if (++i != size) {
+                        sb.append("&");
+                    }
+                }
             }
             //if (Log.isPrint) Log.v(TAG, "lite request uri: " + sb.toString());
             return sb.toString();
