@@ -3,7 +3,6 @@ package com.litesuits.http.listener;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.SystemClock;
 import com.litesuits.http.exception.HttpException;
 import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.request.AbstractRequest;
@@ -107,7 +106,7 @@ public abstract class HttpListener<Data> {
         return delayMillis;
     }
 
-    public HttpListener setDelayMillis(long delayMillis) {
+    public HttpListener<Data> setDelayMillis(long delayMillis) {
         this.delayMillis = delayMillis;
         return this;
     }
@@ -123,6 +122,9 @@ public abstract class HttpListener<Data> {
         @Override
         @SuppressWarnings("unchecked")
         public void handleMessage(Message msg) {
+            if (disableListener()) {
+                return;
+            }
             Object[] data;
             switch (msg.what) {
                 case M_START:
@@ -318,7 +320,14 @@ public abstract class HttpListener<Data> {
 
     private boolean delayOrDisable() {
         if (delayMillis > 0) {
-            SystemClock.sleep(delayMillis);
+            //if (HttpLog.isPrint) {
+            //    HttpLog.w(TAG, "litener should be delayed : " + delayMillis + " MS.");
+            //}
+            try {
+                Thread.sleep(delayMillis);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return disableListener();
     }
