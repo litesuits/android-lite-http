@@ -14,17 +14,19 @@ import java.io.InputStream;
 public class BytesParser extends MemCacheableParser<byte[]> {
 
     @Override
-    public byte[] parseNetStream(InputStream stream, long len, String charSet, String cacheDir) throws IOException {
-        byte[] data = streamToByteArray(stream, len);
-        if(request.isCachedModel()){
-            keepToCache(data,getSpecifyFile(cacheDir));
-        }
-        return data;
+    public byte[] parseNetStream(InputStream stream, long len, String charSet) throws IOException {
+        return streamToByteArray(stream, len);
     }
 
     @Override
     protected byte[] parseDiskCache(InputStream stream, long length) throws IOException {
         return streamToByteArray(stream, length);
+    }
+
+
+    @Override
+    protected boolean tryKeepToCache(byte[] data) throws IOException {
+        return keepToCache(data);
     }
 
 }

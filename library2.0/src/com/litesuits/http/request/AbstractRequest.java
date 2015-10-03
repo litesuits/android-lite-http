@@ -113,6 +113,10 @@ public abstract class AbstractRequest<T> {
      */
     private String cacheKey;
     /**
+     * dir for cache data
+     */
+    private String cacheDir;
+    /**
      * expire time of cache
      */
     private long cacheExpireMillis;
@@ -338,6 +342,16 @@ public abstract class AbstractRequest<T> {
         return (S) this;
     }
 
+    public String getCacheDir() {
+        return cacheDir;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <S extends AbstractRequest<T>> S setCacheDir(String cacheDir) {
+        this.cacheDir = cacheDir;
+        return (S) this;
+    }
+
     public long getCacheExpireMillis() {
         return cacheExpireMillis;
     }
@@ -507,6 +521,13 @@ public abstract class AbstractRequest<T> {
     }
 
     /*________________________ enhenced_methods ________________________*/
+
+    public File getCachedFile() {
+        if (cacheDir == null) {
+            throw new RuntimeException("lite-http cache dir for request is null !");
+        }
+        return new File(cacheDir, getCacheKey());
+    }
 
     @SuppressWarnings("unchecked")
     public <S extends AbstractRequest<T>> S setCacheMode(CacheMode cacheMode, String key) {
@@ -687,22 +708,6 @@ public abstract class AbstractRequest<T> {
      */
     public boolean needCached() {
         return isCachedModel();
-    }
-
-    /**
-     * delete cached file
-     *
-     * @param cacheDirPath dir path
-     * @return length of file
-     */
-    public long deleteCacheFile(String cacheDirPath) {
-        long len = 0;
-        File file = getDataParser().getSpecifyFile(cacheDirPath);
-        if (file != null) {
-            len = file.length();
-            file.delete();
-        }
-        return len;
     }
 
     /*________________________ string_methods ________________________*/

@@ -18,6 +18,10 @@ public class StringRequest extends AbstractRequest<String> {
         super(model);
     }
 
+    public StringRequest(String url, HttpParamModel model) {
+        super(url, model);
+    }
+
     @Override
     public DataParser<String> createDataParser() {
         return new StringParser();

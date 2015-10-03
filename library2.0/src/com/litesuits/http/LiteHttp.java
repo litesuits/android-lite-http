@@ -125,9 +125,6 @@ public abstract class LiteHttp {
     protected AtomicLong memCachedSize = new AtomicLong();
     protected ConcurrentHashMap<String, HttpCache> memCache = new ConcurrentHashMap<String, HttpCache>();
 
-    //    protected LiteHttp(HttpConfig config) {
-    //        initConfig(config);
-    //    }
     protected LiteHttp() {}
 
     public static LiteHttp newApacheHttpClient(HttpConfig config) {
@@ -310,6 +307,10 @@ public abstract class LiteHttp {
         return perform(new StringRequest(uri).setMethod(HttpMethods.Get));
     }
 
+    public <T> T get(String uri, Class<T> claxx) {
+        return perform(new JsonRequest<T>(uri, claxx).setMethod(HttpMethods.Get));
+    }
+
     public <T> T get(AbstractRequest<T> request) {
         return perform(request.setMethod(HttpMethods.Get));
     }
@@ -339,6 +340,9 @@ public abstract class LiteHttp {
         }
         if (request.getCacheMode() == null) {
             request.setCacheMode(config.defaultCacheMode);
+        }
+        if (request.getCacheDir() == null) {
+            request.setCacheDir(config.defaultCacheDir);
         }
         if (request.getCacheExpireMillis() == 0) {
             request.setCacheExpireMillis(config.defaultCacheExpireMillis);
@@ -454,12 +458,12 @@ public abstract class LiteHttp {
         long expire = request.getCacheExpireMillis();
         boolean isMemCacheSupport = request.getDataParser().isMemCacheSupport();
 
-        // 1. hit memory cache
+        // 1. try to hit memory cache
         if (isMemCacheSupport) {
             HttpCache<T> cache = (HttpCache<T>) memCache.get(key);
             if (cache != null) {
-                // memory hit!
                 if (expire <= 0 || expire > getCurrentTimeMillis() - cache.time) {
+                    // memory hit!
                     request.getDataParser().readFromMemoryCache(cache.data);
                     response.setCacheHit(true);
                     if (HttpLog.isPrint) {
@@ -475,11 +479,11 @@ public abstract class LiteHttp {
             }
         }
 
-        // 2. hit disk cache
-        File file = request.getDataParser().getSpecifyFile(config.cacheDirPath);
+        // 2. try to hit disk cache
+        File file = request.getCachedFile();
         if (file.exists()) {
-            // disk hit!
             if (expire <= 0 || expire > getCurrentTimeMillis() - file.lastModified()) {
+                // disk hit!
                 request.getDataParser().readFromDiskCache(file);
                 response.setCacheHit(true);
                 if (HttpLog.isPrint) {
@@ -544,6 +548,9 @@ public abstract class LiteHttp {
 
     public final long cleanCacheForRequest(AbstractRequest request) {
         long len = 0;
+        if (request.getCacheDir() == null) {
+            request.setCacheDir(config.defaultCacheDir);
+        }
         synchronized (lock) {
             if (memCache.get(request.getCacheKey()) != null) {
                 HttpCache cache = memCache.remove(request.getCacheKey());
@@ -551,7 +558,7 @@ public abstract class LiteHttp {
                 memCachedSize.addAndGet(-len);
             }
         }
-        File file = request.getDataParser().getSpecifyFile(config.cacheDirPath);
+        File file = request.getCachedFile();
         if (file != null) {
             len = file.length();
             file.delete();
@@ -570,12 +577,12 @@ public abstract class LiteHttp {
     }
 
     public final boolean deleteCachedFile(String cacehKey) {
-        File file = new File(config.cacheDirPath, cacehKey);
+        File file = new File(config.defaultCacheDir, cacehKey);
         return file.delete();
     }
 
     public final long deleteCachedFiles() {
-        File file = new File(config.cacheDirPath);
+        File file = new File(config.defaultCacheDir);
         long len = 0;
         if (file.isDirectory()) {
             File[] fs = file.listFiles();

@@ -2,10 +2,7 @@ package com.litesuits.http.parser;
 
 import com.litesuits.http.log.HttpLog;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * @author MaTianyu
@@ -13,36 +10,29 @@ import java.io.InputStream;
  */
 public abstract class FileCacheableParser<T> extends DataParser<T> {
     protected File file;
-
-    /**
-     * save to default file
-     */
     public FileCacheableParser() {
     }
-
-    /**
-     * save to this file
-     */
     public FileCacheableParser(File saveToFile) {
         this.file = saveToFile;
     }
+
+    public final T readFromDiskCache(File file) throws IOException {
+        data = parseDiskCache(file);
+        return data;
+    }
+
+    /**
+     * parse local file
+     */
+    protected abstract T parseDiskCache(File file) throws IOException;
 
     @Override
     public boolean isMemCacheSupport() {
         return false;
     }
 
-    /**
-     * if you have set a file or path to this parser, return your file.
-     * otherwise return new File(cacheDir, cacheKey)
-     */
-    @Override
-    public File getSpecifyFile(String dir) {
-        return file != null ? file : new File(dir, request.getCacheKey());
-    }
-
-    protected final File streamToFile(InputStream is, long len, String cacheDir) throws IOException {
-        File file = getSpecifyFile(cacheDir);
+    protected final File streamToFile(InputStream is, long len) throws IOException {
+        File file = request.getCachedFile();
         FileOutputStream fos = null;
         try {
             File pFile = file.getParentFile();
@@ -52,10 +42,6 @@ public abstract class FileCacheableParser<T> extends DataParser<T> {
                     HttpLog.i(TAG, "keep cache mkdirs result: " + mk + "  path:" + pFile.getAbsolutePath());
                 }
             }
-            //if (!file.exists()) {
-            //    boolean cf = file.createNewFile();
-            //    HttpLog.v(TAG, "keep cache create file result: " + cf + "  path:" + file.getAbsolutePath());
-            //}
             fos = new FileOutputStream(file);
             byte[] tmp = new byte[buffSize];
             int l;

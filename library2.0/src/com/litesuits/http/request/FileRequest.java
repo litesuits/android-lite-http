@@ -45,6 +45,10 @@ public class FileRequest extends AbstractRequest<File> {
         return this;
     }
 
+    public File getCachedFile() {
+        return saveToFile != null ? saveToFile : super.getCachedFile();
+    }
+
     @Override
     public DataParser<File> createDataParser() {
         return new FileParser(saveToFile);

@@ -1,36 +1,24 @@
 package com.litesuits.http.model;
 
+import java.util.ArrayList;
+
 /**
  * response string will be converted to this model
  */
-public class User extends BaseModel {
+public class User extends ApiModel<User.Data> {
 
-    private int age;
-    protected String name;
+    public static class Data extends BaseModel{
+        public int age;
+        public String name;
+        public ArrayList<String> girl_friends;
 
-    public int getAge() {
-        return age;
-    }
-
-    public User setAge(int age) {
-        this.age = age;
-        return this;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public User setName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-               "age=" + age +
-               ", name='" + name + '\'' +
-               "} ";
+        @Override
+        public String toString() {
+            return "Data{" +
+                   "age=" + age +
+                   ", name='" + name + '\'' +
+                   ", girl_friends=" + girl_friends +
+                   "} " ;
+        }
     }
 }

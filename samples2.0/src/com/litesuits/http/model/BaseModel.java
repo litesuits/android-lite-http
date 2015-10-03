@@ -1,3 +1,8 @@
 package com.litesuits.http.model;
 
-public abstract class BaseModel {}
+import java.io.Serializable;
+
+/**
+ * base model
+ */
+public abstract class BaseModel implements Serializable {}

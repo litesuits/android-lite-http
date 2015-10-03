@@ -1,4 +1,4 @@
-package com.litesuits.http.helper;
+package com.litesuits.http.custom;
 
 import android.app.Activity;
 import com.litesuits.http.data.HttpStatus;

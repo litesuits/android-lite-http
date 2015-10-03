@@ -13,26 +13,19 @@ import java.io.InputStream;
  *         2014-2-21下午8:56:59
  */
 public class FileParser extends FileCacheableParser<File> {
-    /**
-     * save to default path
-     */
     public FileParser() {
     }
-
-    /**
-     * save to this file
-     */
     public FileParser(File saveToFile) {
         this.file = saveToFile;
     }
 
     @Override
-    public File parseNetStream(InputStream stream, long len, String charSet, String cacheDir) throws IOException {
-        return streamToFile(stream, len, cacheDir);
+    public File parseNetStream(InputStream stream, long len, String charSet) throws IOException {
+        return streamToFile(stream, len);
     }
 
     @Override
-    public File readFromDiskCache(File file) {
+    public File parseDiskCache(File file) {
         return file;
     }
 }

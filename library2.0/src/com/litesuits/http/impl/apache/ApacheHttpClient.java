@@ -315,7 +315,7 @@ public class ApacheHttpClient extends LiteHttp {
                         if (statistic != null) {
                             statistic.onPreRead(request);
                         }
-                        parser.readFromNetStream(entity.getContent(), len, charSet, config.getCacheDirPath());
+                        parser.readFromNetStream(entity.getContent(), len, charSet);
                         if (statistic != null) {
                             statistic.onAfterRead(request);
                         }

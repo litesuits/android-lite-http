@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * POST request， HTTP body：UrlEncodedForm: [id=000&key=xxx]
  * use cache
  */
-@HttpUri(MainActivity.userGet)
+@HttpUri(MainActivity.userUrl)
 @HttpMethod(HttpMethods.Post)
 @HttpCacheMode(CacheMode.CacheFirst)
 @HttpCacheExpire(value = 10, unit = TimeUnit.SECONDS)

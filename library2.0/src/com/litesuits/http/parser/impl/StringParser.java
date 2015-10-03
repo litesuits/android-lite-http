@@ -14,16 +14,17 @@ import java.io.InputStream;
 public class StringParser extends MemCacheableParser<String> {
 
     @Override
-    public String parseNetStream(InputStream stream, long len, String charSet, String cacheDir) throws IOException {
-        String data = streamToString(stream, len, charSet);
-        if (request.isCachedModel()) {
-            keepToCache(data, getSpecifyFile(cacheDir));
-        }
-        return data;
+    public String parseNetStream(InputStream stream, long len, String charSet) throws IOException {
+        return streamToString(stream, len, charSet);
     }
 
     @Override
     protected String parseDiskCache(InputStream stream, long length) throws IOException {
         return streamToString(stream, length, charSet);
+    }
+
+    @Override
+    protected boolean tryKeepToCache(String data) throws IOException {
+        return keepToCache(data);
     }
 }

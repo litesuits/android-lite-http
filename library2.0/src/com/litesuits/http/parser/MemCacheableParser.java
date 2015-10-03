@@ -9,32 +9,22 @@ import java.io.*;
 import java.nio.charset.Charset;
 
 /**
- * parse inputstream to string.
+ * MemCacheableParser: parse inputstream to data ,save to mem and sdcard.
  *
  * @author MaTianyu
  *         2014-2-21下午8:56:59
  */
 public abstract class MemCacheableParser<T> extends DataParser<T> {
 
-    @Override
-    public boolean isMemCacheSupport() {
-        return true;
+    public final T readFromNetStream(InputStream stream, long len, String charSet) throws IOException {
+        this.data = super.readFromNetStream(stream, len, charSet);
+        if (this.data != null && request.isCachedModel()) {
+            tryKeepToCache(data);
+        }
+        return this.data;
     }
 
-    @Override
-    public File getSpecifyFile(String dir) {
-        return new File(dir, request.getCacheKey());
-    }
-
-    protected abstract T parseDiskCache(InputStream stream, long length) throws IOException;
-
-    /**
-     * read local file and parse to T
-     *
-     * @param file local cache file
-     * @return T
-     */
-    public T readFromDiskCache(File file) throws IOException {
+    public final T readFromDiskCache(File file) throws IOException {
         FileInputStream fos = null;
         try {
             fos = new FileInputStream(file);
@@ -45,6 +35,15 @@ public abstract class MemCacheableParser<T> extends DataParser<T> {
             }
         }
         return data;
+    }
+
+    protected abstract T parseDiskCache(InputStream stream, long length) throws IOException;
+
+    protected abstract boolean tryKeepToCache(T data) throws IOException;
+
+    @Override
+    public boolean isMemCacheSupport() {
+        return true;
     }
 
     /**
@@ -136,16 +135,18 @@ public abstract class MemCacheableParser<T> extends DataParser<T> {
     }
 
 
-    protected final void keepToCache(String src, File file) throws IOException {
+    protected final boolean keepToCache(String src) throws IOException {
         if (src != null) {
-            keepToCache(StringCodingUtils.getBytes(src, Charset.forName(charSet)), file);
+            return keepToCache(StringCodingUtils.getBytes(src, Charset.forName(charSet)));
         }
+        return false;
     }
 
-    protected final void keepToCache(byte[] data, File file) throws IOException {
+    protected final boolean keepToCache(byte[] data) throws IOException {
         if (data != null) {
             FileOutputStream fos = null;
             try {
+                File file = request.getCachedFile();
                 File pFile = file.getParentFile();
                 if (!pFile.exists()) {
                     boolean mk = pFile.mkdirs();
@@ -164,12 +165,14 @@ public abstract class MemCacheableParser<T> extends DataParser<T> {
                             + "   key: " + request.getCacheKey()
                             + "   path: " + file.getAbsolutePath());
                 }
+                return true;
             } finally {
                 if (fos != null) {
                     fos.close();
                 }
             }
         }
+        return false;
     }
 
     //    protected byte[] getBytes(String src, Charset charSet) {

@@ -23,10 +23,14 @@ public abstract class DataParser<T> {
     protected String charSet = Consts.DEFAULT_CHARSET;
     protected int buffSize = HttpConfig.DEFAULT_BUFFER_SIZE;
 
-    public final T readFromNetStream(InputStream stream, long len, String charSet, String cacheDir) throws IOException {
+    /**
+     * source 1. read data form network
+     */
+    public T readFromNetStream(InputStream stream, long len,
+                               String charSet) throws IOException {
         if (stream != null) {
             try {
-                this.data = parseNetStream(stream, len, charSet, cacheDir);
+                this.data = parseNetStream(stream, len, charSet);
             } finally {
                 stream.close();
             }
@@ -35,11 +39,14 @@ public abstract class DataParser<T> {
     }
 
     /**
-     * parse network stream
+     * source 2. read data form disk
      */
-    protected abstract T parseNetStream(InputStream stream, long totalLength, String charSet, String cacheDir)
-            throws IOException;
+    public abstract T readFromDiskCache(File file) throws IOException;
 
+
+    /**
+     * source 3. read data form network
+     */
     public final T readFromMemoryCache(T data) {
         if (isMemCacheSupport()) {
             this.data = data;
@@ -47,20 +54,16 @@ public abstract class DataParser<T> {
         return this.data;
     }
 
-    public abstract T readFromDiskCache(File file) throws IOException;
+    /**
+     * parse network stream
+     */
+    protected abstract T parseNetStream(InputStream stream, long totalLength,
+                                        String charSet) throws IOException;
 
     /**
      * is memory cache supported
      */
     public abstract boolean isMemCacheSupport();
-
-    /**
-     * get cache file name, null will save to default path.
-     *
-     * @return custom data
-     */
-    public abstract File getSpecifyFile(String dir);
-
 
     /**
      * get the data

@@ -15,34 +15,26 @@ import java.io.InputStream;
  *         2014-2-21下午8:56:59
  */
 public class BitmapParser extends FileCacheableParser<Bitmap> {
-    /**
-     * save to default path
-     */
-    //public BitmapParser(AbstractRequest<Bitmap> request) {
-    //    super(request);
-    //}
-
-    /**
-     * save to this file
-     */
+    public BitmapParser() {}
     public BitmapParser(File file) {
-        //super(request);
         this.file = file;
     }
 
     @Override
-    public Bitmap parseNetStream(InputStream stream, long len, String charSet, String cacheDir) throws IOException {
-        if (request.isCachedModel() || this.file != null
-            || (request.getHttpListener() != null && request.getHttpListener().isReadingNotify())) {
-            File file = streamToFile(stream, len, cacheDir);
-            return BitmapFactory.decodeFile(file.getAbsolutePath());
-        } else {
-            return BitmapFactory.decodeStream(stream);
-        }
+    public Bitmap parseNetStream(InputStream stream, long len, String charSet) throws IOException {
+        //if (this.file != null || request.isCachedModel()
+        //    || (request.getHttpListener() != null && request.getHttpListener().isReadingNotify())) {
+        //    File file = streamToFile(stream, len, cacheDir);
+        //    return BitmapFactory.decodeFile(file.getAbsolutePath());
+        //} else {
+        //    return BitmapFactory.decodeStream(stream);
+        //}
+        file = streamToFile(stream, len);
+        return BitmapFactory.decodeFile(file.getAbsolutePath());
     }
 
     @Override
-    public Bitmap readFromDiskCache(File file) {
+    public Bitmap parseDiskCache(File file) {
         return BitmapFactory.decodeFile(file.getAbsolutePath());
     }
 }

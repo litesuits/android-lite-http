@@ -120,7 +120,7 @@ public class HttpConfig {
      * note: if context is not null, this default path will be reset by {@link #HttpConfig(android.content.Context)}.
      * if context is null, we need  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
      */
-    protected String cacheDirPath = Environment.getExternalStorageDirectory() + "/lite/http-cache";
+    protected String defaultCacheDir = Environment.getExternalStorageDirectory() + "/lite/http-cache";
 
     /**
      * set common headers to all request
@@ -170,7 +170,15 @@ public class HttpConfig {
     public HttpConfig(Context context) {
         if (context != null) {
             this.context = context.getApplicationContext();
-            setCacheDirPath(context.getFilesDir() + "/lite/http-cache");
+        }
+        setDefaultCacheDir(getDefaultCacheDir(context));
+    }
+
+    private String getDefaultCacheDir(Context context) {
+        if (context != null) {
+            return context.getFilesDir() + "/lite/http-cache";
+        } else {
+            return Environment.getExternalStorageDirectory() + "/lite/http-cache";
         }
     }
 
@@ -312,18 +320,18 @@ public class HttpConfig {
         return this;
     }
 
-    public String getCacheDirPath() {
-        return cacheDirPath;
+    public String getDefaultCacheDir() {
+        return defaultCacheDir;
     }
 
-    public HttpConfig setCacheDirPath(String cacheDirPath) {
-        this.cacheDirPath = cacheDirPath;
-        File file = new File(cacheDirPath);
+    public HttpConfig setDefaultCacheDir(String defaultCacheDir) {
+        this.defaultCacheDir = defaultCacheDir;
+        File file = new File(defaultCacheDir);
         if (!file.exists()) {
             boolean mkdirs = file.mkdirs();
             HttpLog.i(TAG, file.getAbsolutePath() + "  mkdirs: " + mkdirs);
         }
-        HttpLog.i(TAG, "lite http cache file dir: " + cacheDirPath);
+        HttpLog.i(TAG, "lite http cache file dir: " + defaultCacheDir);
         return this;
     }
 
@@ -462,7 +470,7 @@ public class HttpConfig {
         schedulePolicy = SchedulePolicy.FirstInFistRun;
         overloadPolicy = OverloadPolicy.DiscardOldTaskInQueue;
         maxMemCacheBytesSize = 512 * 1024;
-        cacheDirPath = Environment.getExternalStorageDirectory() + "/lite/http-cache";
+        defaultCacheDir = getDefaultCacheDir(context);
 
         commonHeaders = null;
         defaultCharSet = Consts.DEFAULT_CHARSET;
@@ -525,7 +533,7 @@ public class HttpConfig {
                ", schedulePolicy=" + schedulePolicy +
                ", overloadPolicy=" + overloadPolicy +
                ", maxMemCacheBytesSize=" + maxMemCacheBytesSize +
-               ", cacheDirPath='" + cacheDirPath + '\'' +
+               ", defaultCacheDir='" + defaultCacheDir + '\'' +
                ", commonHeaders=" + commonHeaders +
                ", defaultCharSet='" + defaultCharSet + '\'' +
                ", defaultHttpMethod=" + defaultHttpMethod +

@@ -51,6 +51,10 @@ public class BitmapRequest extends AbstractRequest<Bitmap> {
         return this;
     }
 
+    public File getCachedFile() {
+        return saveToFile != null ? saveToFile : super.getCachedFile();
+    }
+
     @Override
     public DataParser<Bitmap> createDataParser() {
         return new BitmapParser(saveToFile);

@@ -22,12 +22,9 @@ public class JsonParser<T> extends MemCacheableParser<T> {
     }
 
     @Override
-    protected T parseNetStream(InputStream stream, long totalLength, String charSet,
-                               String cacheDir) throws IOException {
+    protected T parseNetStream(InputStream stream, long totalLength
+            , String charSet) throws IOException {
         json = streamToString(stream, totalLength, charSet);
-        if (request.isCachedModel()) {
-            keepToCache(json, getSpecifyFile(cacheDir));
-        }
         return Json.get().toObject(json, claxx);
     }
 
@@ -35,6 +32,11 @@ public class JsonParser<T> extends MemCacheableParser<T> {
     protected T parseDiskCache(InputStream stream, long length) throws IOException {
         json = streamToString(stream, length, charSet);
         return Json.get().toObject(json, claxx);
+    }
+
+    @Override
+    protected boolean tryKeepToCache(T data) throws IOException {
+        return keepToCache(json);
     }
 
     /**
