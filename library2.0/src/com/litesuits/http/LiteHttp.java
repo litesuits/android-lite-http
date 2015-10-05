@@ -344,7 +344,7 @@ public abstract class LiteHttp {
         if (request.getCacheDir() == null) {
             request.setCacheDir(config.defaultCacheDir);
         }
-        if (request.getCacheExpireMillis() == 0) {
+        if (request.getCacheExpireMillis() < 0) {
             request.setCacheExpireMillis(config.defaultCacheExpireMillis);
         }
         if (request.getCharSet() == null) {
@@ -353,10 +353,10 @@ public abstract class LiteHttp {
         if (request.getMethod() == null) {
             request.setMethod(config.defaultHttpMethod);
         }
-        if (request.getMaxRedirectTimes() == 0) {
+        if (request.getMaxRedirectTimes() < 0) {
             request.setMaxRedirectTimes(config.defaultMaxRedirectTimes);
         }
-        if (request.getMaxRetryTimes() == 0) {
+        if (request.getMaxRetryTimes() < 0) {
             request.setMaxRetryTimes(config.defaultMaxRetryTimes);
         }
         if (request.getQueryBuilder() == null) {
@@ -462,7 +462,7 @@ public abstract class LiteHttp {
         if (isMemCacheSupport) {
             HttpCache<T> cache = (HttpCache<T>) memCache.get(key);
             if (cache != null) {
-                if (expire <= 0 || expire > getCurrentTimeMillis() - cache.time) {
+                if (expire < 0 || expire > getCurrentTimeMillis() - cache.time) {
                     // memory hit!
                     request.getDataParser().readFromMemoryCache(cache.data);
                     response.setCacheHit(true);
@@ -482,7 +482,7 @@ public abstract class LiteHttp {
         // 2. try to hit disk cache
         File file = request.getCachedFile();
         if (file.exists()) {
-            if (expire <= 0 || expire > getCurrentTimeMillis() - file.lastModified()) {
+            if (expire < 0 || expire > getCurrentTimeMillis() - file.lastModified()) {
                 // disk hit!
                 request.getDataParser().readFromDiskCache(file);
                 response.setCacheHit(true);

@@ -54,7 +54,6 @@ public class PostReceiver extends HttpServlet {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private HttpEntity getMultipartEntity(String path) throws UnsupportedEncodingException, FileNotFoundException {
         MultipartEntity entity = new MultipartEntity();
         entity.addPart("stringKey", new StringBody("StringBody", "text/plain", Charset.forName("utf-8")));
@@ -80,25 +79,21 @@ public class PostReceiver extends HttpServlet {
         return se;
     }
 
-    @SuppressWarnings("deprecation")
     private HttpEntity getByteArrayEntity() throws UnsupportedEncodingException {
         ByteArrayEntity be = new ByteArrayEntity(new byte[]{1, 2, 3, 4, 5, 6, 7});
         return be;
     }
 
-    @SuppressWarnings("deprecation")
     private HttpEntity getFileEntity(String path) throws UnsupportedEncodingException {
         HttpEntity en = new FileEntity(new File(path + "well.png"), "image/jpeg");
         return en;
     }
 
-    @SuppressWarnings("deprecation")
     private HttpEntity getInputStreamEntity(String path) throws UnsupportedEncodingException, FileNotFoundException {
         HttpEntity en = new InputStreamEntity(new FileInputStream(new File(path + "well.png")));
         return en;
     }
 
-    @SuppressWarnings("deprecation")
     private HttpEntity getSerializableEntity() throws UnsupportedEncodingException {
         HashMap<String, List<String>> map = new HashMap<>();
         List<String> list1 = new ArrayList<>();
@@ -139,7 +134,10 @@ public class PostReceiver extends HttpServlet {
      */
     protected void doPost(HttpServletRequest request,
                           HttpServletResponse response) throws ServletException, IOException {
-        String fileDir = "/Users/Matianyu/Downloads/";
+
+        //String fileDir = "D:\\Downloads";
+        //这是我的Mac笔记本上的位置，开发者设置为合适自己的文件夹，尤其windows系统。
+        String fileDir = "/Users/Matianyu/Downloads";
 
         String contentType = request.getContentType();
         System.out.println("_________________ content type: " + contentType);
@@ -161,7 +159,6 @@ public class PostReceiver extends HttpServlet {
 
         PrintWriter writer = response.getWriter();
         writer.println("contentType:" + contentType);
-
 
         if (contentType != null) {
             if (contentType.startsWith("multipart")) {
@@ -243,6 +240,9 @@ public class PostReceiver extends HttpServlet {
         }
     }
 
+    /**
+     * 处理表单字符数据
+     */
     private void processFormField(FileItem item, PrintWriter writer) {
         String name = item.getFieldName();
         String value = item.getString();
@@ -251,6 +251,9 @@ public class PostReceiver extends HttpServlet {
         System.out.println("Form Part [" + name + "] value :" + value + "\r\n");
     }
 
+    /**
+     * 处理表单文件
+     */
     private void processUploadedFile(String filePath, FileItem item, PrintWriter writer) throws Exception {
         String filename = item.getName();
         int index = filename.lastIndexOf("\\");

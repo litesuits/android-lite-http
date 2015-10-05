@@ -29,7 +29,6 @@ public interface Response<T> {
 
     public long getContentLength();
 
-
     public String getCharSet();
 
     public long getUseTime();
@@ -39,7 +38,6 @@ public interface Response<T> {
     public int getRetryTimes();
 
     public int getRedirectTimes();
-
 
     public HttpException getException();
 

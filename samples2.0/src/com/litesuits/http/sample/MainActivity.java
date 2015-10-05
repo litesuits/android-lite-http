@@ -19,12 +19,13 @@ import com.litesuits.http.annotation.*;
 import com.litesuits.http.concurrent.OverloadPolicy;
 import com.litesuits.http.concurrent.SchedulePolicy;
 import com.litesuits.http.concurrent.SmartExecutor;
-import com.litesuits.http.data.Json;
-import com.litesuits.http.data.NameValuePair;
-import com.litesuits.http.exception.HttpException;
 import com.litesuits.http.custom.CustomJSONParser;
 import com.litesuits.http.custom.FastJson;
 import com.litesuits.http.custom.MyHttpExceptHandler;
+import com.litesuits.http.data.Json;
+import com.litesuits.http.data.NameValuePair;
+import com.litesuits.http.data.StatisticsInfo;
+import com.litesuits.http.exception.HttpException;
 import com.litesuits.http.listener.GlobalHttpListener;
 import com.litesuits.http.listener.HttpListener;
 import com.litesuits.http.log.HttpLog;
@@ -363,7 +364,7 @@ public class MainActivity extends Activity {
             case 7:
                 // 7. Custom Data Parser
 
-                JsonAbsRequest<JSONObject> jsonRequest = new JsonAbsRequest<JSONObject>(userUrl) {};
+                JsonRequest<JSONObject> jsonRequest = new JsonRequest<JSONObject>(userUrl, JSONObject.class);
                 jsonRequest.setDataParser(new CustomJSONParser());
                 liteHttp.executeAsync(jsonRequest.setHttpListener(new HttpListener<JSONObject>() {
                     @Override
@@ -377,10 +378,8 @@ public class MainActivity extends Activity {
             case 8:
                 // 8. Replace Json Library
 
-                // first, builder a java class that used FastJson
-                Json json = new FastJson();
-                // then, set new json framework.
-                Json.set(json);
+                // first, set new json framework instance. then, over.
+                Json.set(new FastJson());
 
                 // json model convert used #FastJson
                 liteHttp.executeAsync(new JsonAbsRequest<User>(userUrl) {}.setHttpListener(new HttpListener<User>() {
@@ -413,29 +412,31 @@ public class MainActivity extends Activity {
                 upProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                 upProgress.setIndeterminate(false);
                 upProgress.show();
-                StringRequest uploadRequest = new StringRequest(uploadUrl)
-                        .setMethod(HttpMethods.Post)
-                        .setHttpBody(new FileBody(new File("/sdcard/aaa.jpg")))
-                        .setHttpListener(new HttpListener<String>(true, false, true) {
-                            @Override
-                            public void onSuccess(String s, Response<String> response) {
-                                upProgress.dismiss();
-                                HttpUtil.showTips(activity, "Upload Success", s);
-                                response.printInfo();
-                            }
 
-                            @Override
-                            public void onFailure(HttpException e, Response<String> response) {
-                                upProgress.dismiss();
-                                HttpUtil.showTips(activity, "Upload Failed", e.toString());
-                            }
+                StringRequest uploadRequest = new StringRequest(uploadUrl);
 
-                            @Override
-                            public void onUploading(AbstractRequest<String> request, long total, long len) {
-                                upProgress.setMax((int) total);
-                                upProgress.setProgress((int) len);
-                            }
-                        });
+                uploadRequest.setMethod(HttpMethods.Post)
+                             .setHttpBody(new FileBody(new File("/sdcard/aaa.jpg")))
+                             .setHttpListener(new HttpListener<String>(true, false, true) {
+                                 @Override
+                                 public void onSuccess(String s, Response<String> response) {
+                                     upProgress.dismiss();
+                                     HttpUtil.showTips(activity, "Upload Success", s);
+                                     response.printInfo();
+                                 }
+
+                                 @Override
+                                 public void onFailure(HttpException e, Response<String> response) {
+                                     upProgress.dismiss();
+                                     HttpUtil.showTips(activity, "Upload Failed", e.toString());
+                                 }
+
+                                 @Override
+                                 public void onUploading(AbstractRequest<String> request, long total, long len) {
+                                     upProgress.setMax((int) total);
+                                     upProgress.setProgress((int) len);
+                                 }
+                             });
                 liteHttp.executeAsync(uploadRequest);
                 break;
             case 10:
@@ -479,11 +480,10 @@ public class MainActivity extends Activity {
                 // 11. Disable Some Network
 
                 HttpConfig config = liteHttp.getConfig();
-                // disable network need context
+                // must set context
                 config.setContext(activity);
-                // disable mobile(2G/3G/4G + WIFI) network
+                // disable mobile(2G/3G/4G) and wifi network
                 config.setDisableNetworkFlags(HttpConfig.FLAG_NET_DISABLE_MOBILE | HttpConfig.FLAG_NET_DISABLE_WIFI);
-                needRestore = true;
 
                 liteHttp.executeAsync(new StringRequest(url).setHttpListener(new HttpListener<String>() {
                     @Override
@@ -496,6 +496,8 @@ public class MainActivity extends Activity {
                         HttpUtil.showTips(activity, "LiteHttp2.0", e.toString());
                     }
                 }));
+
+                needRestore = true;
                 break;
 
             case 12:
@@ -512,6 +514,15 @@ public class MainActivity extends Activity {
                         msg += "  Global " + liteHttp.getStatisticsInfo();
                         HttpUtil.showTips(activity, "LiteHttp2.0", msg);
 
+                        response.getRedirectTimes();  // 重定向的次数
+                        response.getRetryTimes();     // 重试的次数
+                        response.getUseTime();        // 耗时
+                        response.getContentLength();  // header中的数据长度（Content-Length）
+                        response.getReadedLength();   // 实际读取的数据长度
+
+                        StatisticsInfo sta = liteHttp.getStatisticsInfo();
+                        sta.getConnectTime();         // litehttp 实例化后所有请求耗时累计
+                        sta.getDataLength();          // litehttp 实例化后读取数据长度累计
                     }
 
                     @Override
@@ -523,43 +534,73 @@ public class MainActivity extends Activity {
             case 13:
                 // 13. Retry/Redirect
 
-                // maximum retry times
+                // default retry times
                 liteHttp.getConfig().setDefaultMaxRetryTimes(2);
-                // maximum redirect times
-                liteHttp.getConfig().setDefaultMaxRedirectTimes(5);
-                // test it
-                liteHttp.executeAsync(new StringRequest(redirectUrl).setHttpListener(new HttpListener<String>() {
+                // default redirect times
+                liteHttp.getConfig().setDefaultMaxRedirectTimes(4);
+                // default retry waitting time
+                liteHttp.getConfig().setForRetry(1500, false);
 
-                    @Override
-                    public void onRedirect(AbstractRequest<String> request, int max, int times) {
-                        Toast.makeText(activity, "Redirect max num: " + max + " , times: " + times
-                                                 + "\n GO-TO: " + request.getUri(), Toast.LENGTH_LONG).show();
-                    }
+                // make request
+                StringRequest redirect = new StringRequest(redirectUrl)
+                        .setMaxRetryTimes(1) // maximum retry times
+                        .setMaxRedirectTimes(5) // maximum redirect times
+                        .setHttpListener(new HttpListener<String>() {
 
-                    @Override
-                    public void onRetry(AbstractRequest<String> request, int max, int times) {
-                        Toast.makeText(activity, "Retry Now! max num: " + max + " , times: " + times
-                                , Toast.LENGTH_LONG).show();
+                            @Override
+                            public void onRedirect(AbstractRequest<String> request, int max, int times) {
+                                Toast.makeText(activity, "Redirect max num: " + max + " , times: " + times
+                                                         + "\n GO-TO: " + request.getUri(), Toast.LENGTH_LONG).show();
+                            }
 
-                    }
+                            @Override
+                            public void onRetry(AbstractRequest<String> request, int max, int times) {
+                                Toast.makeText(activity, "Retry Now! max num: " + max + " , times: " + times
+                                        , Toast.LENGTH_LONG).show();
 
-                    @Override
-                    public void onSuccess(String s, Response<String> response) {
-                        HttpUtil.showTips(activity, "LiteHttp2.0", "Content Length: " + s.length());
-                    }
-                }));
+                            }
+
+                            @Override
+                            public void onSuccess(String s, Response<String> response) {
+                                HttpUtil.showTips(activity, "LiteHttp2.0", "Content Length: " + s.length());
+                            }
+                        });
+
+                liteHttp.executeAsync(redirect);
                 break;
 
             case 14:
                 // 14. Best Practices of Exception Handling
-                liteHttp.executeAsync(
-                        new StringRequest("httpa://invalid-url").setHttpListener(new HttpListener<String>() {
 
+                class MyHttpListener<T> extends HttpListener<T> {
+                    private Activity activity;
+
+                    public MyHttpListener(Activity activity) {
+                        this.activity = activity;
+                    }
+
+                    // disable listener when activity is null or be finished.
+                    @Override
+                    public boolean disableListener() {
+                        return activity == null || activity.isFinishing();
+                    }
+
+                    // handle by this by call super.onFailure()
+                    @Override
+                    public void onFailure(HttpException e, Response response) {
+                        // handle exception
+                        new MyHttpExceptHandler(activity).handleException(e);
+                    }
+                }
+
+                liteHttp.executeAsync(new StringRequest("httpa://invalid-url")
+                        .setHttpListener(new MyHttpListener<String>(activity) {
                             @Override
-                            public void onFailure(HttpException exception, Response<String> response) {
-                                new MyHttpExceptHandler(activity).handleException(exception);
+                            public void onFailure(HttpException e, Response response) {
+                                // handle by this by call super.onFailure()
+                                super.onFailure(e, response);
+                                // 通过调用父类的处理方法，来调用 MyHttpExceptHandler 来处理异常。
                             }
-
                         }));
                 break;
             case 15:
@@ -586,9 +627,24 @@ public class MainActivity extends Activity {
                 break;
             case 16:
                 // 16. POST Multi-Form Data
+
                 final ProgressDialog postProgress = new ProgressDialog(this);
                 postProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                 postProgress.setIndeterminate(false);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("POST DATA TEST");
+                String[] array = new String[]{
+                        "字符串上传",
+                        "UrlEncodedForm上传",
+                        "对象自动转JSON上传",
+                        "对象序列化后上传",
+                        "字节上传",
+                        "单文件上传",
+                        "单输入流上传",
+                        "多文件（表单）上传"
+                };
+                //String[] array = getResources().getStringArray(R.array.http_test_post);
 
                 final StringRequest postRequest = new StringRequest(uploadUrl)
                         .setMethod(HttpMethods.Post)
@@ -600,28 +656,23 @@ public class MainActivity extends Activity {
                             }
 
                             @Override
-                            public void onSuccess(String s, Response<String> response) {
-                                //                                postProgress.dismiss();
-                                HttpUtil.showTips(activity, "Upload Success", s);
-                                response.printInfo();
-                            }
-
-                            @Override
-                            public void onFailure(HttpException e, Response<String> response) {
-                                postProgress.dismiss();
-                                HttpUtil.showTips(activity, "Upload Failed", e.toString());
-                            }
-
-                            @Override
                             public void onUploading(AbstractRequest<String> request, long total, long len) {
                                 postProgress.setMax((int) total);
                                 postProgress.setProgress((int) len);
                             }
+
+                            @Override
+                            public void onEnd(Response<String> response) {
+                                postProgress.dismiss();
+                                if (response.isConnectSuccess()) {
+                                    HttpUtil.showTips(activity, "Upload Success", response.getResult() + "");
+                                } else {
+                                    HttpUtil.showTips(activity, "Upload Failure", response.getException() + "");
+                                }
+                                response.printInfo();
+                            }
                         });
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("POST DATA TEST");
-                String[] array = getResources().getStringArray(R.array.http_test_post);
                 builder.setItems(array, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -646,9 +697,7 @@ public class MainActivity extends Activity {
                                 postRequest.setHttpBody(new SerializableBody(list));
                                 break;
                             case 4:
-                                postRequest.setHttpBody(new ByteArrayBody(
-                                        new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 127
-                                        }));
+                                postRequest.setHttpBody(new ByteArrayBody(new byte[]{1, 2, 3, 4, 5, 15, 18, 127}));
                                 break;
                             case 5:
                                 postRequest.setHttpBody(new FileBody(new File("/sdcard/litehttp.txt")));
@@ -669,7 +718,6 @@ public class MainActivity extends Activity {
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
-                                //View v;v.setBackground();
 
                                 MultipartBody body = new MultipartBody();
                                 body.addPart(new StringPart("key1", "hello"));
@@ -692,23 +740,26 @@ public class MainActivity extends Activity {
             case 17:
                 // 17. Concurrent and Scheduling
 
-                HttpConfig csConfig = liteHttp.getConfig();
+                HttpConfig httpConfig = liteHttp.getConfig();
                 // only one task can be executed at the same time
-                csConfig.setConcurrentSize(1);
+                httpConfig.setConcurrentSize(1);
                 // at most two tasks be hold in waiting queue at the same time
-                csConfig.setWaitingQueueSize(2);
+                httpConfig.setWaitingQueueSize(2);
                 // the last waiting task executed first
-                csConfig.setSchedulePolicy(SchedulePolicy.LastInFirstRun);
+                httpConfig.setSchedulePolicy(SchedulePolicy.LastInFirstRun);
                 // when task more than 3(current = 1, waiting = 2), new task will be discard.
-                csConfig.setOverloadPolicy(OverloadPolicy.DiscardCurrentTask);
+                httpConfig.setOverloadPolicy(OverloadPolicy.DiscardCurrentTask);
 
                 // note : restore config to default, next click.
                 needRestore = true;
 
-                // executed order: 0 -> 2 -> 1 , by [DiscardNewTaskInQueue Policy] 3 will be discard.
+                // by [DiscardCurrentTask Policy] the last will be discard.
                 for (int i = 0; i < 4; i++) {
                     liteHttp.executeAsync(new StringRequest(url).setTag(i));
                 }
+                // submit order : 0 -> 1 -> 2 -> 3
+                // task 0 is executing, 1 and 2 is in waitting queue, 3 was discarded.
+                // real executed order: 0 -> 2 -> 1
 
                 break;
             case 18:

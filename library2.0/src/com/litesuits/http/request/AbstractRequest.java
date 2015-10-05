@@ -84,11 +84,11 @@ public abstract class AbstractRequest<T> {
     /**
      * max number of retry..
      */
-    private int maxRetryTimes;
+    private int maxRetryTimes = -1;
     /**
      * max number of redirect..
      */
-    private int maxRedirectTimes;
+    private int maxRedirectTimes = -1;
     /**
      * callback of start, success, fialure, retry, redirect, loading, etc.
      */
@@ -119,7 +119,7 @@ public abstract class AbstractRequest<T> {
     /**
      * expire time of cache
      */
-    private long cacheExpireMillis;
+    private long cacheExpireMillis = -1;
 
     /**
      * intelligently translate java object into mapping(k=v) parameters
@@ -429,11 +429,11 @@ public abstract class AbstractRequest<T> {
                             charSet = ((HttpCharSet) a).value();
                         }
                     } else if (a instanceof HttpMaxRedirect) {
-                        if (maxRedirectTimes == 0) {
+                        if (maxRedirectTimes < 0) {
                             maxRetryTimes = ((HttpMaxRedirect) a).value();
                         }
                     } else if (a instanceof HttpMaxRetry) {
-                        if (maxRetryTimes == 0) {
+                        if (maxRetryTimes < 0) {
                             maxRetryTimes = ((HttpMaxRetry) a).value();
                         }
                     }
