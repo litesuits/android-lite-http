@@ -26,12 +26,12 @@ public abstract class HttpRichParamModel<T> implements HttpParamModel {
     @NonHttpParam
     protected boolean attachToUrl = true;
 
-    public boolean isAttachToUrl(){
+    public final boolean isAttachToUrl(){
         return attachToUrl;
     }
 
     @SuppressWarnings("unchecked")
-    public  <H extends HttpRichParamModel<T>> H setAttachToUrl(boolean attachToUrl) {
+    public final <H extends HttpRichParamModel<T>> H setAttachToUrl(boolean attachToUrl) {
         this.attachToUrl = attachToUrl;
         return (H) this;
     }

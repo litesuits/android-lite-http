@@ -765,18 +765,27 @@ public class MainActivity extends Activity {
             case 18:
                 // 18. Detail of Configuration
 
+                // init common headers for all request
                 List<NameValuePair> headers = new ArrayList<NameValuePair>();
                 headers.add(new NameValuePair("cookies", "this is cookies"));
                 headers.add(new NameValuePair("custom-key", "custom-value"));
 
                 HttpConfig newConfig = new HttpConfig(activity);
 
+                // app context(be used to detect network and get app files path)
+                newConfig.setContext(activity);
+                // the log is turn on when debugged is true
+                newConfig.setDebugged(true);
+                // set user-agent
+                newConfig.setUserAgent("Mozilla/5.0");
+                // set global http listener to all request
+                newConfig.setGlobalHttpListener(null);
+                // set global scheme and host to all request.
+                newConfig.setGlobalSchemeHost("http://litesuits.com/");
                 // common headers will be set to all request
                 newConfig.setCommonHeaders(headers);
                 // set default cache path to all request
                 newConfig.setDefaultCacheDir(Environment.getExternalStorageDirectory() + "/a-cache");
-                // app context(be used to detect network and get app files path)
-                newConfig.setContext(activity);
                 // set default cache expire time to all request
                 newConfig.setDefaultCacheExpireMillis(30 * 60 * 1000);
                 // set default cache mode to all request
@@ -803,8 +812,6 @@ public class MainActivity extends Activity {
                 newConfig.setSocketBufferSize(4096);
                 // if the network is unstable, wait 3000 milliseconds then start retry.
                 newConfig.setForRetry(3000, false);
-                // set global http listener to all request
-                newConfig.setGlobalHttpListener(null);
                 // set maximum size of memory cache space
                 newConfig.setMaxMemCacheBytesSize(1024 * 300);
                 // maximum number of concurrent tasks(http-request) at the same time
@@ -815,25 +822,19 @@ public class MainActivity extends Activity {
                 newConfig.setOverloadPolicy(OverloadPolicy.DiscardOldTaskInQueue);
                 // set schedule policy of thread pool executor
                 newConfig.setSchedulePolicy(SchedulePolicy.LastInFirstRun);
-                // set user-agent
-                newConfig.setUserAgent("Mozilla/5.0");
 
                 // set a new config to lite-http
                 liteHttp.initConfig(newConfig);
                 break;
             case 19:
-                // 19. The Use of Annotation
+                // 19. Usage of Annotation
 
                 @HttpUri(userUrl)
                 @HttpMethod(HttpMethods.Get)
-                @HttpTag("custom tag")
                 @HttpID(1)
                 @HttpCacheMode(CacheMode.CacheFirst)
                 @HttpCacheExpire(value = 1, unit = TimeUnit.MINUTES)
-                @HttpMaxRetry(3)
-                @HttpMaxRedirect(5)
                 class UserAnnoParam implements HttpParamModel {
-                    private static final long serialVersionUID = 2931033825895021716L;
                     public long id = 110;
                     private String key = "aes";
                 }
@@ -850,14 +851,18 @@ public class MainActivity extends Activity {
 
             case 20:
                 // 20. Multi Cache Mechanism
-                JsonRequest<User> cacheRequest = new JsonRequest<User>(userUrl, User.class);
+                StringRequest cacheRequest = new StringRequest(url);
+
                 cacheRequest.setCacheMode(CacheMode.CacheFirst);
                 cacheRequest.setCacheExpire(30, TimeUnit.SECONDS);
-                cacheRequest.setHttpListener(new HttpListener<User>() {
+                cacheRequest.setCacheDir("/sdcard/lite");
+                cacheRequest.setCacheKey(null);
+
+                cacheRequest.setHttpListener(new HttpListener<String>() {
                     @Override
-                    public void onSuccess(User user, Response<User> response) {
+                    public void onSuccess(String html, Response<String> response) {
                         String title = response.isCacheHit() ? "Hit Cache(使用缓存)" : "No Cache(未用缓存)";
-                        HttpUtil.showTips(activity, title, user.toString());
+                        HttpUtil.showTips(activity, title, html);
                     }
                 });
                 liteHttp.executeAsync(cacheRequest);
@@ -879,17 +884,17 @@ public class MainActivity extends Activity {
                 HttpListener<Bitmap> firstHttpListener = new HttpListener<Bitmap>(false, false, false) {
                     @Override
                     public void onSuccess(Bitmap bitmap, Response<Bitmap> response) {
-                        HttpLog.i(TAG, "New Listener, request success ...");
+                        HttpLog.i(TAG, "first Listener, request success ...");
                     }
 
                     @Override
                     public void onFailure(HttpException e, Response<Bitmap> response) {
-                        HttpLog.i(TAG, "New Listener, request failure ...");
+                        HttpLog.i(TAG, "first Listener, request failure ...");
                     }
 
                     @Override
                     public void onLoading(AbstractRequest<Bitmap> request, long total, long len) {
-                        HttpLog.i(TAG, "New Listener, request loading  ...");
+                        HttpLog.i(TAG, "first Listener, request loading  ...");
                     }
                 };
                 // create a bitmap request.
@@ -937,42 +942,64 @@ public class MainActivity extends Activity {
 
             case 23:
                 // 23. Automatic Conversion of Complex Model
+                String upUrl = "http://app.globalvillage.biz/app/provider/apply_android";
+                StringRequest req = new StringRequest(upUrl);
+                req.setHttpListener(new HttpListener<String>() {
+                    @Override
+                    public void onSuccess(String s, Response<String> response) {
+                        super.onSuccess(s, response);
+                        response.printInfo();;
+                    }
+
+                    @Override
+                    public void onFailure(HttpException e, Response<String> response) {
+                        super.onFailure(e, response);
+                        response.printInfo();;
+                    }
+                });
+                MultipartBody body = new MultipartBody();
+                req.setHttpBody(body,HttpMethods.Post);
+                File file1 = new File("/sdcard/aaa.jpg");
+                File file2 = new File("/sdcard/avator.png");
+                body.addPart(new StringPart("phone", "15068748660", "utf-8", null));
+                body.addPart(new StringPart("address", "浙江省杭州市", "utf-8", null));
+                body.addPart(new StringPart("latitude", "30.287376" + "", "utf-8", null));
+                body.addPart(new StringPart("longitude", "120.025528" + "", "utf-8", null));
+                body.addPart(new StringPart("service_range", "1,2", "utf-8", null));
+                body.addPart(new FilePart("file1", file1, "image/jpeg"));
+                body.addPart(new FilePart("file2", file2, "image/jpeg"));
+
+                liteHttp.executeAsync(req);
+                //body.addPart(new FilePart("file2", file2, "image/jpeg"));
                 break;
             case 24:
                 // 24. Best Practice: HTTP Rich Param Model (It is simpler and More Useful)
 
-                // rich param 更简单、有用！只需要定义一个RichParam，即可指定URL、参数、返回响应体三个关键事务。
+                // rich param 更简单、有用！只需要定义一个RichParam，可指定URL、参数、返回响应体三个关键事物。
                 @HttpUri(userUrl)
-                @HttpMethod(HttpMethods.Get)
-                @HttpCharSet("UTF-8")
-                @HttpTag("custom tag")
-                @HttpCacheMode(CacheMode.CacheFirst)
-                @HttpCacheKey("custom-cache-key-name-by-myself")
-                @HttpCacheExpire(value = 1, unit = TimeUnit.MINUTES)
-                @HttpID(2)
-                @HttpMaxRetry(3)
-                @HttpMaxRedirect(5)
                 class UserRichParam extends HttpRichParamModel<User> {
-                    private static final long serialVersionUID = -785053238885177613L;
                     public long id = 110;
-                    private String key = "aes";
-
-                    /**
-                     * 还可以定义监听器
-                     */
-                    @Override
-                    protected HttpListener<User> createHttpListener() {
-                        return new HttpListener<User>() {
-                            @Override
-                            public void onSuccess(User user, Response<User> response) {
-                                HttpUtil.showTips(activity, "UserRichParam", user.toString());
-                            }
-                        };
-                    }
+                    private String key = "aes-125";
                 }
 
                 // 一句话调用即可
                 liteHttp.executeAsync(new UserRichParam());
+
+
+                // 其他更多注解还有：
+                @HttpSchemeHost("http://litesuits.com") // 定义scheme
+                @HttpUri("/mockdata/user_get") // 定义uri 或者 path
+                @HttpMethod(HttpMethods.Get) // 请求方式
+                @HttpCharSet("UTF-8") // 请求编码
+                @HttpTag("custom tag") // 打TAG
+                @HttpCacheMode(CacheMode.CacheFirst) // 缓存模式
+                @HttpCacheKey("custom-cache-key-name-by-myself") // 缓存文件名字
+                @HttpCacheExpire(value = 1, unit = TimeUnit.MINUTES) // 缓存时间
+                @HttpID(2) // 请求ID
+                @HttpMaxRetry(3) // 重试次数
+                @HttpMaxRedirect(5) // 重定向次数
+                class TEST extends HttpRichParamModel<User> { }
+
                 break;
         }
     }
@@ -1015,7 +1042,7 @@ public class MainActivity extends Activity {
 
         @Override
         public void onStart(AbstractRequest<Bitmap> request) {
-            HttpLog.i(TAG, " Listener, request start ...");
+            HttpLog.i(TAG, "second listener, request start ...");
             progressDialog = new ProgressDialog(MainActivity.this);
             progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             progressDialog.setIndeterminate(false);
@@ -1024,7 +1051,7 @@ public class MainActivity extends Activity {
 
         @Override
         public void onSuccess(Bitmap bitmap, Response<Bitmap> response) {
-            HttpLog.i(TAG, " Listener, request success ...");
+            HttpLog.i(TAG, "second listener, request success ...");
             progressDialog.dismiss();
             ImageView iv = new ImageView(activity);
             iv.setImageBitmap(bitmap);
@@ -1034,36 +1061,17 @@ public class MainActivity extends Activity {
 
         @Override
         public void onFailure(HttpException e, Response<Bitmap> response) {
-            HttpLog.i(TAG, " Listener, request failure ...");
+            HttpLog.i(TAG, " second listener, request failure ...");
             progressDialog.dismiss();
         }
 
         @Override
-        public void onCancel(Bitmap bitmap, Response<Bitmap> response) {
-            HttpLog.i(TAG, " Listener, request cancel ...");
-        }
-
-        @Override
         public void onLoading(AbstractRequest<Bitmap> request, long total, long len) {
-            HttpLog.i(TAG, " Listener, request loading  ...");
+            HttpLog.i(TAG, " second listener, request loading  ...");
             progressDialog.setMax((int) total);
             progressDialog.setProgress((int) len);
         }
 
-        @Override
-        public void onUploading(AbstractRequest<Bitmap> request, long total, long len) {
-            HttpLog.i(TAG, " Listener, request upLoading  ...");
-        }
-
-        @Override
-        public void onRetry(AbstractRequest<Bitmap> request, int max, int times) {
-            HttpLog.i(TAG, " Listener, request retry ...");
-        }
-
-        @Override
-        public void onRedirect(AbstractRequest<Bitmap> request, int max, int times) {
-            HttpLog.i(TAG, " Listener, request redirect ...");
-        }
     };
 
 }

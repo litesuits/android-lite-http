@@ -141,7 +141,7 @@ public class HttpConfig {
     /**
      * set default cache expire time to all request
      */
-    protected long defaultCacheExpireMillis;
+    protected long defaultCacheExpireMillis = -1;
     /**
      * set default max number of retry to all request
      */

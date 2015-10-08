@@ -204,7 +204,10 @@ public abstract class LiteHttp {
             if (listener != null) {
                 listener.notifyCallStart(request);
             }
-            if (request.getCacheMode() == CacheMode.CacheFirst && tryHitCache(response)) {
+            if(request.getCacheMode() == CacheMode.CacheOnly){
+                tryHitCache(response);
+                return response;
+            }else if (request.getCacheMode() == CacheMode.CacheFirst && tryHitCache(response)) {
                 return response;
             } else {
                 tryToConnectNetwork(request, response);
