@@ -40,16 +40,15 @@ import com.litesuits.http.request.param.HttpMethods;
 import com.litesuits.http.request.param.HttpParamModel;
 import com.litesuits.http.request.param.HttpRichParamModel;
 import com.litesuits.http.request.query.JsonQueryBuilder;
+import com.litesuits.http.request.query.ModelQueryBuilder;
 import com.litesuits.http.response.Response;
 import com.litesuits.http.utils.HttpUtil;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -67,6 +66,7 @@ public class MainActivity extends Activity {
     //public static final String httpsUrl = "https://www.thanku.love";
     public static final String uploadUrl = "http://192.168.8.105:8080/upload";
     public static final String userUrl = "http://litesuits.com/mockdata/user_get";
+    public static final String loginUrl = "http://litesuits.com/mockdata/user_get";
     public static final String picUrl = "http://pic.33.la/20140403sj/1638.jpg";
     public static final String redirectUrl = "http://www.baidu.com/link?url=Lqc3GptP8u05JCRDsk0jqsAvIZh9WdtO_RkXYMYRQEm";
 
@@ -107,7 +107,7 @@ public class MainActivity extends Activity {
                     .setDetectNetwork(true)              // detect network before connect
                     .setDoStatistics(true)               // statistics of time and traffic
                     .setUserAgent("Mozilla/5.0 (...)")   // set custom User-Agent
-                    .setTimeOut(1000, 1000);             // connect and socket timeout: 10s
+                    .setTimeOut(10000, 10000);             // connect and socket timeout: 10s
             liteHttp = LiteHttp.newApacheHttpClient(config);
         } else {
             liteHttp.getConfig()                        // configuration directly
@@ -115,7 +115,7 @@ public class MainActivity extends Activity {
                     .setDetectNetwork(true)             // detect network before connect
                     .setDoStatistics(true)              // statistics of time and traffic
                     .setUserAgent("Mozilla/5.0 (...)")  // set custom User-Agent
-                    .setTimeOut(1000, 1000);            // connect and socket timeout: 10s
+                    .setTimeOut(10000, 10000);            // connect and socket timeout: 10s
         }
     }
 
@@ -915,50 +915,63 @@ public class MainActivity extends Activity {
                 // 智能并发调度控制器：设置[最大并发数]，和[等待队列]大小
                 SmartExecutor smallExecutor = new SmartExecutor();
 
+                // set this temporary parameter, just for test
                 // number of concurrent threads at the same time, recommended core size is CPU count
-                // set this temporary parameter, just for test
                 smallExecutor.setCoreSize(2);
-                //  Adjust maximum number of waiting queue size by yourself or based on phone performance
+
                 // set this temporary parameter, just for test
+                // adjust maximum number of waiting queue size by yourself or based on phone performance
                 smallExecutor.setQueueSize(2);
 
                 // 任务数量超出[最大并发数]后，自动进入[等待队列]，等待当前执行任务完成后按策略进入执行状态：先进先执行，先进后执行。
                 smallExecutor.setSchedulePolicy(SchedulePolicy.LastInFirstRun);
 
-                smallExecutor.setOverloadPolicy(OverloadPolicy.DiscardOldTaskInQueue);
                 // 后续添加新任务数量超出[等待队列]大小时，执行过载策略：抛弃队列内最新、抛弃队列内最旧、抛弃当前任务、当前线程直接运行、抛异常。
+                smallExecutor.setOverloadPolicy(OverloadPolicy.DiscardOldTaskInQueue);
 
-                for (int i = 0; i < 6; i++) {
+                // 一次投入5个任务
+                for (int i = 0; i < 5; i++) {
                     final int j = i;
                     smallExecutor.execute(new Runnable() {
                         @Override
                         public void run() {
-                            HttpLog.i(TAG, j + " task running");
+                            HttpLog.i(TAG, " TASK " + j + " is running now ----------->");
                             SystemClock.sleep(j * 200);
                         }
                     });
                 }
+
+                // 再投入1个需要取消的任务
+                Future future = smallExecutor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        HttpLog.i(TAG, " last task running: will be canceled... ------------>");
+                        SystemClock.sleep(1000);
+                    }
+                });
+                future.cancel(false);
                 break;
 
             case 23:
                 // 23. Automatic Conversion of Complex Model
                 String upUrl = "http://app.globalvillage.biz/app/provider/apply_android";
                 StringRequest req = new StringRequest(upUrl);
+                req.setMaxRetryTimes(0);
                 req.setHttpListener(new HttpListener<String>() {
                     @Override
                     public void onSuccess(String s, Response<String> response) {
                         super.onSuccess(s, response);
-                        response.printInfo();;
+                        response.printInfo();
                     }
 
                     @Override
                     public void onFailure(HttpException e, Response<String> response) {
                         super.onFailure(e, response);
-                        response.printInfo();;
+                        response.printInfo();
                     }
                 });
                 MultipartBody body = new MultipartBody();
-                req.setHttpBody(body,HttpMethods.Post);
+                req.setHttpBody(body, HttpMethods.Post);
                 File file1 = new File("/sdcard/aaa.jpg");
                 File file2 = new File("/sdcard/avator.png");
                 body.addPart(new StringPart("phone", "15068748660", "utf-8", null));
@@ -970,7 +983,33 @@ public class MainActivity extends Activity {
                 body.addPart(new FilePart("file2", file2, "image/jpeg"));
 
                 liteHttp.executeAsync(req);
-                //body.addPart(new FilePart("file2", file2, "image/jpeg"));
+
+                // 实现登陆，参数为 name 和 password，成功后返回 User 对象。
+                @HttpUri(loginUrl)
+                class LoginParam extends HttpRichParamModel<User> {
+                    private String name;
+                    private String password;
+
+                    public LoginParam(String name, String password) {
+                        this.name = name;
+                        this.password = password;
+                    }
+                }
+
+                // 一句话调用即可
+                liteHttp.executeAsync(new LoginParam("lucy", "123456").setHttpListener(
+                        new HttpListener<User>() {
+                            @Override
+                            public void onSuccess(User user, Response<User> response) {
+                                HttpUtil.showTips(activity, "返回复杂对象", user.toString());
+                            }
+
+                            @Override
+                            public void onFailure(HttpException e, Response<User> response) {
+                                HttpUtil.showTips(activity, "返回复杂对象", e.getMessage());
+                            }
+                        }
+                ));
                 break;
             case 24:
                 // 24. Best Practice: HTTP Rich Param Model (It is simpler and More Useful)
@@ -997,8 +1036,31 @@ public class MainActivity extends Activity {
                 @HttpCacheExpire(value = 1, unit = TimeUnit.MINUTES) // 缓存时间
                 @HttpID(2) // 请求ID
                 @HttpMaxRetry(3) // 重试次数
-                @HttpMaxRedirect(5) // 重定向次数
-                class TEST extends HttpRichParamModel<User> { }
+                @HttpMaxRedirect(5)
+                        // 重定向次数
+                class TEST extends HttpRichParamModel<User> {
+                    // 可以复写设置headers/querybuilder/listener/httpbody 等参数
+
+                    @Override
+                    protected LinkedHashMap<String, String> createHeaders() {
+                        return super.createHeaders();
+                    }
+
+                    @Override
+                    protected ModelQueryBuilder createQueryBuilder() {
+                        return super.createQueryBuilder();
+                    }
+
+                    @Override
+                    protected HttpListener<User> createHttpListener() {
+                        return super.createHttpListener();
+                    }
+
+                    @Override
+                    protected HttpBody createHttpBody() {
+                        return super.createHttpBody();
+                    }
+                }
 
                 break;
         }

@@ -45,7 +45,13 @@ public class HttpConfig {
     public static final int DEFAULT_MAX_REDIRECT_TIMES = 5;
     public static final int DEFAULT_HTTP_PORT = 80;
     public static final int DEFAULT_HTTPS_PORT = 443;
-    public static final int DEFAULT_TIMEOUT = 20000;
+    /**
+     * 20 second
+     */
+    public static final int DEFAULT_TIMEOUT = 20 * 1000;
+    /**
+     * 3 second
+     */
     public static final int DEFAULT_TRY_WAIT_TIME = 3000;
     public static final int DEFAULT_BUFFER_SIZE = 4096;
 

@@ -74,6 +74,6 @@ public class ApiModel<T> extends BaseModel {
                ", code=" + code +
                ", message='" + message + '\'' +
                ", data=" + data +
-               "} " + super.toString();
+               "} ";
     }
 }
