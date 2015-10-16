@@ -12,18 +12,13 @@ import java.util.LinkedList;
  */
 public class MultipartBody extends HttpBody {
     private LinkedList<AbstractPart> httpParts = new LinkedList<AbstractPart>();
-    private String boundary;
-    private byte[] boundaryLine;
-    private byte[] boundaryEnd;
-    private long bytesWritten;
     private long totalSize;
+    private long bytesWritten;
+    BoundaryCreater boundaryCreater;
 
     public MultipartBody() {
-        BoundaryCreater boundaryCreater = new BoundaryCreater();
-        boundary = boundaryCreater.getBoundary();
-        boundaryLine = boundaryCreater.getBoundaryLine();
-        boundaryEnd = boundaryCreater.getBoundaryEnd();
-        contentType = Consts.MIME_TYPE_FORM_DATA + Consts.BOUNDARY_PARAM + boundary;
+        boundaryCreater = new BoundaryCreater();
+        contentType = Consts.MIME_TYPE_FORM_DATA + Consts.BOUNDARY_PARAM + boundaryCreater.getBoundary();
     }
 
     public LinkedList<AbstractPart> getHttpParts() {
@@ -58,7 +53,7 @@ public class MultipartBody extends HttpBody {
         }
         // note that: set multibody to every part, so that we can get progress of these part.
         part.setMultipartBody(this);
-        part.createHeader(boundaryLine);
+        part.createHeader(boundaryCreater.getBoundaryLine());
         httpParts.add(part);
         return this;
     }
@@ -74,7 +69,7 @@ public class MultipartBody extends HttpBody {
                 }
                 contentLen += len;
             }
-            contentLen += boundaryEnd.length;
+            contentLen += boundaryCreater.getBoundaryEnd().length;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,8 +82,8 @@ public class MultipartBody extends HttpBody {
         for (AbstractPart part : httpParts) {
             part.writeToServer(outstream);
         }
-        outstream.write(boundaryEnd);
-        updateProgress(boundaryEnd.length);
+        outstream.write(boundaryCreater.getBoundaryEnd());
+        updateProgress(boundaryCreater.getBoundaryEnd().length);
     }
 
     @SuppressWarnings("unchecked")
@@ -99,15 +94,7 @@ public class MultipartBody extends HttpBody {
         }
     }
 
-    public String getBoundary() {
-        return boundary;
-    }
-
-    public byte[] getBoundaryLine() {
-        return boundaryLine;
-    }
-
-    public byte[] getBoundaryEnd() {
-        return boundaryEnd;
+    public BoundaryCreater getBoundary() {
+        return boundaryCreater;
     }
 }

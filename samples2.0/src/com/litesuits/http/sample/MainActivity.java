@@ -954,35 +954,6 @@ public class MainActivity extends Activity {
 
             case 23:
                 // 23. Automatic Conversion of Complex Model
-                String upUrl = "http://app.globalvillage.biz/app/provider/apply_android";
-                StringRequest req = new StringRequest(upUrl);
-                req.setMaxRetryTimes(0);
-                req.setHttpListener(new HttpListener<String>() {
-                    @Override
-                    public void onSuccess(String s, Response<String> response) {
-                        super.onSuccess(s, response);
-                        response.printInfo();
-                    }
-
-                    @Override
-                    public void onFailure(HttpException e, Response<String> response) {
-                        super.onFailure(e, response);
-                        response.printInfo();
-                    }
-                });
-                MultipartBody body = new MultipartBody();
-                req.setHttpBody(body, HttpMethods.Post);
-                File file1 = new File("/sdcard/aaa.jpg");
-                File file2 = new File("/sdcard/avator.png");
-                body.addPart(new StringPart("phone", "15068748660", "utf-8", null));
-                body.addPart(new StringPart("address", "浙江省杭州市", "utf-8", null));
-                body.addPart(new StringPart("latitude", "30.287376" + "", "utf-8", null));
-                body.addPart(new StringPart("longitude", "120.025528" + "", "utf-8", null));
-                body.addPart(new StringPart("service_range", "1,2", "utf-8", null));
-                body.addPart(new FilePart("file1", file1, "image/jpeg"));
-                body.addPart(new FilePart("file2", file2, "image/jpeg"));
-
-                liteHttp.executeAsync(req);
 
                 // 实现登陆，参数为 name 和 password，成功后返回 User 对象。
                 @HttpUri(loginUrl)
@@ -996,17 +967,17 @@ public class MainActivity extends Activity {
                     }
                 }
 
-                // 一句话调用即可
+                // 一句话调用即实现登陆
                 liteHttp.executeAsync(new LoginParam("lucy", "123456").setHttpListener(
                         new HttpListener<User>() {
                             @Override
                             public void onSuccess(User user, Response<User> response) {
-                                HttpUtil.showTips(activity, "返回复杂对象", user.toString());
+                                HttpUtil.showTips(activity, "对象自动转化", user.toString());
                             }
 
                             @Override
                             public void onFailure(HttpException e, Response<User> response) {
-                                HttpUtil.showTips(activity, "返回复杂对象", e.getMessage());
+                                HttpUtil.showTips(activity, "对象自动转化", e.getMessage());
                             }
                         }
                 ));
