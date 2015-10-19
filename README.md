@@ -1,19 +1,138 @@
-# LiteHttp之开篇简介和大纲目录
 
-## 1. lite-http是什么？  (･̆⍛･̆)  
+# Android network framework: LiteHttp
+
+Tags : litehttp2.x-tutorials
+
+---
+Website : http://litesuits.com
+QQgroup : 47357508 , 42960650
+
+---
+
+### 1. What‘s lite-http ? 
+
+> LiteHttp is a simple, intelligent and flexible HTTP client for Android. With LiteHttp you can make HTTP request with only one line of code! It supports GET, POST, PUT, DELETE, HEAD, TRACE, OPTIONS and PATCH request types. LiteHttp could convert a java model to the parameter of http request and rander the response JSON as a java model intelligently. And you can extend the abstract class DataParser to parse inputstream(network) to which you want.
+
+### 2. Why choose lite-http ?
+
+Simple, powerful, make HTTP request with only one line of code:
+`` `Java
+User user = liteHttp.get (url, User.class);
+`` `
+
+more details, you can see lite-http introduction: [LiteHttp Introduction: Why should developers choose LiteHttp? ? ][1]
+
+### 3. What are the fetures ?
+
+- Lightweight: tiny size overhead to your app. About 99kb for core jar. .
+
+- One-Thread-Based: all methods work on the same thread as the request was created.
+
+- Full support: GET, POST, PUT, DELETE, HEAD, TRACE, OPTIONS, PATCH.
+
+- Automatic: one line of code auto-complete translation between Model and Parameter, Json and Model.
+
+- Configurable: more flexible configuration options, up to 23+ items.
+
+- Polymorphic: more intuitive API, input and output is more clear.
+ 
+- Strong Concurrency: concurrent scheduler that comes with a strong, effective control of scheduling and queue control strategies.
+
+- Annotation Usage: convention over configuration. Parameters, Response, URL, Method, ID, TAG, etc. Can be configured.
+
+- Easy expansion: extend the abstract class DataParser to parse inputstream(network) to which you want..
+
+- Alternatively: interface-based, easy to replace the network connection implementations and Json serialization library.
+
+- Multilayer cache: hit Memory is more efficient! Multiple cache mode. Support for setting cache expire time.
+
+- Callback Flexible: callback can be on current or UI thread. listen the beginning, ending, success or failure, uploading, downloading, etc.
+
+- File Upload: support for single, multiple, large file uploads.
+
+- Downloads: support files, Bimtap download and progress notifications.
+
+- Network Disabled: disable one of a variety of network environments, such as specifying disabling 2G, 3G.
+
+- Statistics: time cost statistics and traffic statistics.
+
+- Exception system: a unified, concise, clear exception is thrown into three categories: client, network, server, and abnormalities can be accurately subdivided.
+
+- GZIP compression: automatic GZIP compression.
+
+- Automatic Retry: combined probe exception type and current network conditions, intelligent retry strategies.
+
+- Automatic redirection: based on the retry 30X state, and can set the maximum number of times to prevent excessive jump.
+
+
+### 4. Overall architecture of lite-http
+
+! [Lite-http Chart] [2]
+
+About App architecture, see my other article:
+[How to take high-quality Android project framework, the framework of the structure described in detail? ] [3]
+
+### 5. tutorials and analysis (◕‸◕)
+
+Good ◝‿◜, huh:
+
+ [1. Initialization and preliminary usage] [4]
+
+ [2. Simplified requests and non-safe method of use] [5]
+ 
+ [3. Automatic model conversion] [6]
+ 
+ [4. Custom DataParser and Json serialization library Replace] [7]
+ 
+ [5. Files, bitmap upload and download] [8]
+ 
+ [6. Disable network and traffic statistics] [9]
+ 
+ [7. Retries and redirect] [10]
+ 
+ [8. Exceptions handling and cancellation request] [11]
+ 
+ [9. Multiple data transmission via POST(PUT)] [12]
+ 
+ [10. Asynchronous concurrency and scheduling strategy] [13]
+ 
+ [11. Global configuration and parameter settings Detailed] [14]
+ 
+ [12. Annotation-Based request] [15]
+ 
+ [13. Multilayer cache mechanism and usage] [16]
+ 
+ [14. Detailed of callback listener] [17]
+ 
+ [15. SmartExecutor： concurrent scheduler] [18]
+
+
+# Android网络通信框架LiteHttp
+
+标签： litehttp2.x版本系列教程
+
+---
+官网： http://litesuits.com
+QQ群： 大群 47357508，二群 42960650
+
+本系列文章面向android开发者，展示开源网络通信框架LiteHttp的主要用法，并讲解其关键功能的运作原理，同时传达了一些框架作者在日常开发中的一些最佳实践和经验。
+
+---
+
+### 1. lite-http是什么？  (･̆⍛･̆)  
 
 > LiteHttp是一款简单、智能、灵活的HTTP框架库，它在请求和响应层面做到了全自动构建和解析，主要用于Android快速开发。
 
-## 2. 为什么选lite-http？  (•́ ₃ •̀) 
+### 2. 为什么选lite-http？  (•́ ₃ •̀) 
 
 简单、强大，一行代码搞定API请求和数据转化：
 ```java
 User user = liteHttp.get(url, User.class);
 ```
 
-案例详情可见我另一篇lite-http引言文章：[LiteHttp 引言：开发者为什么要选LiteHttp？？][1]
+案例详情可见我的另一篇lite-http引言文章：[LiteHttp 引言：开发者为什么要选LiteHttp？？][1]
 
-## 3. lite-http有什么特点？    (´ڡ`)  
+### 3. lite-http有什么特点？    (´ڡ`)  
 
 - 轻量级：微小的内存开销与Jar包体积，99K左右。
 
@@ -37,13 +156,13 @@ User user = liteHttp.get(url, User.class);
 
 - 多层缓存：内存命中更高效！多种缓存模式，支持设置缓存有效期。
 
-- 回调灵活：可选择当前或UI线程执行回调，开始结束、成败、上传、下载进度等都可监听。
+- 回调灵活：可选择当前或UI线程执行回调，开始、结束、成败、上传、下载进度等都可监听。
 
 - 文件上传：支持单个、多个大文件上传。
 
 - 文件下载：支持文件、Bimtap下载及其进度通知。
 
-- 网络禁用：快速禁用一种、多种网络环境，比如指定禁用 2G，3G 。
+- 网络禁用：禁用一种、多种网络环境，比如指定禁用 2G，3G 。
 
 - 数据统计：链接、读取时长统计，以及流量统计。
 
@@ -56,14 +175,14 @@ User user = liteHttp.get(url, User.class);
 - 自动重定向：基于 30X 状态的重试，且可设置最大次数防止过度跳转。
 
 
-## 4. lite-http的整体架构是怎样的呀？    (´ڡ`)  
+### 4. lite-http的整体架构是怎样的呀？    (´ڡ`)  
 
 ![lite-http架构图][2]
 
-关于App架构，请看我另一篇文章分享：
+关于App架构，请看我另一篇文章：
 [怎样搭高质量的Android项目框架，框架的结构具体描述？][3]
 
-## 5. 老湿，来点教学和分析带我飞呗？    (◕‸◕)  
+### 5. 老湿，来点教学和分析带我飞呗？    (◕‸◕)  
 
 好的 ◝‿◜ ，下面直接给你看，疗效好记得联系我，呵呵哒：
 
