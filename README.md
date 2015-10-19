@@ -1,17 +1,15 @@
-
-# LiteHttp: Android Network Framework
+# Android network framework: LiteHttp
 
 Tags : litehttp2.x-tutorials
 
 ---
 Website : http://litesuits.com
 
-QQgroup : 47357508 , 42960650
+QQgroup : [47357508][1] , [42960650][2]
 
-[为什么开发者要选用lite-http ？][1]
+[为什么开发者要选用lite-http ？][3]
 
-[lite-http 初步使用 和 快速起步上手][4]
-
+[lite-http 初步使用 和 快速上手][4]
 ---
 
 ### 1. What‘s lite-http ? 
@@ -27,7 +25,7 @@ Simple, powerful, make HTTP request with only one line of code:
 User user = liteHttp.get (url, User.class);
 ```
 
-more details, you can see lite-http introduction: [LiteHttp Introduction: Why should developers choose LiteHttp ? ][1]
+more details, you can see lite-http introduction: [LiteHttp Introduction: Why should developers choose LiteHttp ? ][5]
 
 
 ### 3. What are the fetures ?
@@ -75,58 +73,62 @@ more details, you can see lite-http introduction: [LiteHttp Introduction: Why sh
 
 ### 4. Overall architecture of lite-http
 
-![Lite-http Chart][2]
+![Lite-http Chart][6]
 
 About App architecture, see my other article:
-[How to take high-quality Android project framework, the framework of the structure described in detail? ] [3]
+[How to take high-quality Android project framework, the framework of the structure described in detail? ] [7]
 
 ### 5. tutorials and analysis (◕‸◕)
 
 Good ◝‿◜, huh:
 
- [1. Initialization and preliminary usage] [4]
+ [1. Initialization and preliminary usage] [8]
 
- [2. Simplified requests and non-safe method of use] [5]
+ [2. Simplified requests and non-safe method of use] [9]
 
- [3. Automatic model conversion] [6]
+ [3. Automatic model conversion] [10]
 
- [4. Custom DataParser and Json serialization library Replace] [7]
+ [4. Custom DataParser and Json serialization library Replace] [11]
 
- [5. Files, bitmap upload and download] [8]
+ [5. Files, bitmap upload and download] [12]
 
- [6. Disable network and traffic statistics] [9]
+ [6. Disable network and traffic statistics] [13]
 
- [7. Retries and redirect] [10]
+ [7. Retries and redirect] [14]
 
- [8. Exceptions handling and cancellation request] [11]
+ [8. Exceptions handling and cancellation request] [15]
 
- [9. Multiple data transmission via POST(PUT)] [12]
+ [9. Multiple data transmission via POST(PUT)] [16]
 
- [10. Asynchronous concurrency and scheduling strategy] [13]
+ [10. Asynchronous concurrency and scheduling strategy] [17]
 
- [11. Global configuration and parameter settings Detailed] [14]
+ [11. Global configuration and parameter settings Detailed] [18]
 
- [12. Annotation-Based request] [15]
+ [12. Annotation-Based request] [19]
 
- [13. Multilayer cache mechanism and usage] [16]
+ [13. Multilayer cache mechanism and usage] [20]
 
- [14. Detailed of callback listener] [17]
+ [14. Detailed of callback listener] [21]
 
- [15. SmartExecutor： concurrent scheduler] [18]
+ [15. SmartExecutor： concurrent scheduler] [22]
+
 
 
 # LiteHttp： Android网络通信框架（中文版 换个语种，再来一次）
 
-标签： litehttp2.x版本系列教程
-
 ---
 官网： http://litesuits.com
 
-QQ群： 大群 47357508，二群 42960650
+QQ群： [大群 47357508][1] ， [二群 42960650][2]
 
 本系列文章面向android开发者，展示开源网络通信框架LiteHttp的主要用法，并讲解其关键功能的运作原理，同时传达了一些框架作者在日常开发中的一些最佳实践和经验。
 
+[为什么开发者要选用lite-http ？][3]
+
+[lite-http 初步使用 和 快速起步上手][4]
+
 ---
+
 
 ### 1. lite-http是什么？  (･̆⍛･̆)  
 
@@ -139,7 +141,7 @@ QQ群： 大群 47357508，二群 42960650
 User user = liteHttp.get(url, User.class);
 ```
 
-案例详情可见我的另一篇lite-http引言文章：[LiteHttp 引言：开发者为什么要选LiteHttp？？][1]
+案例详情可见我另一篇lite-http引言文章：[LiteHttp 引言：开发者为什么要选LiteHttp？？][5]
 
 ### 3. lite-http有什么特点？    (´ڡ`)  
 
@@ -165,13 +167,13 @@ User user = liteHttp.get(url, User.class);
 
 - 多层缓存：内存命中更高效！多种缓存模式，支持设置缓存有效期。
 
-- 回调灵活：可选择当前或UI线程执行回调，开始、结束、成败、上传、下载进度等都可监听。
+- 回调灵活：可选择当前或UI线程执行回调，开始结束、成败、上传、下载进度等都可监听。
 
 - 文件上传：支持单个、多个大文件上传。
 
 - 文件下载：支持文件、Bimtap下载及其进度通知。
 
-- 网络禁用：禁用一种、多种网络环境，比如指定禁用 2G，3G 。
+- 网络禁用：快速禁用一种、多种网络环境，比如指定禁用 2G，3G 。
 
 - 数据统计：链接、读取时长统计，以及流量统计。
 
@@ -186,61 +188,65 @@ User user = liteHttp.get(url, User.class);
 
 ### 4. lite-http的整体架构是怎样的呀？    (´ڡ`)  
 
-![lite-http架构图][2]
+![lite-http架构图][6]
 
-关于App架构，请看我另一篇文章：
-[怎样搭高质量的Android项目框架，框架的结构具体描述？][3]
+关于App架构，请看我另一篇文章分享：
+[怎样搭高质量的Android项目框架，框架的结构具体描述？][7]
 
 ### 5. 老湿，来点教学和分析带我飞呗？    (◕‸◕)  
 
 好的 ◝‿◜ ，下面直接给你看，疗效好记得联系我，呵呵哒：
 
- [1. 初始化和初步使用][4]
+ [1. 初始化和初步使用][8]
 
- [2. 简化请求和非安全方法的使用][5]
+ [2. 简化请求和非安全方法的使用][9]
  
- [3. 自动对象转化][6]
+ [3. 自动对象转化][10]
  
- [4. 自定义DataParser和Json序列化库的替换][7]
+ [4. 自定义DataParser和Json序列化库的替换][11]
  
- [5. 文件、位图的上传和下载][8]
+ [5. 文件、位图的上传和下载][12]
  
- [6. 禁用网络和流量、时间统计][9]
+ [6. 禁用网络和流量、时间统计][13]
  
- [7. 重试和重定向][10]
+ [7. 重试和重定向][14]
  
- [8. 处理异常和取消请求][11]
+ [8. 处理异常和取消请求][15]
  
- [9. POST方式的多种类型数据传输][12]
+ [9. POST方式的多种类型数据传输][16]
  
- [10. lite-http异步并发与调度策略][13]
+ [10. lite-http异步并发与调度策略][17]
  
- [11. 全局配置与参数设置详解][14]
+ [11. 全局配置与参数设置详解][18]
  
- [12. 通过注解完成API请求][15]
+ [12. 通过注解完成API请求][19]
  
- [13. 多层缓存机制及用法][16]
+ [13. 多层缓存机制及用法][20]
  
- [14. 回调监听器详解][17]
+ [14. 回调监听器详解][21]
  
- [15. 并发调度控制器详解][18]
+ [15. 并发调度控制器详解][22]
 
 
-  [1]: https://zybuluo.com/liter/note/186533
-  [2]: http://litesuits.com/imgs/lite-http-arch.png
-  [3]: https://zybuluo.com/liter/note/186526
+  [1]: http://shang.qq.com/wpa/qunwpa?idkey=492d63aaffb04b23d8dc4df21f6b594008cbe1a819978659cddab2dbc397684e
+  [2]: http://shang.qq.com/wpa/qunwpa?idkey=19bf15b9c85ec15c62141dd00618f725e2983803cd2b48566fa0e94964ae8370
+  [3]: https://zybuluo.com/liter/note/186533
   [4]: https://zybuluo.com/liter/note/186560
-  [5]: https://zybuluo.com/liter/note/186561
-  [6]: https://zybuluo.com/liter/note/186565
-  [7]: https://zybuluo.com/liter/note/186583
-  [8]: https://zybuluo.com/liter/note/186756
-  [9]: https://zybuluo.com/liter/note/186801
-  [10]: https://zybuluo.com/liter/note/186860
-  [11]: https://zybuluo.com/liter/note/186900
-  [12]: https://zybuluo.com/liter/note/186965
-  [13]: https://zybuluo.com/liter/note/186998
-  [14]: https://zybuluo.com/liter/note/187016
-  [15]: https://zybuluo.com/liter/note/187568
-  [16]: https://zybuluo.com/liter/note/187894
-  [17]: https://zybuluo.com/liter/note/187904
-  [18]: https://zybuluo.com/liter/note/189537
+  [5]: https://zybuluo.com/liter/note/186533
+  [6]: http://litesuits.com/imgs/lite-http-arch.png
+  [7]: https://zybuluo.com/liter/note/186526
+  [8]: https://zybuluo.com/liter/note/186560
+  [9]: https://zybuluo.com/liter/note/186561
+  [10]: https://zybuluo.com/liter/note/186565
+  [11]: https://zybuluo.com/liter/note/186583
+  [12]: https://zybuluo.com/liter/note/186756
+  [13]: https://zybuluo.com/liter/note/186801
+  [14]: https://zybuluo.com/liter/note/186860
+  [15]: https://zybuluo.com/liter/note/186900
+  [16]: https://zybuluo.com/liter/note/186965
+  [17]: https://zybuluo.com/liter/note/186998
+  [18]: https://zybuluo.com/liter/note/187016
+  [19]: https://zybuluo.com/liter/note/187568
+  [20]: https://zybuluo.com/liter/note/187894
+  [21]: https://zybuluo.com/liter/note/187904
+  [22]: https://zybuluo.com/liter/note/189537
