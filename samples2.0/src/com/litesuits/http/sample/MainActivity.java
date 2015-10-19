@@ -912,25 +912,34 @@ public class MainActivity extends Activity {
             case 22:
                 // 22. Best Practices of SmartExecutor
 
+                //可定义等待队列进入执行状态的策略：先来先执行，后来先执行。
+
+                //可定义等待队列满载后处理新请求的策略：
+                //- 抛弃队列中最新的任务
+                //- 抛弃队列中最旧的任务
+                //- 抛弃当前新任务
+                //- 直接执行（阻塞当前线程）
+                //- 抛出异常（中断当前线程）
+
                 // 智能并发调度控制器：设置[最大并发数]，和[等待队列]大小
                 SmartExecutor smallExecutor = new SmartExecutor();
 
                 // set this temporary parameter, just for test
+
                 // number of concurrent threads at the same time, recommended core size is CPU count
                 smallExecutor.setCoreSize(2);
 
-                // set this temporary parameter, just for test
                 // adjust maximum number of waiting queue size by yourself or based on phone performance
                 smallExecutor.setQueueSize(2);
 
-                // 任务数量超出[最大并发数]后，自动进入[等待队列]，等待当前执行任务完成后按策略进入执行状态：先进先执行，先进后执行。
+                // 任务数量超出[最大并发数]后，自动进入[等待队列]，等待当前执行任务完成后按策略进入执行状态：后进先执行。
                 smallExecutor.setSchedulePolicy(SchedulePolicy.LastInFirstRun);
 
-                // 后续添加新任务数量超出[等待队列]大小时，执行过载策略：抛弃队列内最新、抛弃队列内最旧、抛弃当前任务、当前线程直接运行、抛异常。
+                // 后续添加新任务数量超出[等待队列]大小时，执行过载策略：抛弃队列内最旧任务。
                 smallExecutor.setOverloadPolicy(OverloadPolicy.DiscardOldTaskInQueue);
 
-                // 一次投入5个任务
-                for (int i = 0; i < 5; i++) {
+                // 一次投入 4 个任务
+                for (int i = 0; i < 4; i++) {
                     final int j = i;
                     smallExecutor.execute(new Runnable() {
                         @Override
@@ -945,7 +954,7 @@ public class MainActivity extends Activity {
                 Future future = smallExecutor.submit(new Runnable() {
                     @Override
                     public void run() {
-                        HttpLog.i(TAG, " last task running: will be canceled... ------------>");
+                        HttpLog.i(TAG, " TASK 4 will be canceled ... ------------>");
                         SystemClock.sleep(1000);
                     }
                 });

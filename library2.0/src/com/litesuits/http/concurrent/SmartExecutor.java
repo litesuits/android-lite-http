@@ -143,6 +143,14 @@ public class SmartExecutor implements Executor {
 
 
     /**
+     * submit RunnableFuture task
+     */
+    public <T> void submit(RunnableFuture<T> task) {
+        execute(task);
+    }
+
+
+    /**
      * When {@link #execute(Runnable)} is called, {@link SmartExecutor} perform actions:
      * <ol>
      * <li>if fewer than {@link #coreSize} tasks are running, post new task in {@link #runningList} and execute it immediately.</li>
