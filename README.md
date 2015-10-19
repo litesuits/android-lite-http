@@ -1,10 +1,11 @@
 
-# Android network framework: LiteHttp
+# LiteHttp: Android Network Framework
 
 Tags : litehttp2.x-tutorials
 
 ---
 Website : http://litesuits.com
+
 QQgroup : 47357508 , 42960650
 
 ---
@@ -13,14 +14,16 @@ QQgroup : 47357508 , 42960650
 
 > LiteHttp is a simple, intelligent and flexible HTTP client for Android. With LiteHttp you can make HTTP request with only one line of code! It supports GET, POST, PUT, DELETE, HEAD, TRACE, OPTIONS and PATCH request types. LiteHttp could convert a java model to the parameter of http request and rander the response JSON as a java model intelligently. And you can extend the abstract class DataParser to parse inputstream(network) to which you want.
 
+
 ### 2. Why choose lite-http ?
 
 Simple, powerful, make HTTP request with only one line of code:
-`` `Java
+```Java
 User user = liteHttp.get (url, User.class);
-`` `
+```
 
 more details, you can see lite-http introduction: [LiteHttp Introduction: Why should developers choose LiteHttp? ? ][1]
+
 
 ### 3. What are the fetures ?
 
@@ -67,7 +70,7 @@ more details, you can see lite-http introduction: [LiteHttp Introduction: Why sh
 
 ### 4. Overall architecture of lite-http
 
-! [Lite-http Chart] [2]
+![Lite-http Chart][2]
 
 About App architecture, see my other article:
 [How to take high-quality Android project framework, the framework of the structure described in detail? ] [3]
@@ -79,40 +82,41 @@ Good ◝‿◜, huh:
  [1. Initialization and preliminary usage] [4]
 
  [2. Simplified requests and non-safe method of use] [5]
- 
+
  [3. Automatic model conversion] [6]
- 
+
  [4. Custom DataParser and Json serialization library Replace] [7]
- 
+
  [5. Files, bitmap upload and download] [8]
- 
+
  [6. Disable network and traffic statistics] [9]
- 
+
  [7. Retries and redirect] [10]
- 
+
  [8. Exceptions handling and cancellation request] [11]
- 
+
  [9. Multiple data transmission via POST(PUT)] [12]
- 
+
  [10. Asynchronous concurrency and scheduling strategy] [13]
- 
+
  [11. Global configuration and parameter settings Detailed] [14]
- 
+
  [12. Annotation-Based request] [15]
- 
+
  [13. Multilayer cache mechanism and usage] [16]
- 
+
  [14. Detailed of callback listener] [17]
- 
+
  [15. SmartExecutor： concurrent scheduler] [18]
 
 
-# Android网络通信框架LiteHttp
+# LiteHttp中文： Android网络通信框架
 
 标签： litehttp2.x版本系列教程
 
 ---
 官网： http://litesuits.com
+
 QQ群： 大群 47357508，二群 42960650
 
 本系列文章面向android开发者，展示开源网络通信框架LiteHttp的主要用法，并讲解其关键功能的运作原理，同时传达了一些框架作者在日常开发中的一些最佳实践和经验。
