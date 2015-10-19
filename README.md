@@ -8,11 +8,16 @@ Website : http://litesuits.com
 
 QQgroup : 47357508 , 42960650
 
+[为什么开发者要选用lite-http ？][1]
+
+[lite-http 初步使用 和 快速起步上手][4]
+
 ---
 
 ### 1. What‘s lite-http ? 
 
-> LiteHttp is a simple, intelligent and flexible HTTP client for Android. With LiteHttp you can make HTTP request with only one line of code! It supports GET, POST, PUT, DELETE, HEAD, TRACE, OPTIONS and PATCH request types. LiteHttp could convert a java model to the parameter of http request and rander the response JSON as a java model intelligently. And you can extend the abstract class DataParser to parse inputstream(network) to which you want.
+> LiteHttp is a simple, intelligent and flexible HTTP framework for Android. With LiteHttp you can make HTTP request with only one line of code! 
+It could convert a java model to the parameter and rander the response JSON as a java model intelligently. 
 
 
 ### 2. Why choose lite-http ?
@@ -22,7 +27,7 @@ Simple, powerful, make HTTP request with only one line of code:
 User user = liteHttp.get (url, User.class);
 ```
 
-more details, you can see lite-http introduction: [LiteHttp Introduction: Why should developers choose LiteHttp? ? ][1]
+more details, you can see lite-http introduction: [LiteHttp Introduction: Why should developers choose LiteHttp ? ][1]
 
 
 ### 3. What are the fetures ?
@@ -110,7 +115,7 @@ Good ◝‿◜, huh:
  [15. SmartExecutor： concurrent scheduler] [18]
 
 
-# LiteHttp中文： Android网络通信框架
+# LiteHttp： Android网络通信框架（中文版 换个语种，再来一次）
 
 标签： litehttp2.x版本系列教程
 
