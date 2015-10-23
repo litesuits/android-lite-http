@@ -7,7 +7,7 @@ Website : http://litesuits.com
 
 QQgroup : [47357508][1] , [42960650][2]
 
-[为什么开发者要选用lite-http ？][3]
+[Android网络框架为什么可以选用lite-http ？][3]
 
 [lite-http 初步使用 和 快速上手][4]
 
@@ -25,6 +25,41 @@ Simple, powerful, make HTTP request with only one line of code:
 ```Java
 User user = liteHttp.get (url, User.class);
 ```
+
+asynchronous download a file（execute on sub-thread，listen on ui-thread）:
+```java
+liteHttp.executeAsync(new FileRequest(url,path).setHttpListener(
+	new HttpListener<File>(true, true, true) {
+	
+		@Override
+		public void onLoading(AbstractRequest<Bitmap> request, long total, long len) {
+			// loading notification
+		}
+		
+	})
+);
+```
+
+configure an asynchronous login request by annotation:
+```java
+String loginUrl = "http://litesuits.com/mockdata/user_get";
+
+// 1. URL        : loginUrl
+// 2. Parameter  : name=value&password= value
+// 3. Response   : User
+@HttpUri(loginUrl) 
+class LoginParam extends HttpRichParamModel<User> {
+    private String name;
+    private String password;
+
+    public LoginParam(String name, String password) {
+        this.name = name;
+        this.password = password;
+    }
+}
+liteHttp.executeAsync(new LoginParam("lucy", "123456"));
+```
+will be built as **http://xxx?name=lucy&password=123456**
 
 more details, you can see lite-http introduction: [LiteHttp Introduction: Why should developers choose LiteHttp ? ][5]
 
@@ -114,23 +149,26 @@ Good ◝‿◜, huh:
  [15. SmartExecutor： concurrent scheduler] [22]
 
 
-
 ## LiteHttp： Android网络通信框架
-（中文版 换个语种，再来一次）
+
+中文版 换个语种，再来一次
+
+标签： litehttp2.x版本系列教程
 
 ---
 官网： http://litesuits.com
 
 QQ群： [大群 47357508][1] ， [二群 42960650][2]
 
-本系列文章面向android开发者，展示开源网络通信框架LiteHttp的主要用法，并讲解其关键功能的运作原理，同时传达了一些框架作者在日常开发中的一些最佳实践和经验。
-
-[为什么开发者要选用lite-http ？][3]
+[Android网络框架为什么可以选用lite-http？][3]
 
 [lite-http 初步使用 和 快速起步上手][4]
 
+本系列文章面向android开发者，展示开源网络通信框架LiteHttp的主要用法，并讲解其关键功能的运作原理，同时传达了一些框架作者在日常开发中的一些最佳实践和经验。
+
 ---
 
+# LiteHttp之开篇简介和大纲目录
 
 ### 1. lite-http是什么？  (･̆⍛･̆)  
 
@@ -138,10 +176,40 @@ QQ群： [大群 47357508][1] ， [二群 42960650][2]
 
 ### 2. 为什么选lite-http？  (•́ ₃ •̀) 
 
-简单、强大，一行代码搞定API请求和数据转化：
+简单、强大，线程无关，一行代码搞定API请求和数据转化：
 ```java
 User user = liteHttp.get(url, User.class);
 ```
+
+当然也可以开启线程异步下载文件：
+```java
+liteHttp.executeAsync(new FileRequest(url,path).setHttpListener(
+	new HttpListener<File>(true, true, true) {
+	
+		@Override
+		public void onLoading(AbstractRequest<Bitmap> request, long total, long len) {
+			// 进度通知
+		}
+		
+	})
+);
+```
+
+通过注解约定完成异步请求：
+```java
+@HttpUri(loginUrl) 
+class LoginParam extends HttpRichParamModel<User> {
+    private String name;
+    private String password;
+
+    public LoginParam(String name, String password) {
+        this.name = name;
+        this.password = password;
+    }
+}
+liteHttp.executeAsync(new LoginParam("lucy", "123456"));
+```
+将构建类似下面请求：http://xxx?name=lucy&password=123456
 
 案例详情可见我另一篇lite-http引言文章：[LiteHttp 引言：开发者为什么要选LiteHttp？？][5]
 
