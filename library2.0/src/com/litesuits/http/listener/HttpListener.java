@@ -167,7 +167,7 @@ public abstract class HttpListener<Data> {
 
     //____________lite called method ____________
     public final void notifyCallStart(AbstractRequest<Data> req) {
-        if (delayOrDisable()) {
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -183,7 +183,8 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallSuccess(Data data, Response<Data> response) {
-        if (delayOrDisable()) {
+        delayOrNot();
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -199,7 +200,8 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallFailure(HttpException e, Response<Data> response) {
-        if (delayOrDisable()) {
+        delayOrNot();
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -219,7 +221,8 @@ public abstract class HttpListener<Data> {
             HttpLog.w(TAG, "Request be Cancelled!  isCancelled: " + response.getRequest().isCancelled()
                            + "  Thread isInterrupted: " + Thread.currentThread().isInterrupted());
         }
-        if (delayOrDisable()) {
+        delayOrNot();
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -235,7 +238,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallLoading(AbstractRequest<Data> req, long total, long len) {
-        if (delayOrDisable()) {
+        if (disableListener()) {
             return;
         }
         if (readingNotify) {
@@ -253,7 +256,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallUploading(AbstractRequest<Data> req, long total, long len) {
-        if (delayOrDisable()) {
+        if (disableListener()) {
             return;
         }
         if (uploadingNotify) {
@@ -271,7 +274,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallRetry(AbstractRequest<Data> req, int max, int times) {
-        if (delayOrDisable()) {
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -287,7 +290,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallRedirect(AbstractRequest<Data> req, int max, int times) {
-        if (delayOrDisable()) {
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -303,7 +306,7 @@ public abstract class HttpListener<Data> {
     }
 
     public final void notifyCallEnd(Response<Data> response) {
-        if (delayOrDisable()) {
+        if (disableListener()) {
             return;
         }
         if (runOnUiThread) {
@@ -318,18 +321,16 @@ public abstract class HttpListener<Data> {
         }
     }
 
-    private boolean delayOrDisable() {
+    private boolean delayOrNot() {
         if (delayMillis > 0) {
-            //if (HttpLog.isPrint) {
-            //    HttpLog.w(TAG, "litener should be delayed : " + delayMillis + " MS.");
-            //}
             try {
                 Thread.sleep(delayMillis);
+                return true;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        return disableListener();
+        return false;
     }
 
     //____________ developer override method ____________
