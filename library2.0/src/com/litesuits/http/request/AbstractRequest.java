@@ -411,7 +411,7 @@ public abstract class AbstractRequest<T> {
                             cacheMode = ((HttpCacheMode) a).value();
                         }
                     } else if (a instanceof HttpCacheExpire) {
-                        if (cacheExpireMillis == 0) {
+                        if (cacheExpireMillis < 0) {
                             TimeUnit unit = ((HttpCacheExpire) a).unit();
                             long time = ((HttpCacheExpire) a).value();
                             if (unit != null) {

@@ -33,10 +33,15 @@ asynchronous download a file（execute on sub-thread，listen on ui-thread）:
 liteHttp.executeAsync(new FileRequest(url,path).setHttpListener(
 	new HttpListener<File>(true, true, true) {
 	
-		@Override
-		public void onLoading(AbstractRequest<Bitmap> request, long total, long len) {
-			// loading notification
-		}
+        @Override
+        public void onLoading(AbstractRequest<File> request, long total, long len) {
+            // loading notification
+        }
+
+        @Override
+        public void onSuccess(File file, Response<File> response) {
+            // successfully download 
+        }
 		
 	})
 );
@@ -188,10 +193,15 @@ User user = liteHttp.get(url, User.class);
 liteHttp.executeAsync(new FileRequest(url,path).setHttpListener(
 	new HttpListener<File>(true, true, true) {
 	
-		@Override
-		public void onLoading(AbstractRequest<Bitmap> request, long total, long len) {
-			// 进度通知
-		}
+        @Override
+        public void onLoading(AbstractRequest<File> request, long total, long len) {
+            // loading notification
+        }
+
+        @Override
+        public void onSuccess(File file, Response<File> response) {
+            // successfully download 
+        }
 		
 	})
 );
