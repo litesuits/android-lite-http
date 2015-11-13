@@ -89,8 +89,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 //        2.2.0 版本：
 //        1. 修复某些情况下参数无法拼接到URI的bug。
-//        2. http参数类可以注解指定Key，避免成员变量出现java关键词，同时增加动态URL构建；
-//        3. Request接受直接注解参数、内部构建参数。
+//        2. http参数类增加通过注解指定Key，避免成员变量出现java关键词，同时增加动态URL构建；
+//        3. 每一个request可以直接接受注解参数和内部构建参数。
 
 
 /**
