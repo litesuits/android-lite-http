@@ -11,6 +11,9 @@ import com.litesuits.http.listener.HttpListener;
 import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.request.content.HttpBody;
+import com.litesuits.http.request.content.StringBody;
+import com.litesuits.http.request.content.UrlEncodedFormBody;
+import com.litesuits.http.request.content.multi.MultipartBody;
 import com.litesuits.http.request.param.CacheMode;
 import com.litesuits.http.request.param.HttpMethods;
 import com.litesuits.http.request.param.HttpParamModel;
@@ -39,7 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author MaTianyu
  *         2014-1-1下午9:51:59
  */
-public abstract class AbstractRequest<T> {
+public abstract class AbstractRequest<T> implements HttpParamModel {
     private static final String TAG = AbstractRequest.class.getSimpleName();
     private static final String ENCODE_PATTERN_URL = "^.+\\?(%[0-9a-fA-F]+|[=&A-Za-z0-9_#\\-\\.\\*])*$";
     /**
@@ -163,10 +166,13 @@ public abstract class AbstractRequest<T> {
      * global http listener for request
      */
     private GlobalHttpListener globalHttpListener;
+    /**
+     * whether http params be pinned to url
+     */
+    protected boolean isFieldAttachToUrl = false;
 
     /*________________________ constructors  ________________________*/
     //    public AbstractRequest() {}
-
     public AbstractRequest(String uri) {
         this.uri = uri;
     }
@@ -370,74 +376,15 @@ public abstract class AbstractRequest<T> {
     public <S extends AbstractRequest<T>> S setParamModel(HttpParamModel paramModel) {
         if (paramModel != null) {
             this.paramModel = paramModel;
+            Annotation annotations[] = paramModel.getClass().getAnnotations();
+            readParamFromAnnotations(annotations);
             if (paramModel instanceof HttpRichParamModel) {
                 HttpRichParamModel richModel = (HttpRichParamModel) paramModel;
+                setUri(richModel.getUri());
                 addHeader(richModel.getHeaders());
-                if (httpBody == null) {
-                    setHttpBody(richModel.getHttpBody());
-                }
-                if (httpListener == null) {
-                    setHttpListener(richModel.getHttpListener());
-                }
-                if (queryBuilder == null) {
-                    setQueryBuilder(richModel.getModelQueryBuilder());
-                }
-            }
-            Annotation as[] = paramModel.getClass().getAnnotations();
-            if (as != null && as.length > 0) {
-                for (Annotation a : as) {
-                    if (a instanceof HttpID) {
-                        if (id == 0) {
-                            setId(((HttpID) a).value());
-                        }
-                    } else if (a instanceof HttpTag) {
-                        if (tag == null) {
-                            setTag(((HttpTag) a).value());
-                        }
-                    } else if (a instanceof HttpSchemeHost) {
-                        if (schemeHost == null) {
-                            schemeHost = ((HttpUri) a).value();
-                        }
-                    } else if (a instanceof HttpUri) {
-                        if (uri == null) {
-                            uri = ((HttpUri) a).value();
-                        }
-                    } else if (a instanceof HttpMethod) {
-                        if (method == null) {
-                            method = ((HttpMethod) a).value();
-                        }
-                    } else if (a instanceof HttpCacheMode) {
-                        if (cacheMode == null) {
-                            cacheMode = ((HttpCacheMode) a).value();
-                        }
-                    } else if (a instanceof HttpCacheExpire) {
-                        if (cacheExpireMillis < 0) {
-                            TimeUnit unit = ((HttpCacheExpire) a).unit();
-                            long time = ((HttpCacheExpire) a).value();
-                            if (unit != null) {
-                                cacheExpireMillis = unit.toMillis(time);
-                            } else {
-                                cacheExpireMillis = time;
-                            }
-                        }
-                    } else if (a instanceof HttpCacheKey) {
-                        if (cacheKey == null) {
-                            cacheKey = ((HttpCacheKey) a).value();
-                        }
-                    } else if (a instanceof HttpCharSet) {
-                        if (charSet == null) {
-                            charSet = ((HttpCharSet) a).value();
-                        }
-                    } else if (a instanceof HttpMaxRedirect) {
-                        if (maxRedirectTimes < 0) {
-                            maxRetryTimes = ((HttpMaxRedirect) a).value();
-                        }
-                    } else if (a instanceof HttpMaxRetry) {
-                        if (maxRetryTimes < 0) {
-                            maxRetryTimes = ((HttpMaxRetry) a).value();
-                        }
-                    }
-                }
+                setHttpBody(richModel.getHttpBody());
+                setHttpListener(richModel.getHttpListener());
+                setQueryBuilder(richModel.getModelQueryBuilder());
             }
         }
         return (S) this;
@@ -496,26 +443,32 @@ public abstract class AbstractRequest<T> {
         return (S) this;
     }
 
+    public boolean isFieldAttachToUrl() {
+        return isFieldAttachToUrl;
+    }
+
+    public <S extends AbstractRequest<T>> S  setFieldAttachToUrl(boolean fieldAttachToUrl) {
+        this.isFieldAttachToUrl = fieldAttachToUrl;
+        return (S) this;
+    }
+
     /*________________________ private_methods ________________________*/
 
     /**
      * 融合hashmap和解析到的javamodel里的参数，即所有string 参数.
      */
     public LinkedHashMap<String, String> getBasicParams()
-            throws IllegalArgumentException, UnsupportedEncodingException, IllegalAccessException,
-            InvocationTargetException {
+            throws IllegalArgumentException, UnsupportedEncodingException,
+            IllegalAccessException, InvocationTargetException {
         LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
         if (paramMap != null) {
             map.putAll(paramMap);
         }
         if (paramModel != null) {
-            if (paramModel instanceof HttpRichParamModel
-                && ((HttpRichParamModel) paramModel).isAttachToUrl()) {
-                LinkedHashMap<String, String> modelMap = getQueryBuilder().buildPrimaryMap(paramModel);
-                if (modelMap != null) {
-                    map.putAll(modelMap);
-                }
+            if (paramModel instanceof HttpRichParamModel && !((HttpRichParamModel) paramModel).isAttachToUrl()) {
+                return map;
             }
+            map.putAll(getQueryBuilder().buildPrimaryMap(paramModel));
         }
         return map;
     }
@@ -710,6 +663,108 @@ public abstract class AbstractRequest<T> {
         return isCachedModel();
     }
 
+    /**
+     * Override by sub-class, set id for request.
+     */
+    public long buildHttpID() {
+        return 0;
+    }
+
+    /**
+     * Override by sub-class, build tag for request.
+     */
+    public Object buildHttpTag() {
+        return null;
+    }
+
+    /**
+     * Override by sub-class, build uri for request.
+     */
+    public String buildHttpUri() {
+        return null;
+    }
+
+    /**
+     * Override by sub-class, build scheme host for request.
+     */
+    public String buildSchemeHost() {
+        return null;
+    }
+
+    /**
+     * Override by sub-class, build headers for request.
+     */
+    public LinkedHashMap<String, String> buildHeaders() {return null;}
+
+    /**
+     * Override by sub-class, build http body for POST/PUT... request.
+     *
+     * @return such as {@link StringBody}, {@link UrlEncodedFormBody}, {@link MultipartBody}...
+     */
+    public HttpBody buildHttpBody() {return null;}
+
+    /**
+     * Override by sub-class, whether http params be pinned to url
+     */
+    public void initHttpParams() {
+        Annotation annotations[] = this.getClass().getAnnotations();
+        readParamFromAnnotations(annotations);
+        if (id <= 0) {
+            id = buildHttpID();
+        }
+        if (tag == null) {
+            tag = buildHttpTag();
+        }
+        if (uri == null) {
+            uri = buildHttpUri();
+        }
+        if (schemeHost == null) {
+            schemeHost = buildSchemeHost();
+        }
+        if (headers == null) {
+            headers = buildHeaders();
+        }
+        if (httpBody == null) {
+            httpBody = buildHttpBody();
+        }
+    }
+
+    private void readParamFromAnnotations(Annotation as[]) {
+        if (as != null && as.length > 0) {
+            for (Annotation a : as) {
+                if (a instanceof HttpID) {
+                    setId(((HttpID) a).value());
+                } else if (a instanceof HttpTag) {
+                    setTag(((HttpTag) a).value());
+                } else if (a instanceof HttpSchemeHost) {
+                    schemeHost = ((HttpUri) a).value();
+                } else if (a instanceof HttpUri) {
+                    uri = ((HttpUri) a).value();
+                } else if (a instanceof HttpMethod) {
+                    method = ((HttpMethod) a).value();
+                } else if (a instanceof HttpCacheMode) {
+                    cacheMode = ((HttpCacheMode) a).value();
+                } else if (a instanceof HttpCacheExpire) {
+                    TimeUnit unit = ((HttpCacheExpire) a).unit();
+                    long time = ((HttpCacheExpire) a).value();
+                    if (unit != null) {
+                        cacheExpireMillis = unit.toMillis(time);
+                    } else {
+                        cacheExpireMillis = time;
+                    }
+                } else if (a instanceof HttpCacheKey) {
+                    cacheKey = ((HttpCacheKey) a).value();
+                } else if (a instanceof HttpCharSet) {
+                    charSet = ((HttpCharSet) a).value();
+                } else if (a instanceof HttpMaxRedirect) {
+                    maxRetryTimes = ((HttpMaxRedirect) a).value();
+                } else if (a instanceof HttpMaxRetry) {
+                    maxRetryTimes = ((HttpMaxRetry) a).value();
+                }
+            }
+        }
+    }
+
     /*________________________ string_methods ________________________*/
     @Override
     public String toString() {
@@ -754,6 +809,7 @@ public abstract class AbstractRequest<T> {
         }
         sb.append("\n________________ request-end ________________");
         return sb.toString();
-
     }
+
+
 }

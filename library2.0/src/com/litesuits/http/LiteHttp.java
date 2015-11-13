@@ -87,6 +87,12 @@ import java.util.concurrent.atomic.AtomicLong;
 //        * 7. 完善构建：提供 jar 包支持，后边支持 gradle 和 maven 。
 
 
+//        2.2.0 版本：
+//        1. 修复某些情况下参数无法拼接到URI的bug。
+//        2. http参数类可以注解指定Key，避免成员变量出现java关键词，同时增加动态URL构建；
+//        3. Request接受直接注解参数、内部构建参数。
+
+
 /**
  * A simple, intelligent and flexible HTTP client for Android.
  * With LiteHttp you can make HTTP request with only one line of code!
@@ -338,6 +344,7 @@ public abstract class LiteHttp {
      * if some of request params is null or 0, set global default value to it.
      */
     protected <T> InternalResponse<T> handleRequest(AbstractRequest<T> request) {
+        request.initHttpParams();
         if (config.commonHeaders != null) {
             request.addHeader(config.commonHeaders);
         }

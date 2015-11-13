@@ -3,6 +3,7 @@ package com.litesuits.http.request;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.impl.JsonParser;
 import com.litesuits.http.request.param.HttpParamModel;
+import com.litesuits.http.request.param.NonHttpParam;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -13,6 +14,7 @@ import java.lang.reflect.Type;
  */
 public abstract class JsonAbsRequest<T> extends AbstractRequest<T> {
 
+    @NonHttpParam
     protected Type resultType;
 
     public JsonAbsRequest(String url) {

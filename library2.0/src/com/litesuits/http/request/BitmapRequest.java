@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.impl.BitmapParser;
 import com.litesuits.http.request.param.HttpParamModel;
+import com.litesuits.http.request.param.NonHttpParam;
 
 import java.io.File;
 
@@ -13,6 +14,7 @@ import java.io.File;
  */
 public class BitmapRequest extends AbstractRequest<Bitmap> {
 
+    @NonHttpParam
     protected File saveToFile;
 
     public BitmapRequest(HttpParamModel model) {

@@ -3,6 +3,7 @@ package com.litesuits.http.request;
 import com.litesuits.http.parser.DataParser;
 import com.litesuits.http.parser.impl.FileParser;
 import com.litesuits.http.request.param.HttpParamModel;
+import com.litesuits.http.request.param.NonHttpParam;
 
 import java.io.File;
 
@@ -12,6 +13,7 @@ import java.io.File;
  */
 public class FileRequest extends AbstractRequest<File> {
 
+    @NonHttpParam
     private File saveToFile;
 
     public FileRequest(String url) {
