@@ -182,7 +182,6 @@ public class MainActivity extends Activity {
 
         switch (which) {
             case 0:
-
                 initLiteHttp();
                 HttpUtil.showTips(activity, "LiteHttp2.0", "Init Config Success!");
                 break;
