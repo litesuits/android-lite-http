@@ -380,11 +380,21 @@ public abstract class AbstractRequest<T> implements HttpParamModel {
             readParamFromAnnotations(annotations);
             if (paramModel instanceof HttpRichParamModel) {
                 HttpRichParamModel richModel = (HttpRichParamModel) paramModel;
-                setUri(richModel.getUri());
-                addHeader(richModel.getHeaders());
-                setHttpBody(richModel.getHttpBody());
-                setHttpListener(richModel.getHttpListener());
-                setQueryBuilder(richModel.getModelQueryBuilder());
+                if (uri == null) {
+                    setUri(richModel.getUri());
+                }
+                if (headers == null) {
+                    setHeaders(richModel.getHeaders());
+                }
+                if (httpBody == null) {
+                    setHttpBody(richModel.getHttpBody());
+                }
+                if (httpListener == null) {
+                    setHttpListener(richModel.getHttpListener());
+                }
+                if (queryBuilder == null) {
+                    setQueryBuilder(richModel.getModelQueryBuilder());
+                }
             }
         }
         return (S) this;
@@ -447,7 +457,7 @@ public abstract class AbstractRequest<T> implements HttpParamModel {
         return isFieldAttachToUrl;
     }
 
-    public <S extends AbstractRequest<T>> S  setFieldAttachToUrl(boolean fieldAttachToUrl) {
+    public <S extends AbstractRequest<T>> S setFieldAttachToUrl(boolean fieldAttachToUrl) {
         this.isFieldAttachToUrl = fieldAttachToUrl;
         return (S) this;
     }
@@ -733,33 +743,55 @@ public abstract class AbstractRequest<T> implements HttpParamModel {
         if (as != null && as.length > 0) {
             for (Annotation a : as) {
                 if (a instanceof HttpID) {
-                    setId(((HttpID) a).value());
+                    if (id <= 0) {
+                        setId(((HttpID) a).value());
+                    }
                 } else if (a instanceof HttpTag) {
-                    setTag(((HttpTag) a).value());
+                    if (tag == null) {
+                        setTag(((HttpTag) a).value());
+                    }
                 } else if (a instanceof HttpSchemeHost) {
-                    schemeHost = ((HttpUri) a).value();
+                    if (schemeHost == null) {
+                        schemeHost = ((HttpUri) a).value();
+                    }
                 } else if (a instanceof HttpUri) {
-                    uri = ((HttpUri) a).value();
+                    if (uri == null) {
+                        uri = ((HttpUri) a).value();
+                    }
                 } else if (a instanceof HttpMethod) {
-                    method = ((HttpMethod) a).value();
+                    if (method == null) {
+                        method = ((HttpMethod) a).value();
+                    }
                 } else if (a instanceof HttpCacheMode) {
-                    cacheMode = ((HttpCacheMode) a).value();
+                    if (cacheMode == null) {
+                        cacheMode = ((HttpCacheMode) a).value();
+                    }
                 } else if (a instanceof HttpCacheExpire) {
-                    TimeUnit unit = ((HttpCacheExpire) a).unit();
-                    long time = ((HttpCacheExpire) a).value();
-                    if (unit != null) {
-                        cacheExpireMillis = unit.toMillis(time);
-                    } else {
-                        cacheExpireMillis = time;
+                    if (cacheExpireMillis < 0) {
+                        TimeUnit unit = ((HttpCacheExpire) a).unit();
+                        long time = ((HttpCacheExpire) a).value();
+                        if (unit != null) {
+                            cacheExpireMillis = unit.toMillis(time);
+                        } else {
+                            cacheExpireMillis = time;
+                        }
                     }
                 } else if (a instanceof HttpCacheKey) {
-                    cacheKey = ((HttpCacheKey) a).value();
+                    if (cacheKey == null) {
+                        cacheKey = ((HttpCacheKey) a).value();
+                    }
                 } else if (a instanceof HttpCharSet) {
-                    charSet = ((HttpCharSet) a).value();
+                    if (charSet == null) {
+                        charSet = ((HttpCharSet) a).value();
+                    }
                 } else if (a instanceof HttpMaxRedirect) {
-                    maxRetryTimes = ((HttpMaxRedirect) a).value();
+                    if (maxRedirectTimes < 0) {
+                        maxRetryTimes = ((HttpMaxRedirect) a).value();
+                    }
                 } else if (a instanceof HttpMaxRetry) {
-                    maxRetryTimes = ((HttpMaxRetry) a).value();
+                    if (maxRetryTimes < 0) {
+                        maxRetryTimes = ((HttpMaxRetry) a).value();
+                    }
                 }
             }
         }
