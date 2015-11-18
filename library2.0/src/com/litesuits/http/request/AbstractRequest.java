@@ -14,21 +14,21 @@ import com.litesuits.http.request.content.HttpBody;
 import com.litesuits.http.request.content.StringBody;
 import com.litesuits.http.request.content.UrlEncodedFormBody;
 import com.litesuits.http.request.content.multi.MultipartBody;
-import com.litesuits.http.request.param.CacheMode;
-import com.litesuits.http.request.param.HttpMethods;
-import com.litesuits.http.request.param.HttpParamModel;
-import com.litesuits.http.request.param.HttpRichParamModel;
+import com.litesuits.http.request.param.*;
 import com.litesuits.http.request.query.JsonQueryBuilder;
 import com.litesuits.http.request.query.ModelQueryBuilder;
 import com.litesuits.http.utils.HexUtil;
+import com.litesuits.http.utils.HttpUtil;
 import com.litesuits.http.utils.MD5Util;
 import com.litesuits.http.utils.UriUtil;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author MaTianyu
  *         2014-1-1下午9:51:59
  */
-public abstract class AbstractRequest<T> implements HttpParamModel {
+public abstract class AbstractRequest<T> {
     private static final String TAG = AbstractRequest.class.getSimpleName();
     private static final String ENCODE_PATTERN_URL = "^.+\\?(%[0-9a-fA-F]+|[=&A-Za-z0-9_#\\-\\.\\*])*$";
     /**
@@ -169,26 +169,35 @@ public abstract class AbstractRequest<T> implements HttpParamModel {
     /**
      * whether http params be pinned to url
      */
-    protected boolean isFieldAttachToUrl = false;
+    //protected boolean isFieldAttachToUrl = false;
+
+    /**
+     * whether http params be pinned to url
+     */
+    private HashMap<String, Field> paramFieldMap = null;
 
     /*________________________ constructors  ________________________*/
     //    public AbstractRequest() {}
     public AbstractRequest(String uri) {
+        // init annotations
+        //readParamFromAnnotations(this.getClass());
         this.uri = uri;
     }
 
     public AbstractRequest(HttpParamModel paramModel) {
+        // init annotations
+        //readParamFromAnnotations(this.getClass());
         setParamModel(paramModel);
     }
 
     public AbstractRequest(HttpParamModel paramModel, HttpListener<T> listener) {
-        setParamModel(paramModel);
+        this(paramModel);
         setHttpListener(listener);
     }
 
     public AbstractRequest(String uri, HttpParamModel paramModel) {
+        this(uri);
         setParamModel(paramModel);
-        this.uri = uri;
     }
 
     /*________________________ abstract_method ________________________*/
@@ -375,26 +384,29 @@ public abstract class AbstractRequest<T> implements HttpParamModel {
     @SuppressWarnings("unchecked")
     public <S extends AbstractRequest<T>> S setParamModel(HttpParamModel paramModel) {
         if (paramModel != null) {
-            this.paramModel = paramModel;
-            Annotation annotations[] = paramModel.getClass().getAnnotations();
-            readParamFromAnnotations(annotations);
-            if (paramModel instanceof HttpRichParamModel) {
-                HttpRichParamModel richModel = (HttpRichParamModel) paramModel;
-                if (uri == null) {
-                    setUri(richModel.getUri());
+            try {
+                this.paramModel = paramModel;
+                readParamFromAnnotations(paramModel);
+                if (paramModel instanceof HttpRichParamModel) {
+                    HttpRichParamModel richModel = (HttpRichParamModel) paramModel;
+                    if (richModel.getUri() == null) {
+                        setUri(richModel.getUri());
+                    }
+                    if (richModel.getHeaders() == null) {
+                        setHeaders(richModel.getHeaders());
+                    }
+                    if (richModel.getHttpBody() == null) {
+                        setHttpBody(richModel.getHttpBody());
+                    }
+                    if (richModel.getHttpListener() == null) {
+                        setHttpListener(richModel.getHttpListener());
+                    }
+                    if (richModel.getModelQueryBuilder() == null) {
+                        setQueryBuilder(richModel.getModelQueryBuilder());
+                    }
                 }
-                if (headers == null) {
-                    setHeaders(richModel.getHeaders());
-                }
-                if (httpBody == null) {
-                    setHttpBody(richModel.getHttpBody());
-                }
-                if (httpListener == null) {
-                    setHttpListener(richModel.getHttpListener());
-                }
-                if (queryBuilder == null) {
-                    setQueryBuilder(richModel.getModelQueryBuilder());
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return (S) this;
@@ -453,14 +465,14 @@ public abstract class AbstractRequest<T> implements HttpParamModel {
         return (S) this;
     }
 
-    public boolean isFieldAttachToUrl() {
-        return isFieldAttachToUrl;
-    }
-
-    public <S extends AbstractRequest<T>> S setFieldAttachToUrl(boolean fieldAttachToUrl) {
-        this.isFieldAttachToUrl = fieldAttachToUrl;
-        return (S) this;
-    }
+    //public boolean isFieldAttachToUrl() {
+    //    return isFieldAttachToUrl;
+    //}
+    //
+    //public <S extends AbstractRequest<T>> S setFieldAttachToUrl(boolean fieldAttachToUrl) {
+    //    this.isFieldAttachToUrl = fieldAttachToUrl;
+    //    return (S) this;
+    //}
 
     /*________________________ private_methods ________________________*/
 
@@ -592,6 +604,19 @@ public abstract class AbstractRequest<T> implements HttpParamModel {
         return (S) this;
     }
 
+    @SuppressWarnings("unchecked")
+    public <S extends AbstractRequest<T>> S addUrlParam(List<NameValuePair> list) {
+        if (list != null) {
+            if (paramMap == null) {
+                paramMap = new LinkedHashMap<String, String>();
+            }
+            for (NameValuePair pair : list) {
+                paramMap.put(pair.getName(), pair.getValue());
+            }
+        }
+        return (S) this;
+    }
+
     /**
      * if you setUri as "www.tb.cn" .
      * you must add prifix "http://" or "https://" yourself.
@@ -676,125 +701,133 @@ public abstract class AbstractRequest<T> implements HttpParamModel {
     /**
      * Override by sub-class, set id for request.
      */
-    public long buildHttpID() {
-        return 0;
-    }
+    //public long buildHttpID() {
+    //    return 0;
+    //}
 
     /**
      * Override by sub-class, build tag for request.
      */
-    public Object buildHttpTag() {
-        return null;
-    }
+    //public Object buildHttpTag() {
+    //    return null;
+    //}
 
     /**
      * Override by sub-class, build uri for request.
      */
-    public String buildHttpUri() {
-        return null;
-    }
+    //public String buildHttpUri() {
+    //    return null;
+    //}
 
     /**
      * Override by sub-class, build scheme host for request.
      */
-    public String buildSchemeHost() {
-        return null;
-    }
+    //public String buildSchemeHost() {
+    //    return null;
+    //}
 
     /**
      * Override by sub-class, build headers for request.
      */
-    public LinkedHashMap<String, String> buildHeaders() {return null;}
+    //public LinkedHashMap<String, String> buildHeaders() {return null;}
 
     /**
      * Override by sub-class, build http body for POST/PUT... request.
      *
      * @return such as {@link StringBody}, {@link UrlEncodedFormBody}, {@link MultipartBody}...
      */
-    public HttpBody buildHttpBody() {return null;}
+    //public HttpBody buildHttpBody() {return null;}
 
     /**
      * Override by sub-class, whether http params be pinned to url
      */
-    public void initHttpParams() {
-        Annotation annotations[] = this.getClass().getAnnotations();
-        readParamFromAnnotations(annotations);
-        if (id <= 0) {
-            id = buildHttpID();
-        }
-        if (tag == null) {
-            tag = buildHttpTag();
-        }
-        if (uri == null) {
-            uri = buildHttpUri();
-        }
-        if (schemeHost == null) {
-            schemeHost = buildSchemeHost();
-        }
-        if (headers == null) {
-            headers = buildHeaders();
-        }
-        if (httpBody == null) {
-            httpBody = buildHttpBody();
-        }
-    }
-
-    private void readParamFromAnnotations(Annotation as[]) {
+    //public void initHttpParams() {
+    //    Annotation annotations[] = this.getClass().getAnnotations();
+    //    // 注解初始化
+    //    readParamFromAnnotations(annotations);
+    //    // 注解初始化
+    //    if (id <= 0) {
+    //        id = buildHttpID();
+    //    }
+    //    if (tag == null) {
+    //        tag = buildHttpTag();
+    //    }
+    //    if (uri == null) {
+    //        uri = buildHttpUri();
+    //    }
+    //    if (schemeHost == null) {
+    //        schemeHost = buildSchemeHost();
+    //    }
+    //    if (headers == null) {
+    //        headers = buildHeaders();
+    //    }
+    //    if (httpBody == null) {
+    //        httpBody = buildHttpBody();
+    //    }
+    //}
+    private void readParamFromAnnotations(HttpParamModel model) throws IllegalAccessException {
+        Annotation as[] = model.getClass().getAnnotations();
         if (as != null && as.length > 0) {
             for (Annotation a : as) {
                 if (a instanceof HttpID) {
-                    if (id <= 0) {
-                        setId(((HttpID) a).value());
-                    }
+                    setId(((HttpID) a).value());
                 } else if (a instanceof HttpTag) {
-                    if (tag == null) {
-                        setTag(((HttpTag) a).value());
-                    }
+                    setTag(handleAnnotation(model, ((HttpTag) a).value()));// may be replace{}
                 } else if (a instanceof HttpSchemeHost) {
-                    if (schemeHost == null) {
-                        schemeHost = ((HttpUri) a).value();
-                    }
+                    schemeHost = handleAnnotation(model, ((HttpUri) a).value());// may be replace{}
                 } else if (a instanceof HttpUri) {
-                    if (uri == null) {
-                        uri = ((HttpUri) a).value();
-                    }
+                    uri = handleAnnotation(model, ((HttpUri) a).value());// may be replace{}
                 } else if (a instanceof HttpMethod) {
-                    if (method == null) {
-                        method = ((HttpMethod) a).value();
-                    }
+                    method = ((HttpMethod) a).value();
                 } else if (a instanceof HttpCacheMode) {
-                    if (cacheMode == null) {
-                        cacheMode = ((HttpCacheMode) a).value();
-                    }
+                    cacheMode = ((HttpCacheMode) a).value();
                 } else if (a instanceof HttpCacheExpire) {
-                    if (cacheExpireMillis < 0) {
-                        TimeUnit unit = ((HttpCacheExpire) a).unit();
-                        long time = ((HttpCacheExpire) a).value();
-                        if (unit != null) {
-                            cacheExpireMillis = unit.toMillis(time);
-                        } else {
-                            cacheExpireMillis = time;
-                        }
+                    TimeUnit unit = ((HttpCacheExpire) a).unit();
+                    long time = ((HttpCacheExpire) a).value();
+                    if (unit != null) {
+                        cacheExpireMillis = unit.toMillis(time);
+                    } else {
+                        cacheExpireMillis = time;
                     }
                 } else if (a instanceof HttpCacheKey) {
-                    if (cacheKey == null) {
-                        cacheKey = ((HttpCacheKey) a).value();
-                    }
+                    cacheKey = handleAnnotation(model, ((HttpCacheKey) a).value());// may be replace{}
                 } else if (a instanceof HttpCharSet) {
-                    if (charSet == null) {
-                        charSet = ((HttpCharSet) a).value();
-                    }
+                    charSet = ((HttpCharSet) a).value();
                 } else if (a instanceof HttpMaxRedirect) {
-                    if (maxRedirectTimes < 0) {
-                        maxRetryTimes = ((HttpMaxRedirect) a).value();
-                    }
+                    maxRetryTimes = ((HttpMaxRedirect) a).value();
                 } else if (a instanceof HttpMaxRetry) {
-                    if (maxRetryTimes < 0) {
-                        maxRetryTimes = ((HttpMaxRetry) a).value();
-                    }
+                    maxRetryTimes = ((HttpMaxRetry) a).value();
                 }
             }
         }
+    }
+
+    private String handleAnnotation(HttpParamModel model, String value) throws IllegalAccessException {
+        if (value.indexOf('{') >= 0) {
+            if (paramFieldMap == null) {
+                paramFieldMap = new HashMap<>();
+                List<Field> fields = HttpUtil.getAllParamModelFields(model.getClass());
+                if (fields != null) {
+                    HttpLog.i(TAG, "handleAnnotation fields: " + fields.size());
+                    for (Field f : fields) {
+                        HttpReplace anno = f.getAnnotation(HttpReplace.class);
+                        if (anno != null) {
+                            paramFieldMap.put(anno.value(), f);
+                        }
+                    }
+                }
+            }
+            if (!paramFieldMap.isEmpty()) {
+                for (Map.Entry<String, Field> entry : paramFieldMap.entrySet()) {
+                    Object object = entry.getValue().get(model);
+                    if (object != null) {
+                        value = value.replace("{" + entry.getKey() + "}", object.toString());
+                    }
+                }
+            }
+            HttpLog.i(TAG, "handleAnnotation value: " + value);
+        }
+        return value;
     }
 
     /*________________________ string_methods ________________________*/

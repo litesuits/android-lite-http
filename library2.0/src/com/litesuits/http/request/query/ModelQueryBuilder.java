@@ -3,12 +3,8 @@ package com.litesuits.http.request.query;
 import com.litesuits.http.data.Charsets;
 import com.litesuits.http.data.Consts;
 import com.litesuits.http.data.NameValuePair;
-import com.litesuits.http.request.AbstractRequest;
-import com.litesuits.http.request.param.HttpCustomParam;
+import com.litesuits.http.request.param.*;
 import com.litesuits.http.request.param.HttpCustomParam.CustomValueBuilder;
-import com.litesuits.http.request.param.HttpParam;
-import com.litesuits.http.request.param.HttpParamModel;
-import com.litesuits.http.request.param.NonHttpParam;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
@@ -126,7 +122,7 @@ public abstract class ModelQueryBuilder {
     protected static ArrayList<Field> getAllDeclaredFields(Class<?> claxx) {
         // find all field.
         ArrayList<Field> fieldList = new ArrayList<Field>();
-        while (claxx != null && claxx != AbstractRequest.class && claxx != Object.class) {
+        while (claxx != null && claxx != HttpRichParamModel.class && claxx != Object.class) {
             Field[] fs = claxx.getDeclaredFields();
             for (int i = 0; i < fs.length; i++) {
                 Field f = fs[i];

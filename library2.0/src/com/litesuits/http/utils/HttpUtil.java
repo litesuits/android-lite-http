@@ -4,13 +4,14 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.text.Html;
-import android.view.View;
 import com.litesuits.http.log.HttpLog;
+import com.litesuits.http.request.param.HttpRichParamModel;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Pattern;
 
@@ -94,7 +95,8 @@ public class HttpUtil {
         return showTips(context, title, des, null, null);
     }
 
-    public static Dialog showTips(Context context, String title, String des, String btn, DialogInterface.OnDismissListener dismissListener) {
+    public static Dialog showTips(Context context, String title, String des, String btn,
+                                  DialogInterface.OnDismissListener dismissListener) {
         AlertDialog.Builder builder = dialogBuilder(context, title, des);
         builder.setCancelable(true);
         builder.setPositiveButton(btn, null);
@@ -102,5 +104,21 @@ public class HttpUtil {
         dialog.setCanceledOnTouchOutside(true);
         dialog.setOnDismissListener(dismissListener);
         return dialog;
+    }
+
+    public static ArrayList<Field> getAllParamModelFields(Class<?> claxx) {
+        // find all field.
+        ArrayList<Field> fieldList = new ArrayList<Field>();
+        while (claxx != null && claxx != HttpRichParamModel.class && claxx != Object.class) {
+            Field[] fs = claxx.getDeclaredFields();
+            for (int i = 0; i < fs.length; i++) {
+                Field f = fs[i];
+                if (!f.isSynthetic()) {
+                    fieldList.add(f);
+                }
+            }
+            claxx = claxx.getSuperclass();
+        }
+        return fieldList;
     }
 }

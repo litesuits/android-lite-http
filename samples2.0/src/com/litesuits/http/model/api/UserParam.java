@@ -11,6 +11,8 @@ public class UserParam implements HttpParamModel {
     // static final property will be ignored.
     private static final long serialVersionUID = 2451716801614350437L;
 
+    private String uri;
+
     @HttpParam("id")
     private long id;
 

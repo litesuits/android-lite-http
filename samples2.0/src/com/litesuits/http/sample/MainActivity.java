@@ -47,7 +47,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -148,29 +147,31 @@ public class MainActivity extends Activity {
      * <item>23. Best Practice: Auto-Conversion of Complex Model</item>
      * <item>24. Best Practice: HTTP Rich Param Model</item>
      */
-    @HttpUri("http://baidu.com")
-    @HttpCacheMode(CacheMode.CacheFirst)
-    @HttpCacheExpire(value = 7, unit = TimeUnit.DAYS)
-    class A extends JsonRequest<User> {
-        private String name;
-        private String password;
 
-        public A(String url, Type resultType) {
-            super(url, resultType);
-        }
 
-        @Override
-        public HttpBody getHttpBody() {
-            if (getHttpBody() == null) {
-                return new UrlEncodedFormBody(getQueryBuilder().buildPrimaryPairSafely(this));
-            }
-            return super.getHttpBody();
-        }
-
-        public HttpBody buildHttpBody(){
-            return new UrlEncodedFormBody(getQueryBuilder().buildPrimaryPairSafely(this));
-        }
-    }
+    //@HttpUri("http://baidu.com")
+    //@HttpCacheMode(CacheMode.CacheFirst)
+    //@HttpCacheExpire(value = 7, unit = TimeUnit.DAYS)
+    //class A extends JsonRequest<User> {
+    //    private String name;
+    //    private String password;
+    //
+    //    public A(String url, Type resultType) {
+    //        super(url, resultType);
+    //    }
+    //
+    //    @Override
+    //    public HttpBody getHttpBody() {
+    //        if (getHttpBody() == null) {
+    //            return new UrlEncodedFormBody(getQueryBuilder().buildPrimaryPairSafely(this));
+    //        }
+    //        return super.getHttpBody();
+    //    }
+    //
+    //    public HttpBody buildHttpBody() {
+    //        return new UrlEncodedFormBody(getQueryBuilder().buildPrimaryPairSafely(this));
+    //    }
+    //}
 
     private void clickTestItem(final int which) {
 

@@ -344,7 +344,6 @@ public abstract class LiteHttp {
      * if some of request params is null or 0, set global default value to it.
      */
     protected <T> InternalResponse<T> handleRequest(AbstractRequest<T> request) {
-        request.initHttpParams();
         if (config.commonHeaders != null) {
             request.addHeader(config.commonHeaders);
         }

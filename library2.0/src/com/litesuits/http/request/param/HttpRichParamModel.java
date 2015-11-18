@@ -31,6 +31,15 @@ public abstract class HttpRichParamModel<T> implements HttpParamModel {
     @NonHttpParam
     protected String uri;
 
+    public void reset() {
+        httpListener = null;
+        headers = null;
+        modelQueryBuilder = null;
+        httpBody = null;
+        uri = null;
+        attachToUrl = true;
+    }
+
     public final boolean isAttachToUrl() {
         return attachToUrl;
     }
