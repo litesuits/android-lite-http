@@ -390,19 +390,16 @@ public abstract class AbstractRequest<T> {
                 readParamFromAnnotations(paramModel);
                 if (paramModel instanceof HttpRichParamModel) {
                     HttpRichParamModel richModel = (HttpRichParamModel) paramModel;
-                    if (richModel.getUri() == null) {
-                        setUri(richModel.getUri());
-                    }
-                    if (richModel.getHeaders() == null) {
+                    if (richModel.getHeaders() != null) {
                         setHeaders(richModel.getHeaders());
                     }
-                    if (richModel.getHttpBody() == null) {
+                    if (richModel.getHttpBody() != null) {
                         setHttpBody(richModel.getHttpBody());
                     }
-                    if (richModel.getHttpListener() == null) {
+                    if (richModel.getHttpListener() != null) {
                         setHttpListener(richModel.getHttpListener());
                     }
-                    if (richModel.getModelQueryBuilder() == null) {
+                    if (richModel.getModelQueryBuilder() != null) {
                         setQueryBuilder(richModel.getModelQueryBuilder());
                     }
                 }
@@ -488,7 +485,7 @@ public abstract class AbstractRequest<T> {
             map.putAll(paramMap);
         }
         if (paramModel != null) {
-            if (paramModel instanceof HttpRichParamModel && !((HttpRichParamModel) paramModel).isAttachToUrl()) {
+            if (paramModel instanceof HttpRichParamModel && !((HttpRichParamModel) paramModel).isFieldsAttachToUrl()) {
                 return map;
             }
             map.putAll(getQueryBuilder().buildPrimaryMap(paramModel));
