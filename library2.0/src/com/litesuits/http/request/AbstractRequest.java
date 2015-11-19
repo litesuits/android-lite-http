@@ -390,17 +390,21 @@ public abstract class AbstractRequest<T> {
                 readParamFromAnnotations(paramModel);
                 if (paramModel instanceof HttpRichParamModel) {
                     HttpRichParamModel richModel = (HttpRichParamModel) paramModel;
-                    if (richModel.getHeaders() != null) {
-                        setHeaders(richModel.getHeaders());
+                    HttpBody hb = richModel.getHttpBody();
+                    HttpListener<T> hl = richModel.getHttpListener();
+                    LinkedHashMap<String, String> hs = richModel.getHeaders();
+                    ModelQueryBuilder mb = richModel.getModelQueryBuilder();
+                    if (hb != null) {
+                        setHttpBody(hb);
                     }
-                    if (richModel.getHttpBody() != null) {
-                        setHttpBody(richModel.getHttpBody());
+                    if (hl != null) {
+                        setHttpListener(hl);
                     }
-                    if (richModel.getHttpListener() != null) {
-                        setHttpListener(richModel.getHttpListener());
+                    if (hs != null) {
+                        setHeaders(hs);
                     }
-                    if (richModel.getModelQueryBuilder() != null) {
-                        setQueryBuilder(richModel.getModelQueryBuilder());
+                    if (mb != null) {
+                        setQueryBuilder(mb);
                     }
                 }
             } catch (Exception e) {
