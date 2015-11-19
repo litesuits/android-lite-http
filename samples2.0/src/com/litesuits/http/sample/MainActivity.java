@@ -1019,12 +1019,16 @@ public class MainActivity extends Activity {
                 // 24. Best Practice: HTTP Rich Param Model (It is simpler and More Useful)
 
                 // rich param 更简单、有用！只需要定义一个RichParam，可指定URL、参数、返回响应体三个关键事物。
-                @HttpUri("http://litesuits.com/{path}")
+                @HttpUri("{url}/{path}")
                 class UserRichParam extends HttpRichParamModel<User> {
 
                     @NonHttpParam
+                    @HttpReplace("url")
+                    private String url = "http://litesuits.com";
+
+                    @NonHttpParam
                     @HttpReplace("path")
-                    private String url = "mockdata/user_get";
+                    private String path = "mockdata/user_get";
 
                     public long id = 110;
                     private String key = "aes-125";
