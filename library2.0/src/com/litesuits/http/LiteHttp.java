@@ -29,8 +29,6 @@ import com.litesuits.http.utils.HttpUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.FutureTask;
@@ -210,10 +208,10 @@ public abstract class LiteHttp {
             if (listener != null) {
                 listener.notifyCallStart(request);
             }
-            if(request.getCacheMode() == CacheMode.CacheOnly){
+            if (request.getCacheMode() == CacheMode.CacheOnly) {
                 tryHitCache(response);
                 return response;
-            }else if (request.getCacheMode() == CacheMode.CacheFirst && tryHitCache(response)) {
+            } else if (request.getCacheMode() == CacheMode.CacheFirst && tryHitCache(response)) {
                 return response;
             } else {
                 tryToConnectNetwork(request, response);
@@ -273,15 +271,13 @@ public abstract class LiteHttp {
     }
 
     public <T> Response<T> execute(HttpRichParamModel<T> model) {
-        Type type = ((ParameterizedType) model.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        JsonRequest<T> request = new JsonRequest<T>(model, type);
-        return execute(request);
+        return execute(model.buildRequest());
     }
 
-    public <T> void executeAsync(HttpRichParamModel<T> model) {
-        Type type = ((ParameterizedType) model.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        JsonRequest<T> request = new JsonRequest<T>(model, type);
+    public <T> JsonRequest<T> executeAsync(HttpRichParamModel<T> model) {
+        JsonRequest<T> request = model.buildRequest();
         executeAsync(request);
+        return request;
     }
 
     public <T> T perform(AbstractRequest<T> request) {

@@ -35,12 +35,8 @@ import com.litesuits.http.model.api.UserParam;
 import com.litesuits.http.request.*;
 import com.litesuits.http.request.content.*;
 import com.litesuits.http.request.content.multi.*;
-import com.litesuits.http.request.param.CacheMode;
-import com.litesuits.http.request.param.HttpMethods;
-import com.litesuits.http.request.param.HttpParamModel;
-import com.litesuits.http.request.param.HttpRichParamModel;
+import com.litesuits.http.request.param.*;
 import com.litesuits.http.request.query.JsonQueryBuilder;
-import com.litesuits.http.request.query.ModelQueryBuilder;
 import com.litesuits.http.response.Response;
 import com.litesuits.http.utils.HttpUtil;
 import org.json.JSONObject;
@@ -172,11 +168,11 @@ public class MainActivity extends Activity {
     //        return new UrlEncodedFormBody(getQueryBuilder().buildPrimaryPairSafely(this));
     //    }
     //}
-
     private void clickTestItem(final int which) {
 
         // restore http config
         if (needRestore) {
+            Json.setDefault();
             liteHttp.getConfig().restoreToDefault();
             needRestore = false;
         }
@@ -406,14 +402,16 @@ public class MainActivity extends Activity {
 
                 // first, set new json framework instance. then, over.
                 Json.set(new FastJson());
-
+                String uj = "{\"api\":\"com.xx.get.userinfo\",\"v\":\"1.0\",\"code\":200,\"message\":\"success\",\"data\":{\"age\":18,\"name\":\"qingtianzhu\",\"girl_friends\":[\"xiaoli\",\"fengjie\",\"lucy\"]}}";
+                User u11 = Json.get().toObject(uj, User.class);
+                System.out.println("User:" + u11);
                 // json model convert used #FastJson
                 liteHttp.executeAsync(new JsonAbsRequest<User>(userUrl) {}.setHttpListener(new HttpListener<User>() {
                     @Override
                     public void onSuccess(User user, Response<User> response) {
-                        super.onSuccess(user, response);
                         response.printInfo();
                         HttpUtil.showTips(activity, "LiteHttp2.0", "FastJson handle this: \n" + user.toString());
+                        needRestore = true;
                     }
                 }));
 
@@ -423,11 +421,11 @@ public class MainActivity extends Activity {
                     public void onSuccess(String s, Response<String> response) {
                         User u = Json.get().toObject(s, User.class);
                         Toast.makeText(activity, u.toString(), Toast.LENGTH_LONG).show();
+                        needRestore = true;
                     }
 
                     @Override
                     public void onEnd(Response<String> response) {
-                        super.onEnd(response);
                         needRestore = true;
                     }
                 }));
@@ -1021,8 +1019,13 @@ public class MainActivity extends Activity {
                 // 24. Best Practice: HTTP Rich Param Model (It is simpler and More Useful)
 
                 // rich param 更简单、有用！只需要定义一个RichParam，可指定URL、参数、返回响应体三个关键事物。
-                @HttpUri(userUrl)
+                @HttpUri("http://litesuits.com/{path}")
                 class UserRichParam extends HttpRichParamModel<User> {
+
+                    @NonHttpParam
+                    @HttpReplace("path")
+                    private String url = "mockdata/user_get";
+
                     public long id = 110;
                     private String key = "aes-125";
                 }
@@ -1032,8 +1035,8 @@ public class MainActivity extends Activity {
 
 
                 // 其他更多注解还有：
-                @HttpSchemeHost("http://litesuits.com") // 定义scheme
-                @HttpUri("/mockdata/user_get") // 定义uri 或者 path
+                @HttpSchemeHost("{host}") // 定义scheme，使用host变量的值取代
+                @HttpUri("{path}") // 定义uri 或者 path
                 @HttpMethod(HttpMethods.Get) // 请求方式
                 @HttpCharSet("UTF-8") // 请求编码
                 @HttpTag("custom tag") // 打TAG
@@ -1045,16 +1048,29 @@ public class MainActivity extends Activity {
                 @HttpMaxRedirect(5)
                         // 重定向次数
                 class TEST extends HttpRichParamModel<User> {
-                    // 可以复写设置headers/querybuilder/listener/httpbody 等参数
+
+                    @NonHttpParam
+                    @HttpReplace("host")
+                    private String host = "http://litesuits.com";
+
+                    @HttpReplace("path")
+                    private String apiPath = "/mockdata/user_get";
+
+                    // 可以复写设置headers/attachToUrl/listener/httpbody 等参数
+
+                    /**
+                     * 返回true则将将成员变量{@link #host}、{@link #apiPath}拼接到url中
+                     * 返回false，则不拼接。
+                     * @return
+                     */
+                    @Override
+                    public boolean isFieldsAttachToUrl() {
+                        return false;
+                    }
 
                     @Override
                     protected LinkedHashMap<String, String> createHeaders() {
                         return super.createHeaders();
-                    }
-
-                    @Override
-                    protected ModelQueryBuilder createQueryBuilder() {
-                        return super.createQueryBuilder();
                     }
 
                     @Override
@@ -1067,7 +1083,12 @@ public class MainActivity extends Activity {
                         return super.createHttpBody();
                     }
                 }
-
+                liteHttp.executeAsync(new TEST().setHttpListener(new HttpListener<User>() {
+                    @Override
+                    public void onSuccess(User user, Response<User> response) {
+                        HttpUtil.showTips(activity, "HttpRichParamModel", user.toString());
+                    }
+                }));
                 break;
         }
     }

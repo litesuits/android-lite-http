@@ -166,9 +166,10 @@ public abstract class AbstractRequest<T> {
      * global http listener for request
      */
     private GlobalHttpListener globalHttpListener;
-    /**
-     * whether http params be pinned to url
-     */
+
+    ///**
+    // * whether http params be pinned to url
+    // */
     //protected boolean isFieldAttachToUrl = false;
 
     /**

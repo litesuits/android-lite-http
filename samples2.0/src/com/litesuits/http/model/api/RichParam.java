@@ -25,8 +25,11 @@ import java.util.concurrent.TimeUnit;
 @HttpCacheMode(CacheMode.CacheFirst)
 @HttpCacheExpire(value = 10, unit = TimeUnit.SECONDS)
 public class RichParam extends HttpRichParamModel<User> {
+
+    private static final ModelQueryBuilder MODEL_QUERY_BUILDER = new SimpleQueryBuilder();
+
     public long id;
-    private String key;
+    public String key;
 
     public RichParam(long id, String key) {
         this.id = id;
@@ -40,6 +43,6 @@ public class RichParam extends HttpRichParamModel<User> {
 
     @Override
     protected ModelQueryBuilder createQueryBuilder() {
-        return new SimpleQueryBuilder();
+        return MODEL_QUERY_BUILDER;
     }
 }

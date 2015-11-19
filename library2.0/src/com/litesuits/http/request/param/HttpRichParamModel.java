@@ -1,12 +1,15 @@
 package com.litesuits.http.request.param;
 
 import com.litesuits.http.listener.HttpListener;
+import com.litesuits.http.request.JsonRequest;
 import com.litesuits.http.request.content.HttpBody;
 import com.litesuits.http.request.content.StringBody;
 import com.litesuits.http.request.content.UrlEncodedFormBody;
 import com.litesuits.http.request.content.multi.MultipartBody;
 import com.litesuits.http.request.query.ModelQueryBuilder;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 
 /**
@@ -18,97 +21,25 @@ import java.util.LinkedHashMap;
  *         2014-1-19上午2:39:31
  */
 public abstract class HttpRichParamModel<T> implements HttpParamModel {
-    @NonHttpParam
-    protected HttpListener<T> httpListener;
-    @NonHttpParam
-    protected LinkedHashMap<String, String> headers;
-    @NonHttpParam
-    protected ModelQueryBuilder modelQueryBuilder;
-    @NonHttpParam
-    protected HttpBody httpBody;
-    @NonHttpParam
-    protected boolean attachToUrl = true;
-    @NonHttpParam
-    protected String uri;
-
-    public void reset() {
-        httpListener = null;
-        headers = null;
-        modelQueryBuilder = null;
-        httpBody = null;
-        uri = null;
-        attachToUrl = true;
-    }
-
-    public final boolean isAttachToUrl() {
-        return attachToUrl;
-    }
-
-    @SuppressWarnings("unchecked")
-    public final <H extends HttpRichParamModel<T>> H setAttachToUrl(boolean attachToUrl) {
-        this.attachToUrl = attachToUrl;
-        return (H) this;
-    }
-
-    public final HttpListener<T> getHttpListener() {
-        if (httpListener == null) {
-            httpListener = createHttpListener();
-        }
-        return httpListener;
-    }
-
-    @SuppressWarnings("unchecked")
-    public final <H extends HttpRichParamModel<T>> H setHttpListener(HttpListener<T> httpListener) {
-        this.httpListener = httpListener;
-        return (H) this;
-    }
 
     public final LinkedHashMap<String, String> getHeaders() {
-        if (headers == null) {
-            headers = createHeaders();
-        }
-        return headers;
+        return createHeaders();
     }
 
-    public String getUri() {
-        if (uri == null) {
-            uri = createHttpUri();
-        }
-        return uri;
-    }
-
-    public <H extends HttpRichParamModel<T>> H setUri(String uri) {
-        this.uri = uri;
-        return (H) this;
-    }
-
-    public final HttpRichParamModel setHeaders(LinkedHashMap<String, String> headers) {
-        this.headers = headers;
-        return this;
-    }
-
-    public final ModelQueryBuilder getModelQueryBuilder() {
-        if (modelQueryBuilder == null) {
-            modelQueryBuilder = createQueryBuilder();
-        }
-        return modelQueryBuilder;
-    }
-
-    public final HttpRichParamModel setModelQueryBuilder(ModelQueryBuilder modelQueryBuilder) {
-        this.modelQueryBuilder = modelQueryBuilder;
-        return this;
+    public ModelQueryBuilder getModelQueryBuilder() {
+        return createQueryBuilder();
     }
 
     public final HttpBody getHttpBody() {
-        if (httpBody == null) {
-            httpBody = createHttpBody();
-        }
-        return httpBody;
+        return createHttpBody();
     }
 
-    public final HttpRichParamModel setHttpBody(HttpBody httpBody) {
-        this.httpBody = httpBody;
-        return this;
+    public final HttpListener<T> getHttpListener() {
+        return createHttpListener();
+    }
+
+    public boolean isFieldsAttachToUrl() {
+        return true;
     }
 
     /**
@@ -117,20 +48,11 @@ public abstract class HttpRichParamModel<T> implements HttpParamModel {
     protected LinkedHashMap<String, String> createHeaders() {return null;}
 
     /**
-     * create http uri for request.
+     * craete uri query builder for request.
      */
-    protected String createHttpUri() {return null;}
-
-
-    /**
-     * create parameter builder.
-     */
-    protected ModelQueryBuilder createQueryBuilder() {return null;}
-
-    /**
-     * create http listener for request.
-     */
-    protected HttpListener<T> createHttpListener() {return null;}
+    protected ModelQueryBuilder createQueryBuilder() {
+        return null;
+    }
 
     /**
      * create http body for POST/PUT... request.
@@ -138,4 +60,24 @@ public abstract class HttpRichParamModel<T> implements HttpParamModel {
      * @return such as {@link StringBody}, {@link UrlEncodedFormBody}, {@link MultipartBody}...
      */
     protected HttpBody createHttpBody() {return null;}
+
+    /**
+     * create http listener for request.
+     */
+    protected HttpListener<T> createHttpListener() {return null;}
+
+    /**
+     * build request and set http listener.
+     */
+    public final JsonRequest<T> setHttpListener(HttpListener<T> httpListener) {
+        return buildRequest().setHttpListener(httpListener);
+    }
+
+    /**
+     * build as a request.
+     */
+    public JsonRequest<T> buildRequest() {
+        Type type = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        return new JsonRequest<T>(this, type);
+    }
 }

@@ -9,17 +9,16 @@ public class ApiModel<T> extends BaseModel {
     /**
      * 不变的部分：写在API基类中
      */
-    private String api;
-    private String v;
+    public String api;
+    public String v;
 
-    protected int code;
-    protected String message;
+    public int code;
+    public String message;
 
     /**
      * 变化的部分：使用泛型，数据类型的确认延迟到子类里。
      */
-    protected T data;
-
+    public T data;
 
     public String getApi() {
         return api;
