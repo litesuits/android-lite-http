@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
  *         2014-1-19上午2:39:31
  */
 public abstract class HttpRichParamModel<T> implements HttpParamModel {
+    private HttpListener<T> httpListener;
 
     public final LinkedHashMap<String, String> getHeaders() {
         return createHeaders();
@@ -35,7 +36,10 @@ public abstract class HttpRichParamModel<T> implements HttpParamModel {
     }
 
     public final HttpListener<T> getHttpListener() {
-        return createHttpListener();
+        if (httpListener == null) {
+            httpListener = createHttpListener();
+        }
+        return httpListener;
     }
 
     public boolean isFieldsAttachToUrl() {
@@ -69,8 +73,10 @@ public abstract class HttpRichParamModel<T> implements HttpParamModel {
     /**
      * build request and set http listener.
      */
-    public final JsonRequest<T> setHttpListener(HttpListener<T> httpListener) {
-        return buildRequest().setHttpListener(httpListener);
+    @SuppressWarnings("unchecked")
+    public final <M extends HttpRichParamModel<T>> M setHttpListener(HttpListener<T> httpListener) {
+        this.httpListener = httpListener;
+        return (M) this;
     }
 
     /**

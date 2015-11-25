@@ -999,7 +999,6 @@ public class MainActivity extends Activity {
                         this.password = password;
                     }
                 }
-
                 // 一句话调用即实现登陆
                 liteHttp.executeAsync(new LoginParam("lucy", "123456").setHttpListener(
                         new HttpListener<User>() {
