@@ -807,7 +807,7 @@ public abstract class AbstractRequest<T> {
     private String handleAnnotation(HttpParamModel model, String value) throws IllegalAccessException {
         if (value.indexOf('{') >= 0) {
             if (paramFieldMap == null) {
-                paramFieldMap = new HashMap<>();
+                paramFieldMap = new HashMap<String, Field>();
                 List<Field> fields = HttpUtil.getAllParamModelFields(model.getClass());
                 if (fields != null) {
                     HttpLog.i(TAG, "handleAnnotation fields: " + fields.size());
