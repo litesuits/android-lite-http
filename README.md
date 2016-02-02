@@ -7,7 +7,7 @@ Website : http://litesuits.com
 
 QQgroup : [42960650][1] , [47357508][2]
 
-[Android网络框架为什么可以选用 lite-http ？][3]
+[Android网络通信为啥子选 lite-http ？][3]
 
 [lite-http 初步使用 和 快速上手][4]
 
