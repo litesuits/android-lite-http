@@ -41,6 +41,7 @@ api, v, result为必备基础信息，完成这个任务一般分三步：
 ```java
 String url = "http://litesuits.github.io/mockdata/user?userid=168";
 ```
+
 **2. http连接网络获取api信息（封装后还算简单），典型代码：**
 ```java
 /**
@@ -81,6 +82,7 @@ public static String sendHttpRequst(String apiUrl) {
     return null;
 }
 ```
+
 **3. 解析服务器反馈的string（比较头疼）：**
 ```java
 public static User parseJsonToUser(String json) {
