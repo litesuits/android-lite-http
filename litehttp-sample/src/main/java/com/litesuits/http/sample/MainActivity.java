@@ -27,7 +27,7 @@ import com.litesuits.http.data.Json;
 import com.litesuits.http.data.NameValuePair;
 import com.litesuits.http.data.StatisticsInfo;
 import com.litesuits.http.exception.HttpException;
-import com.litesuits.http.impl.apache.ApacheClient;
+import com.litesuits.http.impl.huc.HttpUrlClient;
 import com.litesuits.http.listener.GlobalHttpListener;
 import com.litesuits.http.listener.HttpListener;
 import com.litesuits.http.log.HttpLog;
@@ -101,7 +101,7 @@ public class MainActivity extends Activity {
     private void initLiteHttp() {
         if (liteHttp == null) {
             liteHttp = LiteHttp.build(this)
-                    .setHttpClient(new ApacheClient())   // http client
+                    .setHttpClient(new HttpUrlClient())       // http client
                     .setJsonConvertor(new GsonImpl())        // json convertor
                     .setBaseUrl(baseUrl)                    // set base url
                     .setDebugged(true)                     // log output when debugged
@@ -451,7 +451,7 @@ public class MainActivity extends Activity {
 
                 // download a file to sdcard.
                 liteHttp.executeAsync(new FileRequest(fileUrl1, "sdcard/aaa.jpg"));
-                liteHttp.executeAsync(new FileRequest(userUrl, "sdcard/user_info.txt"));
+                liteHttp.executeAsync(new FileRequest(userUrl, "sdcard/user.txt"));
                 break;
             case 10:
                 // 10. File Upload
@@ -708,7 +708,7 @@ public class MainActivity extends Activity {
                             case 6:
                                 FileInputStream fis = null;
                                 try {
-                                    fis = new FileInputStream(new File("/sdcard/user_info.txt"));
+                                    fis = new FileInputStream(new File("/sdcard/user.txt"));
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
@@ -717,7 +717,7 @@ public class MainActivity extends Activity {
                             case 7:
                                 fis = null;
                                 try {
-                                    fis = new FileInputStream(new File("/sdcard/user_info.txt"));
+                                    fis = new FileInputStream(new File("/sdcard/user.txt"));
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
@@ -727,7 +727,7 @@ public class MainActivity extends Activity {
                                 body.addPart(new StringPart("key2", "很高兴见到你", "utf-8", null));
                                 body.addPart(new BytesPart("key3", new byte[]{1, 2, 3}));
                                 body.addPart(new FilePart("pic", new File("/sdcard/aaa.jpg"), "image/jpeg"));
-                                body.addPart(new InputStreamPart("litehttp", fis, "user_info.txt", "text/plain"));
+                                body.addPart(new InputStreamPart("litehttp", fis, "user.txt", "text/plain"));
                                 postRequest.setHttpBody(body);
                                 break;
                         }
@@ -995,6 +995,9 @@ public class MainActivity extends Activity {
                 // 24. Best Practice: HTTP Rich Param Model (It is simpler and More Useful)
 
                 // rich param 更简单、有用！只需要定义一个RichParam，可指定URL、参数、返回响应体三个关键事物。
+
+                // request : http://litesuits.com/mockdata/user_get?id=110&key=aes-125
+                // response: User
                 @HttpUri("{url}/{path}")
                 class UserRichParam extends HttpRichParamModel<User> {
 
@@ -1004,7 +1007,7 @@ public class MainActivity extends Activity {
 
                     @NonHttpParam
                     @HttpReplace("path")
-                    private String path = "mockdata/user_get";
+                    private String path = "/mockdata/user_get";
 
                     public long id = 110;
                     private String key = "aes-125";
