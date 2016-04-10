@@ -27,10 +27,6 @@ public class JsonBody extends StringBody {
 
     @Override
     public String toString() {
-        return "StringEntity{" +
-                "string='" + string + '\'' +
-                ", charset='" + charset + '\'' +
-                ", contentType='" + contentType + '\'' +
-                '}';
+        return "JsonBody{} " + super.toString();
     }
 }

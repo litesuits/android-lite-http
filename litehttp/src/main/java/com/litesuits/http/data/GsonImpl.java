@@ -11,7 +11,7 @@ import java.lang.reflect.Type;
  *         2014-2-26下午11:13:39
  */
 public class GsonImpl extends Json {
-    private Gson gson = new Gson();
+    private Gson gson =  new Gson();
 
     @Override
     public String toJson(Object src) {

@@ -1,5 +1,6 @@
 package com.litesuits.http.model.api;
 
+import com.google.gson.annotations.Expose;
 import com.litesuits.http.request.param.HttpParam;
 import com.litesuits.http.request.param.HttpParamModel;
 import com.litesuits.http.request.param.NonHttpParam;
@@ -18,8 +19,9 @@ public class UserParam implements HttpParamModel {
 
     public String key;
 
-    @NonHttpParam
-    protected String ignored = "Ignored by @NonHttpParam ";
+    @Expose(serialize = false) // gson ignore
+    @NonHttpParam// lite http ignore
+    private String beIgnored = "Ignored by @NonHttpParam @Expose";
 
     public UserParam(long id, String key) {
         this.id = id;

@@ -5,16 +5,15 @@ import com.litesuits.http.data.Consts;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 
 /**
  * @author MaTianyu
  * @date 14-7-29
  */
 public class StringBody extends HttpBody {
-    protected String string;
-    protected String mimeType;
     protected String charset;
+    protected String mimeType;
+    protected String string;
     protected byte[] content;
 
 
@@ -31,6 +30,7 @@ public class StringBody extends HttpBody {
         }
         this.charset = charset;
         this.string = string;
+        this.mimeType = mimeType;
         try {
             this.content = string.getBytes(charset);
         } catch (UnsupportedEncodingException e) {
@@ -69,10 +69,9 @@ public class StringBody extends HttpBody {
     @Override
     public String toString() {
         return "StringBody{" +
-               "string='" + string + '\'' +
-               ", charset='" + charset + '\'' +
-               ", content=" + Arrays.toString(content) +
-               "} " + super.toString();
+               "charset='" + charset + '\'' +
+               ", mimeType='" + mimeType + '\'' +
+               ", string='" + string + '\'' +
+               "} " ;
     }
-
 }

@@ -32,13 +32,13 @@ public class EntityBuilder {
                 } else if (body instanceof ByteArrayBody) {
                     // ByteArrayBody SerializableBody
                     ByteArrayBody b = (ByteArrayBody) body;
-                    return new ByteArrayEntity(b.bytes);
+                    return new ByteArrayEntity(b.getBytes());
                 } else if (body instanceof InputStreamBody) {
                     InputStreamBody b = (InputStreamBody) body;
                     return new InputStreamEntity(b.getInstream(), b.getInstream().available(), req);
                 } else if (body instanceof FileBody) {
                     FileBody b = (FileBody) body;
-                    return new FileEntity(b.file, b.getContentType(), req);
+                    return new FileEntity(b.getFile(), b.getContentType(), req);
                 } else if (body instanceof MultipartBody) {
                     return new MultipartEntity((MultipartBody) body);
                 } else {

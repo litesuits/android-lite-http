@@ -11,7 +11,7 @@ import java.util.Arrays;
  * @date 14-7-29
  */
 public class ByteArrayBody extends HttpBody {
-    public byte[] bytes;
+    private byte[] bytes;
 
     public ByteArrayBody(byte[] bytes) {
         this(bytes, Consts.MIME_TYPE_OCTET_STREAM);
@@ -21,6 +21,7 @@ public class ByteArrayBody extends HttpBody {
         this.bytes = bytes;
         this.contentType = contentType;
     }
+
 
     @Override
     public long getContentLength() {
