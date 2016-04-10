@@ -1,2 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<items version="2" />
+<items version="2" >
+
+    <item
+        jar="/Users/matianyu/code-ex/Android/android-lite-http/litehttp-sample/build/intermediates/exploded-aar/android-lite-http/litehttp/unspecified/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="dcf57ba30f97401645ed3a21ebd1d300d6c29148">
+        <dex dex="/Users/matianyu/code-ex/Android/android-lite-http/litehttp-sample/build/intermediates/pre-dexed/debug/android-lite-http-litehttp-unspecified_b49748f24cec557477f45ff1f5f31f3083823621.jar" />
+    </item>
+    <item
+        jar="/Users/matianyu/code-ex/Android/android-lite-http/litehttp-sample/build/intermediates/exploded-aar/android-lite-http/litehttp/unspecified/jars/libs/gson-2.3.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="972da648f3db128078881a21091f416df2d61667">
+        <dex dex="/Users/matianyu/code-ex/Android/android-lite-http/litehttp-sample/build/intermediates/pre-dexed/debug/gson-2.3_0e313aff7583739f250a199427a1c075825c226b.jar" />
+    </item>
+
+</items>
