@@ -13,6 +13,14 @@ import java.util.List;
  */
 public class UrlEncodedFormBody extends StringBody {
 
+    public UrlEncodedFormBody(String encodeBody) {
+        super(encodeBody, Consts.MIME_TYPE_FORM_URLENCODE, Consts.DEFAULT_CHARSET);
+    }
+
+    public UrlEncodedFormBody(String encodeBody, String charset) {
+        super(encodeBody, Consts.MIME_TYPE_FORM_URLENCODE, charset);
+    }
+
     public UrlEncodedFormBody(List<NameValuePair> list) {
         super(handleString(list, Consts.DEFAULT_CHARSET), Consts.MIME_TYPE_FORM_URLENCODE, Consts.DEFAULT_CHARSET);
     }
