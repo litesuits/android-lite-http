@@ -1,14 +1,16 @@
+import proguard.gradle.ProGuardTask
+
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    compileSdkVersion 22
+    buildToolsVersion '23.0.3'
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion 9
+        targetSdkVersion 22
+        versionCode rootProject.versionCode
+        versionName rootProject.versionName
     }
     buildTypes {
         release {
@@ -21,4 +23,33 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
+}
+
+task cleanJars(type: Delete) {
+    delete 'build/libs/*.*'
+}
+
+task cleanBuildDir(type: Delete) {
+    delete rootProject.buildDir
+}
+
+def jarPath = 'build/libs/';
+def jarName = 'lite-http-' + rootProject.versionName + '.jar';
+def jarProName = 'lite-http-pro-' + rootProject.versionName + '.jar';
+
+task makeJar(type: Jar, dependsOn: ['assembleRelease']) {
+    archiveName jarName;
+    destinationDir = file('build/libs')
+    from('build/intermediates/classes/release/')
+    exclude('test/', 'BuildConfig.class', 'R.class', 'R\$*.class', 'META-INF/')
+}
+
+def androidSDKDir = plugins.getPlugin('com.android.library').sdkHandler.getSdkFolder()
+def androidJarDir = androidSDKDir.toString() + '/platforms/' + android.compileSdkVersion + '/android.jar'
+
+task makeProguardJar(type: ProGuardTask, dependsOn: ['makeJar']) {
+    libraryjars(androidJarDir)
+    configuration 'proguard-rules.pro'
+    injars(jarPath + jarName)
+    outjars(jarPath + jarProName)
 }

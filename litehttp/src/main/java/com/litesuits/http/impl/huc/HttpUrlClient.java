@@ -73,7 +73,7 @@ public class HttpUrlClient implements HttpClient {
         StatisticsListener statistic = response.getStatistics();
         try {
             // 0. build URL
-            URL url = new URL(request.getFullUri());
+            URL url = new URL(request.createFullUri());
 
             // 1. open connection and set SSL factory and hostname verifier.
             HttpURLConnection connection;
@@ -207,7 +207,7 @@ public class HttpUrlClient implements HttpClient {
                     String location = connection.getHeaderField(Consts.REDIRECT_LOCATION);
                     if (location != null && location.length() > 0) {
                         if (!location.toLowerCase().startsWith("http")) {
-                            URI uri = new URI(request.getFullUri());
+                            URI uri = new URI(request.createFullUri());
                             URI redirect = new URI(uri.getScheme(), uri.getHost(), location, null);
                             location = redirect.toString();
                         }

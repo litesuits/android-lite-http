@@ -181,6 +181,10 @@ public class LiteHttp {
         return execute(request).getResult();
     }
 
+    public <T> T perform(HttpRichParamModel<T> model) {
+        return execute(model.buildRequest()).getResult();
+    }
+
     public <T> FutureTask<T> performAsync(final AbstractRequest<T> request) {
         FutureTask<T> futureTask = new FutureTask<T>(new Callable<T>() {
             @Override
@@ -242,7 +246,7 @@ public class LiteHttp {
             if (HttpLog.isPrint) {
                 Thread t = Thread.currentThread();
                 HttpLog.i(TAG,
-                          "lite http request: " + request.getFullUri()
+                          "lite http request: " + request.createFullUri()
                           + " , tag: " + request.getTag()
                           + " , method: " + request.getMethod()
                           + " , cache mode: " + request.getCacheMode()

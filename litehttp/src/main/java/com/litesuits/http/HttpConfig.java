@@ -37,7 +37,9 @@ import com.litesuits.http.request.query.ModelQueryBuilder;
 import com.litesuits.http.utils.HttpUtil;
 
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author MaTianyu
@@ -140,7 +142,8 @@ public class HttpConfig {
     /**
      * set common headers to all request
      */
-    protected List<NameValuePair> commonHeaders;
+    //protected List<NameValuePair> commonHeaders;
+    protected Map<String, String> commonHeaders;
     /**
      * set default charset to all request
      */
@@ -358,11 +361,21 @@ public class HttpConfig {
         return this;
     }
 
-    public List<NameValuePair> getCommonHeaders() {
+    public Map<String, String> getCommonHeaders() {
         return commonHeaders;
     }
 
-    public HttpConfig setCommonHeaders(List<NameValuePair> commonHeaders) {
+    public HttpConfig setCommonHeaders(List<NameValuePair> headerList) {
+        if (headerList != null) {
+            this.commonHeaders = new LinkedHashMap<>();
+            for (NameValuePair pair : headerList) {
+                commonHeaders.put(pair.getName(), pair.getValue());
+            }
+        }
+        return this;
+    }
+
+    public HttpConfig setCommonHeaders(Map<String, String> commonHeaders) {
         this.commonHeaders = commonHeaders;
         return this;
     }

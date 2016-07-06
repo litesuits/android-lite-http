@@ -277,7 +277,7 @@ public class ApacheClient implements HttpClient {
                         String location = locationHeader.getValue();
                         if (location != null && location.length() > 0) {
                             if (!location.toLowerCase().startsWith("http")) {
-                                URI uri = new URI(request.getFullUri());
+                                URI uri = new URI(request.createFullUri());
                                 URI redirect = new URI(uri.getScheme(), uri.getHost(), location, null);
                                 location = redirect.toString();
                             }
@@ -319,26 +319,26 @@ public class ApacheClient implements HttpClient {
         HttpEntityEnclosingRequestBase entityRequset = null;
         switch (request.getMethod()) {
             case Get:
-                return new HttpGet(request.getFullUri());
+                return new HttpGet(request.createFullUri());
             case Head:
-                return new HttpHead(request.getFullUri());
+                return new HttpHead(request.createFullUri());
             case Delete:
-                return new HttpDelete(request.getFullUri());
+                return new HttpDelete(request.createFullUri());
             case Trace:
-                return new HttpTrace(request.getFullUri());
+                return new HttpTrace(request.createFullUri());
             case Options:
-                return new HttpOptions(request.getFullUri());
+                return new HttpOptions(request.createFullUri());
             case Post:
-                entityRequset = new HttpPost(request.getFullUri());
+                entityRequset = new HttpPost(request.createFullUri());
                 break;
             case Put:
-                entityRequset = new HttpPut(request.getFullUri());
+                entityRequset = new HttpPut(request.createFullUri());
                 break;
             case Patch:
-                entityRequset = new HttpPatch(request.getFullUri());
+                entityRequset = new HttpPatch(request.createFullUri());
                 break;
             default:
-                return new HttpGet(request.getFullUri());
+                return new HttpGet(request.createFullUri());
         }
         entityRequset.setEntity(EntityBuilder.build(request));
         return entityRequset;

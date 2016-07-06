@@ -52,7 +52,7 @@ public abstract class AbstractRequest<T> {
     /**
      * scheme and host for uri.
      *
-     * if you has set this field, your {@link #uri} can be just set a path: "/path/api...".
+     * such as https://abc.com.
      *
      * note: if {@link #uri} has be set completely and correctly(scheme + host + path), this will be ignored.
      */
@@ -60,12 +60,15 @@ public abstract class AbstractRequest<T> {
     /**
      * uri of http request.
      *
-     * if {@link #baseUrl} is null, you must set a correct uri for a request.
-     *
      * if you has set {@link #baseUrl}, this can be just set a path string for uri.
      * we will concat a full uri as: scheme + host + uri(path)
+     *
+     * with baseUrl, uri can be just set a path: "/path/api...".
+     *
+     * if {@link #baseUrl} is null, you must set a complete and correct uri for a request.
      */
     private String uri;
+    private String fullUri;
     /**
      * HTTP Method, such as GET, POST, PUT, DELETE, etc.
      *
@@ -161,11 +164,11 @@ public abstract class AbstractRequest<T> {
     /**
      * add custom header to request.
      */
-    private LinkedHashMap<String, String> headers;
+    private Map<String, String> headers;
     /**
      * key value parameters
      */
-    private LinkedHashMap<String, String> paramMap;
+    private Map<String, String> paramMap;
     /**
      * data parser
      */
@@ -175,9 +178,9 @@ public abstract class AbstractRequest<T> {
      */
     private GlobalHttpListener globalHttpListener;
     /**
-     * whether http params be pinned to url
+     * parameters field
      */
-    private HashMap<String, Field> paramFieldMap = null;
+    private Map<String, Field> paramFieldMap = null;
 
     /*________________________ constructors  ________________________*/
     //    public AbstractRequest() {}
@@ -459,22 +462,22 @@ public abstract class AbstractRequest<T> {
         return (S) this;
     }
 
-    public LinkedHashMap<String, String> getHeaders() {
+    public Map<String, String> getHeaders() {
         return headers;
     }
 
     @SuppressWarnings("unchecked")
-    public <S extends AbstractRequest<T>> S setHeaders(LinkedHashMap<String, String> headers) {
+    public <S extends AbstractRequest<T>> S setHeaders(Map<String, String> headers) {
         this.headers = headers;
         return (S) this;
     }
 
-    public LinkedHashMap<String, String> getParamMap() {
+    public Map<String, String> getParamMap() {
         return paramMap;
     }
 
     @SuppressWarnings("unchecked")
-    public <S extends AbstractRequest<T>> S setParamMap(LinkedHashMap<String, String> paramMap) {
+    public <S extends AbstractRequest<T>> S setParamMap(Map<String, String> paramMap) {
         this.paramMap = paramMap;
         return (S) this;
     }
@@ -550,7 +553,7 @@ public abstract class AbstractRequest<T> {
 
     public boolean isCancelledOrInterrupted() {
         //System.out.println("req cancel: "+cancel.get()+"  req interrupt: " +  Thread.currentThread().isInterrupted());
-        return cancel.get() ||  Thread.currentThread().isInterrupted();
+        return cancel.get() || Thread.currentThread().isInterrupted();
     }
 
     public void cancel() {
@@ -558,15 +561,14 @@ public abstract class AbstractRequest<T> {
     }
 
 
-    public String getFullUri() throws HttpClientException {
-        if (uri == null) {
-            throw new HttpClientException(ClientException.UrlIsNull);
-        } else if (baseUrl != null) {
-            if (!baseUrl.startsWith(Consts.SCHEME_HTTP)) {
+    public String createFullUri() throws HttpClientException {
+        if (uri == null || !uri.startsWith(Consts.SCHEME_HTTP)) {
+            if (baseUrl == null) {
+                throw new HttpClientException(ClientException.UrlIsNull);
+            } else if (!baseUrl.startsWith(Consts.SCHEME_HTTP)) {
                 throw new HttpClientException(ClientException.IllegalScheme);
-            } else if (!uri.startsWith(Consts.SCHEME_HTTP)) {
-                uri = baseUrl + uri;
             }
+            uri = uri == null ? baseUrl : baseUrl + uri;
         }
         try {
             StringBuilder sb = new StringBuilder();
@@ -597,10 +599,10 @@ public abstract class AbstractRequest<T> {
             LinkedHashMap<String, String> map = getBasicParams();
             int size = map.size();
             if (size > 0) {
-                if (hasQes) {
-                    sb.append("&");
-                } else {
+                if (!hasQes) {
                     sb.append("?");
+                } else if(uri.contains("=")){
+                    sb.append("&");
                 }
                 int i = 0;
                 for (Entry<String, String> v : map.entrySet()) {
@@ -612,7 +614,8 @@ public abstract class AbstractRequest<T> {
                 }
             }
             //if (Log.isPrint) Log.v(TAG, "lite request uri: " + sb.toString());
-            return sb.toString();
+            fullUri = sb.toString();
+            return fullUri;
         } catch (Exception e) {
             throw new HttpClientException(e);
         }
@@ -809,11 +812,7 @@ public abstract class AbstractRequest<T> {
                 } else if (a instanceof HttpCacheExpire) {
                     TimeUnit unit = ((HttpCacheExpire) a).unit();
                     long time = ((HttpCacheExpire) a).value();
-                    if (unit != null) {
-                        cacheExpireMillis = unit.toMillis(time);
-                    } else {
-                        cacheExpireMillis = time;
-                    }
+                    cacheExpireMillis = unit.toMillis(time);
                 } else if (a instanceof HttpCacheKey) {
                     cacheKey = handleAnnotation(model, ((HttpCacheKey) a).value());// may be replace{}
                 } else if (a instanceof HttpCharSet) {
@@ -865,11 +864,11 @@ public abstract class AbstractRequest<T> {
     public String reqToString() {
         StringBuilder sb = new StringBuilder();
         sb.append("\n________________ request-start ________________")
-          .append("\n class            : ").append(getClass().getSimpleName())
+          .append("\n full uri         : ").append(fullUri)
           .append("\n id               : ").append(id)
-          .append("\n uri              : ").append(uri)
           .append("\n method           : ").append(method)
           .append("\n tag              : ").append(tag)
+          .append("\n class            : ").append(getClass().getSimpleName())
           .append("\n charSet          : ").append(charSet)
           .append("\n maxRetryTimes    : ").append(maxRetryTimes)
           .append("\n maxRedirectTimes : ").append(maxRedirectTimes)

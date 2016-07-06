@@ -112,6 +112,7 @@ public class MainActivity extends Activity {
                     .setConnectTimeout(10000)         // connect timeout: 10s
                     .create();
         } else {
+
             liteHttp.getConfig()                   // configuration directly
                     .setSocketTimeout(5000)       // socket timeout: 5s
                     .setConnectTimeout(5000);    // connect timeout: 5s
@@ -157,6 +158,21 @@ public class MainActivity extends Activity {
             case 0:
                 initLiteHttp();
                 HttpUtil.showTips(activity, "LiteHttp2.0", "Init Config Success!");
+                StringRequest login = new StringRequest("https://10.218.128.111/router/rest?")
+                        .setMethod(HttpMethods.Post)
+                        .setHttpListener(new HttpListener<String>() {
+                            @Override
+                            public void onSuccess(String s, Response<String> response) {
+                                response.printInfo();
+                            }
+
+                            @Override
+                            public void onFailure(HttpException e, Response<String> response) {
+                                response.printInfo();
+                            }
+                        })
+                        .setHttpBody(new UrlEncodedFormBody("app_key=4272&cp_code=D_DBKD&format=json&login_account=123456&method=cainiao.yima.app.password.login&os_type=2&password=14e1b600b1fd579f47433b88e8d85291&sign=667037188C082C22C111689EFE06320E&sign_method=md5&timestamp=2016-05-06&v=2.0"));
+                liteHttp.executeAsync(login);
                 break;
 
             case 1:

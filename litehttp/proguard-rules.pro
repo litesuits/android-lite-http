@@ -35,8 +35,7 @@
 #-keepattributes SourceFile,LineNumberTable
 
 # 开发者需要调用，不可以混淆
--keep public class com.litesuits.http.LiteHttp { *; }
--keep public class com.litesuits.http.HttpConfig { *; }
+-keep public class com.litesuits.http.* { *; }
 -keep public class com.litesuits.http.response.Response { *; }
 -keep public class com.litesuits.http.utils.HttpUtil { *; }
 -keep public class com.litesuits.http.annotation.* { *; }
