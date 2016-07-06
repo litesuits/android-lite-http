@@ -3,6 +3,7 @@
 # built application files
 *.apk
 *.ap_
+.gradle
 
 # files for the dex VM
 *.dex
@@ -14,6 +15,7 @@
 bin/
 gen/
 out/
+build/
 
 # Local configuration file (sdk path, etc)
 *.properties
