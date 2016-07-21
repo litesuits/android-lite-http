@@ -7,7 +7,9 @@ import com.litesuits.http.data.Charsets;
 import com.litesuits.http.data.Consts;
 import com.litesuits.http.data.HttpStatus;
 import com.litesuits.http.data.NameValuePair;
+import com.litesuits.http.exception.HttpNetException;
 import com.litesuits.http.exception.HttpServerException;
+import com.litesuits.http.exception.NetException;
 import com.litesuits.http.exception.ServerException;
 import com.litesuits.http.listener.StatisticsListener;
 import com.litesuits.http.log.HttpLog;
@@ -141,7 +143,7 @@ public class HttpUrlClient implements HttpClient {
             }
             // if input stream is null
             if (inputStream == null) {
-                return;
+                throw new HttpNetException(NetException.NetworkUnreachable);
             }
 
             // 6. handle http status code

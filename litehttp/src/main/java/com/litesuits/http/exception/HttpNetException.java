@@ -9,14 +9,14 @@ package com.litesuits.http.exception;
 public class HttpNetException extends HttpException {
     private static final long serialVersionUID = 4961807092977094093L;
     private NetException exceptionType;
-
+    //Network is unreachable
     public HttpNetException(NetException netExp) {
         super(netExp.toString());
         exceptionType = netExp;
     }
 
     /**
-     * 包裹其他异常，网络不稳定因素或者防火墙限制
+     * 包括其他异常，网络不稳定因素或者防火墙限制
      *
      * @param cause
      */

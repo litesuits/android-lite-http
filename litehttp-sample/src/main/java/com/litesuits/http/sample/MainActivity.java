@@ -619,7 +619,7 @@ public class MainActivity extends Activity {
                     }
                 }
 
-                liteHttp.executeAsync(new StringRequest("httpa://invalid-url").setHttpListener(
+                liteHttp.executeAsync(new StringRequest("http://baidu.com").setHttpListener(
                         new MyHttpListener<String>(activity) {
                             @Override
                             public void onFailure(HttpException e, Response response) {
