@@ -7,10 +7,7 @@ import com.litesuits.http.data.Charsets;
 import com.litesuits.http.data.Consts;
 import com.litesuits.http.data.HttpStatus;
 import com.litesuits.http.data.NameValuePair;
-import com.litesuits.http.exception.HttpNetException;
-import com.litesuits.http.exception.HttpServerException;
-import com.litesuits.http.exception.NetException;
-import com.litesuits.http.exception.ServerException;
+import com.litesuits.http.exception.*;
 import com.litesuits.http.listener.StatisticsListener;
 import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.parser.DataParser;
@@ -24,10 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
-import java.net.URI;
-import java.net.URL;
+import java.net.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -69,7 +63,7 @@ public class HttpUrlClient implements HttpClient {
 
     @Override
     public <T> void connect(AbstractRequest<T> request, InternalResponse response)
-            throws Exception {
+            throws HttpClientException, IOException, URISyntaxException, HttpNetException, HttpServerException {
         InputStream inputStream = null;
         int maxRedirectTimes = request.getMaxRedirectTimes();
         StatisticsListener statistic = response.getStatistics();

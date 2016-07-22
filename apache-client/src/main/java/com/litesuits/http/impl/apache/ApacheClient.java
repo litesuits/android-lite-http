@@ -5,9 +5,7 @@ import com.litesuits.http.HttpClient;
 import com.litesuits.http.HttpConfig;
 import com.litesuits.http.data.*;
 import com.litesuits.http.data.HttpStatus;
-import com.litesuits.http.exception.HttpClientException;
-import com.litesuits.http.exception.HttpServerException;
-import com.litesuits.http.exception.ServerException;
+import com.litesuits.http.exception.*;
 import com.litesuits.http.listener.StatisticsListener;
 import com.litesuits.http.log.HttpLog;
 import com.litesuits.http.parser.DataParser;
@@ -239,13 +237,14 @@ public class ApacheClient implements HttpClient {
                 }
                 response.setHeaders(hs);
             }
-            // 成功
-            entity = ares.getEntity();
 
             // is cancelled ?
             if (request.isCancelledOrInterrupted()) {
                 return;
             }
+
+            // 成功
+            entity = ares.getEntity();
 
             // data body
             if (status.getStatusCode() <= 299 || status.getStatusCode() == 600) {
@@ -267,6 +266,8 @@ public class ApacheClient implements HttpClient {
                         }
                         response.setReadedLength(parser.getReadedLength());
                     }
+                }else{
+                    throw new HttpNetException(NetException.NetworkUnreachable);
                 }
             } else if (status.getStatusCode() <= 399) {
                 // redirect

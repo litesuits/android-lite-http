@@ -246,12 +246,12 @@ public class LiteHttp {
             if (HttpLog.isPrint) {
                 Thread t = Thread.currentThread();
                 HttpLog.i(TAG,
-                          "lite http request: " + request.createFullUri()
-                          + " , tag: " + request.getTag()
-                          + " , method: " + request.getMethod()
-                          + " , cache mode: " + request.getCacheMode()
-                          + " , thread ID: " + t.getId()
-                          + " , thread name: " + t.getName());
+                        "lite http request: " + request.createFullUri()
+                        + " , tag: " + request.getTag()
+                        + " , method: " + request.getMethod()
+                        + " , cache mode: " + request.getCacheMode()
+                        + " , thread ID: " + t.getId()
+                        + " , thread name: " + t.getName());
             }
             if (globalListener != null) {
                 globalListener.notifyCallStart(request);
@@ -447,10 +447,12 @@ public class LiteHttp {
                 }
                 // connect and parse data
                 config.httpClient.connect(request, response);
-            } catch (IOException e) {
-                cause = e;
+            } catch (HttpServerException | HttpNetException e) {
+                throw e;
             } catch (SecurityException e) {
                 throw new HttpClientException(e, ClientException.PermissionDenied);
+            } catch (IOException e) {
+                cause = e;
             } catch (Exception e) {
                 throw new HttpClientException(e);
             }
