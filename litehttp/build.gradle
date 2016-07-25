@@ -2,6 +2,10 @@ import proguard.gradle.ProGuardTask
 
 apply plugin: 'com.android.library'
 
+
+def liteHttpVersion = '3.0.1'
+
+
 android {
     compileSdkVersion 22
     buildToolsVersion '23.0.3'
@@ -9,8 +13,8 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 22
-        versionCode rootProject.versionCode
-        versionName rootProject.versionName
+        versionCode 4
+        versionName liteHttpVersion
     }
     buildTypes {
         release {
@@ -34,8 +38,8 @@ task cleanBuildDir(type: Delete) {
 }
 
 def jarPath = 'build/libs/';
-def jarName = 'lite-http-' + rootProject.versionName + '.jar';
-def jarProName = 'lite-http-pro-' + rootProject.versionName + '.jar';
+def jarName = 'lite-http-' + liteHttpVersion + '.jar';
+def jarProName = 'lite-http-pro-' + liteHttpVersion + '.jar';
 
 task makeJar(type: Jar, dependsOn: ['assembleRelease']) {
     archiveName jarName;
@@ -53,3 +57,5 @@ task makeProguardJar(type: ProGuardTask, dependsOn: ['makeJar']) {
     injars(jarPath + jarName)
     outjars(jarPath + jarProName)
 }
+
+
