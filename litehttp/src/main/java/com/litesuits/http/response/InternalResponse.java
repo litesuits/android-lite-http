@@ -213,6 +213,7 @@ public class InternalResponse<T> implements Response<T> {
           .append("____________________________ lite http response info start ____________________________")
           .append("\n url            : ").append(request.getUri())
           .append("\n status         : ").append(httpStatus)
+          .append("\n cache hit      : ").append(isCacheHit)
           .append("\n charSet        : ").append(charSet)
           .append("\n useTime        : ").append(useTime)
           .append("\n retryTimes     : ").append(retryTimes)

@@ -280,11 +280,11 @@ public class LiteHttp {
                 if (HttpLog.isPrint) {
                     Thread t = Thread.currentThread();
                     HttpLog.i(TAG, "lite http response: " + request.getUri()
-                                   + " , tag: " + request.getTag()
                                    + " , method: " + request.getMethod()
-                                   + " , cache mode: " + request.getCacheMode()
+                                   + " , status : " + response.getHttpStatus()
+                                   + " , cache hit: " + response.isCacheHit()
                                    + " , thread ID: " + t.getId()
-                                   + " , thread name: " + t.getName());
+                                   + " , raw string: " + response.getRawString());
                 }
                 if (listener != null) {
                     if (request.isCancelledOrInterrupted()) {
@@ -597,6 +597,23 @@ public class LiteHttp {
         }
         File file = request.getCachedFile();
         if (file != null) {
+            len = file.length();
+            file.delete();
+        }
+        return len;
+    }
+
+    public final long cleanCache(String cacheDir, String cacheKey) {
+        long len = 0;
+        synchronized (lock) {
+            if (memCache.get(cacheKey) != null) {
+                HttpCache cache = memCache.remove(cacheKey);
+                len = cache.length;
+                memCachedSize.addAndGet(-len);
+            }
+        }
+        File file = new File(cacheDir, cacheKey);
+        if (file.exists()) {
             len = file.length();
             file.delete();
         }

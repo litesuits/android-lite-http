@@ -13,12 +13,12 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.*;
+import com.litesuits.go.OverloadPolicy;
+import com.litesuits.go.SchedulePolicy;
+import com.litesuits.go.SmartExecutor;
 import com.litesuits.http.HttpConfig;
 import com.litesuits.http.LiteHttp;
 import com.litesuits.http.annotation.*;
-import com.litesuits.http.concurrent.OverloadPolicy;
-import com.litesuits.http.concurrent.SchedulePolicy;
-import com.litesuits.http.concurrent.SmartExecutor;
 import com.litesuits.http.custom.CustomJSONParser;
 import com.litesuits.http.custom.FastJson;
 import com.litesuits.http.custom.MyHttpExceptHandler;
@@ -59,7 +59,7 @@ public class MainActivity extends Activity {
     protected int count = 0;
     private boolean needRestore;
 
-    public static final String url = "http://baidu.com";
+    public static String url = "http://baidu.com";
     public static final String httpsUrl = "https://baidu.com";
     //public static final String httpsUrl = "https://www.thanku.love";
     public static final String uploadUrl = "http://192.168.31.121:8080/upload";
@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
     private void initViews() {
         mListview = (ListView) findViewById(R.id.listview);
         mAdapter = new ArrayAdapter<String>(this, R.layout.list_item, R.id.tv_item,
-                                            getResources().getStringArray(R.array.http_test_list));
+                getResources().getStringArray(R.array.http_test_list));
         mListview.setAdapter(mAdapter);
         mListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -101,21 +101,23 @@ public class MainActivity extends Activity {
     private void initLiteHttp() {
         if (liteHttp == null) {
             liteHttp = LiteHttp.build(this)
-                    .setHttpClient(new HttpUrlClient())       // http client
-                    .setJsonConvertor(new GsonImpl())        // json convertor
-                    .setBaseUrl(baseUrl)                    // set base url
-                    .setDebugged(true)                     // log output when debugged
-                    .setDoStatistics(true)                // statistics of time and traffic
-                    .setDetectNetwork(true)              // detect network before connect
-                    .setUserAgent("Mozilla/5.0 (...)")  // set custom User-Agent
-                    .setSocketTimeout(10000)           // socket timeout: 10s
-                    .setConnectTimeout(10000)         // connect timeout: 10s
-                    .create();
+                               .setHttpClient(new HttpUrlClient())       // http client
+                               .setJsonConvertor(new GsonImpl())        // json convertor
+                               .setBaseUrl(baseUrl)                    // set base url
+                               .setDebugged(true)                     // log output when debugged
+                               .setDoStatistics(true)                // statistics of time and traffic
+                               .setDetectNetwork(true)              // detect network before connect
+                               .setUserAgent("Mozilla/5.0 (...)")  // set custom User-Agent
+                               .setSocketTimeout(10000)           // socket timeout: 10s
+                               .setConnectTimeout(10000)         // connect timeout: 10s
+                               .create();
         } else {
 
             liteHttp.getConfig()                   // configuration directly
                     .setSocketTimeout(5000)       // socket timeout: 5s
                     .setConnectTimeout(5000);    // connect timeout: 5s
+            HttpUrlClient url = new HttpUrlClient();
+            url.setHostnameVerifier()
         }
     }
 
@@ -157,21 +159,25 @@ public class MainActivity extends Activity {
         switch (which) {
             case 0:
                 initLiteHttp();
+                liteHttp.getConfig()                   // configuration directly
+                        .setSocketTimeout(1000)       // socket timeout: 5s
+                        .setConnectTimeout(1000);    // connect timeout: 5s
                 HttpUtil.showTips(activity, "LiteHttp2.0", "Init Config Success!");
-                StringRequest login = new StringRequest("https://10.218.128.111/router/rest?")
-                        .setMethod(HttpMethods.Post)
+                String apiUrl = "http://api.daily.taobao.net/router/rest?app_key=4272&format=json&method=cainiao.guoguo.courier.getrewardtip&open_id=4398046618004&session_code=7949690a30a91305a3a351a314ec501e&sign=0A9DDED897FDB04E1D8177C984AD4238&sign_method=md5&timestamp=2016-08-05&user_id=4398046618004&v=2.0";
+                StringRequest login = new StringRequest(apiUrl)
+                        .setMethod(HttpMethods.Get)
                         .setHttpListener(new HttpListener<String>() {
                             @Override
                             public void onSuccess(String s, Response<String> response) {
                                 response.printInfo();
+                                HttpUtil.showTips(activity, "LiteHttp2.0", s);
                             }
 
                             @Override
                             public void onFailure(HttpException e, Response<String> response) {
                                 response.printInfo();
                             }
-                        })
-                        .setHttpBody(new UrlEncodedFormBody("app_key=4272&cp_code=D_DBKD&format=json&login_account=123456&method=cainiao.yima.app.password.login&os_type=2&password=14e1b600b1fd579f47433b88e8d85291&sign=667037188C082C22C111689EFE06320E&sign_method=md5&timestamp=2016-05-06&v=2.0"));
+                        });
                 liteHttp.executeAsync(login);
                 break;
 
@@ -392,7 +398,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void onSuccess(JSONObject jsonObject, Response<JSONObject> response) {
                         HttpUtil.showTips(activity, "Custom Data Parser",
-                                          "Custom JSONObject Parser:\n" + jsonObject.toString());
+                                "Custom JSONObject Parser:\n" + jsonObject.toString());
                     }
                 }));
                 break;
@@ -1044,7 +1050,8 @@ public class MainActivity extends Activity {
                 @HttpCacheExpire(value = 1, unit = TimeUnit.MINUTES) // 缓存时间
                 @HttpID(2) // 请求ID
                 @HttpMaxRetry(3) // 重试次数
-                @HttpMaxRedirect(5) // 重定向次数
+                @HttpMaxRedirect(5)
+                        // 重定向次数
                 class TEST extends HttpRichParamModel<User> {
 
                     @NonHttpParam

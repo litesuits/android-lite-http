@@ -509,15 +509,19 @@ public abstract class AbstractRequest<T> {
     public LinkedHashMap<String, String> getBasicParams()
             throws IllegalArgumentException, UnsupportedEncodingException,
             IllegalAccessException, InvocationTargetException {
-        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
-        if (paramMap != null) {
-            map.putAll(paramMap);
-        }
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+
+        // 1. 先读取属性的key-value参数
         if (paramModel != null) {
             if (paramModel instanceof HttpRichParamModel && !((HttpRichParamModel) paramModel).isFieldsAttachToUrl()) {
                 return map;
             }
             map.putAll(getQueryBuilder().buildPrimaryMap(paramModel));
+        }
+
+        // 2. 再读取Map中的key-value参数，如果有和第1步中相同的key，会覆盖之。
+        if (paramMap != null) {
+            map.putAll(paramMap);
         }
         return map;
     }
@@ -601,17 +605,34 @@ public abstract class AbstractRequest<T> {
             if (size > 0) {
                 if (!hasQes) {
                     sb.append("?");
-                } else if(uri.contains("=")){
+                } else if (uri.contains("=")) {
                     sb.append("&");
                 }
                 int i = 0;
-                for (Entry<String, String> v : map.entrySet()) {
-                    sb.append(URLEncoder.encode(v.getKey(), charSet)).append("=")
-                      .append(URLEncoder.encode(v.getValue(), charSet));
+                for (String key : map.keySet()) {
+                    // value 会导致强转String失败，需用Object，可能是泛型丢失导致，很奇怪
+                    Object value = map.get(key);
+                    if (value instanceof String) {
+                        sb.append(URLEncoder.encode(key, charSet)).append("=")
+                          .append(URLEncoder.encode((String) value, charSet));
+                    } else {
+                        sb.append(URLEncoder.encode(key, charSet)).append("=")
+                          .append(URLEncoder.encode(value.toString(), charSet));
+                    }
                     if (++i != size) {
                         sb.append("&");
                     }
                 }
+                // 使用Entry遍历，Entry再编译后失去泛型约束，可能导致String变为Int。
+                // for (Entry<String, String> v : map.entrySet()) {
+                //     String key = v.getKey();
+                //     String value = v.getValue();
+                //     sb.append(URLEncoder.encode(key, charSet)).append("=")
+                //       .append(URLEncoder.encode(value, charSet));
+                //     if (++i != size) {
+                //         sb.append("&");
+                //     }
+                // }
             }
             //if (Log.isPrint) Log.v(TAG, "lite request uri: " + sb.toString());
             fullUri = sb.toString();
@@ -863,41 +884,45 @@ public abstract class AbstractRequest<T> {
 
     public String reqToString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n________________ request-start ________________")
-          .append("\n full uri         : ").append(fullUri)
-          .append("\n id               : ").append(id)
-          .append("\n method           : ").append(method)
-          .append("\n tag              : ").append(tag)
-          .append("\n class            : ").append(getClass().getSimpleName())
-          .append("\n charSet          : ").append(charSet)
-          .append("\n maxRetryTimes    : ").append(maxRetryTimes)
-          .append("\n maxRedirectTimes : ").append(maxRedirectTimes)
-          .append("\n httpListener     : ").append(httpListener)
-          .append("\n cancelled        : ").append(cancel.get())
-          .append("\n cacheMode        : ").append(cacheMode)
-          .append("\n cacheKey         : ").append(cacheKey)
-          .append("\n cacheExpireMillis: ").append(cacheExpireMillis)
-          .append("\n model            : ").append(paramModel)
-          .append("\n queryBuilder     : ").append(queryBuilder)
-          .append("\n httpBody         : ").append(httpBody)
-          .append("\n dataParser       : ").append(getDataParser())
-          .append("\n header           ");
-        if (headers == null) {
-            sb.append(": null");
-        } else {
-            for (Entry<String, String> en : headers.entrySet()) {
-                sb.append("\n|    ").append(String.format("%-20s", en.getKey())).append(" = ").append(en.getValue());
+        try {
+            sb.append("\n________________ request-start ________________")
+              .append("\n full uri         : ").append(fullUri)
+              .append("\n id               : ").append(id)
+              .append("\n method           : ").append(method)
+              .append("\n tag              : ").append(tag)
+              .append("\n class            : ").append(getClass().getSimpleName())
+              .append("\n charSet          : ").append(charSet)
+              .append("\n maxRetryTimes    : ").append(maxRetryTimes)
+              .append("\n maxRedirectTimes : ").append(maxRedirectTimes)
+              .append("\n httpListener     : ").append(httpListener)
+              .append("\n cancelled        : ").append(cancel.get())
+              .append("\n cacheMode        : ").append(cacheMode)
+              .append("\n cacheKey         : ").append(cacheKey)
+              .append("\n cacheExpireMillis: ").append(cacheExpireMillis)
+              .append("\n model            : ").append(paramModel)
+              .append("\n queryBuilder     : ").append(queryBuilder)
+              .append("\n httpBody         : ").append(httpBody)
+              .append("\n dataParser       : ").append(getDataParser())
+              .append("\n header           ");
+            if (headers == null) {
+                sb.append(": null");
+            } else {
+                for (Entry<String, String> en : headers.entrySet()) {
+                    sb.append("\n|    ").append(String.format("%-20s", en.getKey())).append(" = ").append(en.getValue());
+                }
             }
-        }
-        sb.append("\n paramMap         ");
-        if (paramMap == null) {
-            sb.append(": null");
-        } else {
-            for (Entry<String, String> en : paramMap.entrySet()) {
-                sb.append("\n|    ").append(String.format("%-20s", en.getKey())).append(" = ").append(en.getValue());
+            sb.append("\n paramMap         ");
+            if (paramMap == null) {
+                sb.append(": null");
+            } else {
+                for (Entry<String, String> en : paramMap.entrySet()) {
+                    sb.append("\n|    ").append(String.format("%-20s", en.getKey())).append(" = ").append(en.getValue());
+                }
             }
+            sb.append("\n________________ request-end ________________");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        sb.append("\n________________ request-end ________________");
         return sb.toString();
     }
 
